@@ -13,7 +13,14 @@ using namespace std;
 
 int** createGrid(int); // creates the nxn grid where tiles are placed
 void fillGrid(int**, int); // the tiles from 1 to [(n x ) - 1]
-void printGrid(int**, int);
+void printGrid(int**, int); // print the grid
+
+/********** the operators ***********/
+void slideUp(int**, int);
+void slideDown(int**, int);
+void slideLeft(int**, int);        // maybe clean these up later
+void slideRight(int**, int);
+/***********************************/
 
 int main(int argc, const char * argv[]) {
     int **grid = createGrid(3);
@@ -39,15 +46,21 @@ void fillGrid(int** grid, int size) {
             grid[i][j] = (i+j);
         }
     }
-
 }
 
 void printGrid(int** grid, int size) {
     for (int i = 0; i != size; ++i) {
         for (int j = 0; j != size; ++j) {
-            cout <<grid[i][j] << " ";
+            if (grid[i][j] == 0)
+                cout << "  ";
+            else
+                cout <<grid[i][j] << " ";
         }
         cout << endl;
     }
     cout << endl;
+}
+
+void slideLeft(int** grid, int size) {
+    if (
 }
