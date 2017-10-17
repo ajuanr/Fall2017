@@ -53,3 +53,33 @@ bool Slide::moveRight() {
     return false;                   // move could not be executed
     
 }
+
+bool Slide::moveUp() {
+    // blank is already on first row, can't move up
+    if (blankPos < inputSize)
+        return false;
+    
+    blankPos -= inputSize;                  // move the blank
+    
+    // swap the values
+    int temp = grid[blankPos];
+    grid[blankPos] = 0;
+    grid[blankPos+inputSize] = temp;
+    
+    return true;
+}
+
+bool Slide::moveDown() {
+    // blank is on last row, can't move down
+    if (blankPos >= (inputSize * (inputSize-1)))
+        return false;
+    
+    blankPos += inputSize;                  // move the blank
+    
+    // swap the values
+    int temp = grid[blankPos];
+    grid[blankPos] = 0;
+    grid[blankPos-inputSize] = temp;
+    
+    return true;
+}
