@@ -6,9 +6,15 @@ public:
     Slide();           // create a default grid of size 3x3
     Slide(int);        // create a default grid of size nxn
     Slide(int*, int); // initialize the grid from an array
+    
+    void print() const;
+    
 private:
     int* grid; // will hold the n*n grid as a 1-d array
+    int inputSize;
+    int gridSize;
     int blankPos; // keep track of where the blank is for moving it around
+    
 };
 
 #endif
