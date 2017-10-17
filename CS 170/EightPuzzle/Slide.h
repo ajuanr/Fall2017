@@ -9,12 +9,17 @@ public:
     
     void print() const;
     
-private:
-    int* grid; // will hold the n*n grid as a 1-d array
-    int inputSize;
-    int gridSize;
-    int blankPos; // keep track of where the blank is for moving it around
+    // operators allowed
+    bool moveLeft();
+    bool moveRight();
+    bool moveUp();
+    bool moveDown();
     
+private:
+    int* grid;      // will hold the n*n grid as a 1-d array
+    int inputSize;  // input of size n
+    int gridSize;   // grid size of nxn
+    int blankPos;   // keep track of where the blank is for moving it around
 };
 
 #endif

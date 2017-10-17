@@ -12,5 +12,11 @@
 int main() {
     Slide *sp = new Slide;
     sp->print();
+   std::cout << "Move left retsult: " << sp->moveLeft() << std::endl;
+    sp->print();
+//    std::cout << "Move left retsult: " << sp->moveLeft() << std::endl;
+//    std::cout << "Move left retsult: " << sp->moveLeft() << std::endl;
+        std::cout << "Move left retsult: " << sp->moveRight() << std::endl;
+    sp->print();
     return 0;
 }
