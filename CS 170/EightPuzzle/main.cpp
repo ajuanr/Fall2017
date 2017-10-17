@@ -10,11 +10,9 @@
 #include "Slide.h"
 
 int main() {
-    Slide *sp = new Slide;
+    Slide *sp = new Slide(3);
     sp->print();
-    Slide *rp = new Slide(3);
-    rp->print();
-    std::cout << "Testing equality\n";
+    int a[] = {3, 0, 7, 2, 8, 1, 6, 4 ,5};
 
     return 0;
 }

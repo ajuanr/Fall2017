@@ -13,6 +13,17 @@ Slide::Slide(int n):inputSize(n){
     create(inputSize);
 }
 
+Slide::Slide(int* input, int size):inputSize(size) {
+    gridSize = inputSize * inputSize;
+    grid = new int[gridSize];
+    for (int i = 0; i != gridSize; ++i) {
+        grid[i] = input[i];
+        if (input[i] == 0 ){
+            blankPos = i;
+        }
+    }
+}
+
 // initialize the grid
 void Slide::create(int n) {
     gridSize = inputSize * inputSize;

@@ -6,6 +6,7 @@ public:
     Slide();           // create a default grid of size 3x3
     Slide(int);        // create a default grid of size nxn
     Slide(int*, int); // initialize the grid from an array
+    ~Slide() { delete [] grid;}
     
     void print() const;
     
