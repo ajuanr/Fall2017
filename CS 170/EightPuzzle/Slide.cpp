@@ -20,15 +20,16 @@ Slide::Slide(int n):inputSize(n){
     blankPos = gridSize - 1;
     grid = new int [gridSize];
     for (int i = 0; i!= gridSize; ++i) {
-        grid[i] = i;
+        grid[i] = i+1;
     }
+    grid[gridSize-1] = 0;
 }
                          
 void Slide::print() const{
     for (int i = 0; i != gridSize; ++i) {
         if ((i != 0) && (i % inputSize == 0))
             cout << endl;
-        cout << setw(3) << grid[i];
+        cout << setw(4) << grid[i];
     }
     cout << endl << endl;
 }
@@ -84,19 +85,14 @@ bool Slide::moveDown() {
     return true;
 }
 
+// return true if lhs == rhs
 // assumes we'll only compare two grids that are the same size
-bool Slide::operator==(const Slide& rhs) {
-    // compare every value
+bool Slide::operator==(const Slide& rhs) const {
+    // compare every value in both grids
     for (int i = 0; i != this->gridSize; ++i) {
         if (this->grid[i] != rhs[i]) {
-            cout << "FALSE\n";
             return false;
         }
     }
-    cout << "Returning true\n";
     return true;
-}
-
-bool Slide::operator!=(const Slide &rhs) {
-    return !(*this == rhs);
 }

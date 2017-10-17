@@ -12,15 +12,9 @@
 int main() {
     Slide *sp = new Slide;
     sp->print();
-
     Slide *rp = new Slide;
     rp->print();
     std::cout << "Testing equality\n";
-    if (sp != rp) {
-        std::cout << "equal\n";
-    }
-    else
-        std::cout << "not equal\n";
 
     return 0;
 }

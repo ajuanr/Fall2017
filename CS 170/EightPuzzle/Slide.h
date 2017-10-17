@@ -16,10 +16,9 @@ public:
     bool moveDown();
     
     // Overloaded operators
-    bool operator==(const Slide&);
-    bool operator!=(const Slide&);
-    bool operator[](int index) { return grid[index];}
-    bool operator[](int index) const { return grid[index];}
+    bool operator== (const Slide&) const ;
+    int& operator[](int index) { return grid[index];}
+    int& operator[](int index) const { return grid[index];}
     
 private:
     int* grid;      // will hold the n*n grid as a 1-d array
