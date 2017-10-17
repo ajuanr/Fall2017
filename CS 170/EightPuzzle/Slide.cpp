@@ -83,3 +83,20 @@ bool Slide::moveDown() {
     
     return true;
 }
+
+// assumes we'll only compare two grids that are the same size
+bool Slide::operator==(const Slide& rhs) {
+    // compare every value
+    for (int i = 0; i != this->gridSize; ++i) {
+        if (this->grid[i] != rhs[i]) {
+            cout << "FALSE\n";
+            return false;
+        }
+    }
+    cout << "Returning true\n";
+    return true;
+}
+
+bool Slide::operator!=(const Slide &rhs) {
+    return !(*this == rhs);
+}
