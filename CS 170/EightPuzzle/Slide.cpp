@@ -119,18 +119,26 @@ int Slide::misTiles() const {
     return nMisplaced;
 }
 
+// returns the sum of the manhattan distances for the grid
 int Slide::mhatDist() const {
     int dist = 0;
     for (int i = 0; i != gridSize; ++i) {
+        // only need to calculate the distance if tile is in wrong location
+        // ignore the blank tiles
         if (grid[i] != i+1 && grid[i] != 0)
-            dist += displacement(grid[i]);
+            dist += mhat(grid[i]);
     }
     
     return dist;
 }
 
-int Slide::displacement(int n) const {
+// calculate the manhattan distance for a single tile
+int Slide::mhat(int n) const {
     int dist = 0;
-    
-    return dist;
+    // find the index where the misplaced value n currently is
+    for (int i = 0; i != gridSize; ++i) {
+        if (n == grid[i])
+            dist = i;
+    }
+    return dist-(n-1);
 }

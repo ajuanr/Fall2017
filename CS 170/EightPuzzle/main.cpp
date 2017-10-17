@@ -13,14 +13,15 @@ using namespace std;
 
 int main() {
     Slide *sp = new Slide(3);
-    sp->print();
-    int a[] = {3, 0, 7, 2, 8, 1, 6, 4 ,5};
-    sp->moveLeft();
-    sp->moveUp();
-    sp->moveRight();
-    sp->moveUp();
-    sp->print();
-    cout << "Number of tiles miplaced: " << sp->misTiles() << endl;
+    //sp->print();
+    int b[] = {3,2,8,4,5,6,7,1, 0};
+    //int b[] = {1, 2, 3, 4, 5, 6, 7, 0, 8};
+    Slide *p = new Slide(b, 3);
+    p->print();
+    p->moveRight();
+    p->moveUp();
+    p->print();
+    cout << "Mahattan distance is: " << p->mhatDist() << endl;
 
     return 0;
 }

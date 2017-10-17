@@ -33,7 +33,7 @@ private:
     
     // utility functions
     void create(int);           // for constructor
-    int displacement(int) const;      // for mhatDist heuristic
+    int mhat(int) const;      // for mhatDist heuristic
 };
 
 #endif
