@@ -6,6 +6,15 @@
 using namespace std;
 
 Slide::Slide():inputSize(3) {
+    create(inputSize);
+}
+
+Slide::Slide(int n):inputSize(n){
+    create(inputSize);
+}
+
+// initialize the grid
+void Slide::create(int n) {
     gridSize = inputSize * inputSize;
     blankPos = gridSize - 1;
     grid = new int[gridSize];
@@ -15,16 +24,6 @@ Slide::Slide():inputSize(3) {
     grid[gridSize-1] = 0;
 }
 
-Slide::Slide(int n):inputSize(n){
-    gridSize = inputSize * inputSize;
-    blankPos = gridSize - 1;
-    grid = new int [gridSize];
-    for (int i = 0; i!= gridSize; ++i) {
-        grid[i] = i+1;
-    }
-    grid[gridSize-1] = 0;
-}
-                         
 void Slide::print() const{
     for (int i = 0; i != gridSize; ++i) {
         if ((i != 0) && (i % inputSize == 0))

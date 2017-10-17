@@ -25,6 +25,9 @@ private:
     int inputSize;  // input of size n
     int gridSize;   // grid size of nxn
     int blankPos;   // keep track of where the blank is for moving it around
+    
+    // utility functions
+    void create(int);
 };
 
 #endif

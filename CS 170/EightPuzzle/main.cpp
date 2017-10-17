@@ -12,7 +12,7 @@
 int main() {
     Slide *sp = new Slide;
     sp->print();
-    Slide *rp = new Slide;
+    Slide *rp = new Slide(3);
     rp->print();
     std::cout << "Testing equality\n";
 
