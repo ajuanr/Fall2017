@@ -23,6 +23,7 @@ public:
     
     //heuristics
     int misTiles() const;
+    int mhatDist() const;
     
 private:
     int* grid;      // will hold the n*n grid as a 1-d array
@@ -31,7 +32,8 @@ private:
     int blankPos;   // keep track of where the blank is for moving it around
     
     // utility functions
-    void create(int);
+    void create(int);           // for constructor
+    int displacement(int) const;      // for mhatDist heuristic
 };
 
 #endif

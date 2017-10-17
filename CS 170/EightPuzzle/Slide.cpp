@@ -118,3 +118,19 @@ int Slide::misTiles() const {
     }
     return nMisplaced;
 }
+
+int Slide::mhatDist() const {
+    int dist = 0;
+    for (int i = 0; i != gridSize; ++i) {
+        if (grid[i] != i+1 && grid[i] != 0)
+            dist += displacement(grid[i]);
+    }
+    
+    return dist;
+}
+
+int Slide::displacement(int n) const {
+    int dist = 0;
+    
+    return dist;
+}
