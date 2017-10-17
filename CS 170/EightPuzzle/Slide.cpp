@@ -39,7 +39,8 @@ void Slide::print() const{
     for (int i = 0; i != gridSize; ++i) {
         if ((i != 0) && (i % inputSize == 0))
             cout << endl;
-        cout << setw(4) << grid[i];
+        if (grid[i] == 0) cout << "    ";
+        else cout << setw(4) << grid[i];
     }
     cout << endl << endl;
 }
@@ -105,4 +106,15 @@ bool Slide::operator==(const Slide& rhs) const {
         }
     }
     return true;
+}
+
+// returns the number of misplaced tiles, not including the blank tile
+int Slide::misTiles() const {
+    int nMisplaced = 0;             // number of misplaced tiles
+    for (int i = 0; i != gridSize; ++i) {
+        // check if a tile is misplaced, but ignore the blank tile
+        if (grid[i] != i+1 && grid[i] != 0)
+            ++nMisplaced;
+    }
+    return nMisplaced;
 }

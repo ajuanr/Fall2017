@@ -21,6 +21,9 @@ public:
     int& operator[](int index) { return grid[index];}
     int& operator[](int index) const { return grid[index];}
     
+    //heuristics
+    int misTiles() const;
+    
 private:
     int* grid;      // will hold the n*n grid as a 1-d array
     int inputSize;  // input of size n
