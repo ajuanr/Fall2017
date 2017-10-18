@@ -1,5 +1,6 @@
 #include <iostream>
-#include <iomanip>
+#include <iomanip> // for setw
+#include <cmath>        // for abs
 
 #include "Slide.h"
 
@@ -126,6 +127,7 @@ int Slide::mhatDist() const {
         // only need to calculate the distance if tile is in wrong location
         // ignore the blank tiles
         if (grid[i] != i+1 && grid[i] != 0)
+            // pass in the misplaced tile
             dist += mhat(grid[i]);
     }
     
@@ -134,11 +136,17 @@ int Slide::mhatDist() const {
 
 // calculate the manhattan distance for a single tile
 int Slide::mhat(int n) const {
-    int dist = 0;
+    int displacement = 0;
     // find the index where the misplaced value n currently is
     for (int i = 0; i != gridSize; ++i) {
-        if (n == grid[i])
-            dist = i;
+        if (n == grid[i]) {
+            cout << "\nfound "<< grid[i] <<" at: " << i << endl;
+            displacement = i;
+        }
     }
-    return dist-(n-1);
+    displacement = abs(displacement - (n-1)); // n-1 is the position in the array
+    cout << "Distance: " << displacement << endl;
+    int mDistance = (displacement / inputSize) + (displacement % inputSize);
+    cout << "manattan distance is " << mDistance << endl;
+    return mDistance;
 }
