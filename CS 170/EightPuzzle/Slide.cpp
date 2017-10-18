@@ -140,13 +140,10 @@ int Slide::mhat(int n) const {
     // find the index where the misplaced value n currently is
     for (int i = 0; i != gridSize; ++i) {
         if (n == grid[i]) {
-            cout << "\nfound "<< grid[i] <<" at: " << i << endl;
             displacement = i;
         }
     }
     displacement = abs(displacement - (n-1)); // n-1 is the position in the array
-    cout << "Distance: " << displacement << endl;
     int mDistance = (displacement / inputSize) + (displacement % inputSize);
-    cout << "manattan distance is " << mDistance << endl;
     return mDistance;
 }

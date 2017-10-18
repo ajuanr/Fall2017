@@ -11,6 +11,9 @@
 
 using namespace std;
 
+// the problem slide the queueing function
+bool genSearch(Slide*, int(*)(int));
+
 int main() {
     Slide *sp = new Slide(3);
     //sp->print();
@@ -22,4 +25,9 @@ int main() {
     cout << "Mahattan distance is: " << p->mhatDist() << endl;
 
     return 0;
+}
+
+bool genSearch(Slide* s, int(*q)(int n)) {
+    
+    return true;
 }
