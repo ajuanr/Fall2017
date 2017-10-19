@@ -13,8 +13,8 @@
 using namespace std;
 
 // the problem slide the queueing function
-bool genSearch(Slide*, int(*)(int));
-int queueFunc(int n) { return 77;} // FOR TESTING PURPOSES
+bool genSearch(Slide*, int (*)(int));
+int queueFunc(int n) { cout << "n is: " << n << endl;return n;} // FOR TESTING PURPOSES
 
 int main() {
     Slide *sp = new Slide(3);
@@ -22,7 +22,7 @@ int main() {
     Slide *p = new Slide(b, 3);
     p->print();
     
-    cout << genSearch(sp, queueFunc(3)) << endl;
+    cout << genSearch(sp, queueFunc) << endl;
 
     return 0;
 }
@@ -35,6 +35,7 @@ bool genSearch(Slide* s, int(*q)(int n)) {
     nodes->push(s);
     do {
         // are you the goal state
+        q(3);
         if (*nodes->top() == *goal)
             return true;
     } while (true);
