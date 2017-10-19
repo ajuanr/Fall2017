@@ -6,6 +6,7 @@
 // System header files
 #include <iostream>
 #include <queue>
+#include <vector>       // stores the expanded nodes before added to queue
 
 // User header files
 #include "Slide.h"
@@ -27,13 +28,16 @@ void operators(Slide*);
 /****************  the algorithm functions  ***************/
 bool genSearch(problem, qFunc);
 nodes queueFunc(nodes n, exPnd) {;return n;} // FOR TESTING PURPOSES
-void expand(node, exPnd);
+vector<node> expand(node, problem);
 
-node mhat(node, problem);
+/********* will be used for the queueing function ***********/
+nodes mhat(nodes, exPnd);
+
 
 int main() {
     Slide *sp = new Slide(3);
     int b[] = {8,7,1,6,0,2,5,4,3};
+    
     Slide *p = new Slide(b, 3);
     p->print();
     
@@ -61,15 +65,29 @@ bool genSearch(problem s, qFunc q) {
         // are you the goal state
         if (*n->front() == *goal)
             return true; // found the solution
-        
+
         
     } while (true);
 }
 
-node mhat(node current, problem p) {
-    node next;
-    if (current->moveUp())
-        next = current;
+vector<node> expand(node current, problem p) {
+    vector<node> newNodes;
+    if (current->moveLeft()) {
+        newNodes.push_back(current);
+        current->moveRight();           // reset the tile
+    }
+    if (current->moveRight()) {
+        newNodes.push_back(current);
+        current->moveLeft();           // reset the tile
+    }
+    if (current->moveUp()) {
+        newNodes.push_back(current);
+        current->moveDown();           // reset the tile
+    }
+    if (current->moveDown()) {
+        newNodes.push_back(current);
+        current->moveUp();           // reset the tile
+    }
     
-    return next;
+    return newNodes;
 }
