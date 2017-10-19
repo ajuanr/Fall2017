@@ -8,6 +8,7 @@ public:
     Slide(int*, int); // initialize the grid from an array
     ~Slide() { delete [] grid;}
     
+    int getInputSize() const { return inputSize;}
     void print() const;
     
     // operators allowed

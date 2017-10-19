@@ -17,21 +17,19 @@ using namespace std;
  *********************************************************/
 typedef Slide* node;
 typedef Slide* problem;
-typedef int(*qFunc)(int);
 typedef queue<problem> nodes;
+typedef node(*exPnd)(node, problem);
+typedef nodes(*qFunc)(nodes,exPnd); // function pointer
 /*********************************************************/
 
 void operators(Slide*);
 
-/**********************************************************
- ****************  the algorithm functions  ***************
- *********************************************************/
-// the problem slide the queueing function
+/****************  the algorithm functions  ***************/
 bool genSearch(problem, qFunc);
-int queueFunc(int n) {cout << "passed in: " << n << endl;return n;} // FOR TESTING PURPOSES
-void expand(node, int);
-/*********************************************************/
+nodes queueFunc(nodes n, exPnd) {;return n;} // FOR TESTING PURPOSES
+void expand(node, exPnd);
 
+node mhat(node, problem);
 
 int main() {
     Slide *sp = new Slide(3);
@@ -49,13 +47,12 @@ int main() {
  *********************************************************/
 
 bool genSearch(problem s, qFunc q) {
-    // the default state
-    int a[] = {1, 2, 3, 4, 5, 6, 7, 8, 0};
-    Slide *goal = new Slide(a, 3); // CHANGE THE USE OF THE CONSTANT HERE
+    Slide *goal = new Slide(s->getInputSize()); // goal state
     
-    // initialize the stack
-    nodes *n = new queue<Slide*>;
+    // initialize the queue with the initial state
+    nodes *n = new queue<node>;
     n->push(s);
+    
     // look for a solution
     do {
         // check if any nodes left in queue
@@ -63,7 +60,16 @@ bool genSearch(problem s, qFunc q) {
         
         // are you the goal state
         if (*n->front() == *goal)
-            return true;
+            return true; // found the solution
+        
+        
     } while (true);
+}
+
+node mhat(node current, problem p) {
+    node next;
+    if (current->moveUp())
+        next = current;
     
+    return next;
 }
