@@ -41,10 +41,15 @@ int main() {
     
     Slide *p = new Slide(b, 3);
     Slide *copy;
-    copy = p;
-    delete p;
-    copy->print();
+   // p->moveLeft();
+    p->print();
+    //copy = p;
+    //delete p;
+    //copy->print();
     
+    vector<node> result = expand(p, p);
+    for (int i = 0; i != result.size(); ++i)
+        result.at(i)->print();
     
     //cout << genSearch(p, queueFunc) << endl;
 
@@ -80,18 +85,22 @@ bool genSearch(problem p, qFunc q) {
 vector<node> expand(node current, problem p) {
     vector<node> newNodes;
     if (current->moveLeft()) {
+        cout << "left\n";
         newNodes.push_back(current);
         current->moveRight();           // reset the tile
     }
     if (current->moveRight()) {
+        cout << "right\n";
         newNodes.push_back(current);
         current->moveLeft();           // reset the tile
     }
     if (current->moveUp()) {
+        cout << "up\n";
         newNodes.push_back(current);
         current->moveDown();           // reset the tile
     }
     if (current->moveDown()) {
+        cout << "down\n";
         newNodes.push_back(current);
         current->moveUp();           // reset the tile
     }
