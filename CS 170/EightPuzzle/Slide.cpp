@@ -16,7 +16,8 @@ Slide::Slide(int n):inputSize(n){
 
 Slide::Slide(int* input, int size):inputSize(size) {
     gridSize = inputSize * inputSize;
-    grid = new int[gridSize];
+    //grid = new int[gridSize];
+    grid = vecInt(gridSize);
     for (int i = 0; i != gridSize; ++i) {
         grid[i] = input[i];
         if (input[i] == 0 ){
@@ -29,7 +30,8 @@ Slide::Slide(int* input, int size):inputSize(size) {
 void Slide::create(int n) {
     gridSize = inputSize * inputSize;
     blankPos = gridSize - 1;
-    grid = new int[gridSize];
+    //grid = new int[gridSize];
+    grid = vecInt(gridSize);
     for (int i = 0; i!= gridSize; ++i) {
         grid[i] = i+1;
     }

@@ -40,9 +40,13 @@ int main() {
     int b[] = {8,7,1,6,0,2,5,4,3};
     
     Slide *p = new Slide(b, 3);
+    Slide *copy;
+    copy = p;
+    delete p;
+    copy->print();
     
-    p->print();
-    cout << genSearch(p, queueFunc) << endl;
+    
+    //cout << genSearch(p, queueFunc) << endl;
 
     return 0;
 }
