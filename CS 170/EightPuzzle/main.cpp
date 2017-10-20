@@ -40,9 +40,9 @@ int main() {
     int b[] = {8,7,1,6,0,2,5,4,3};
     
     Slide *p = new Slide(b, 3);
-    p->print();
     
-    cout << genSearch(sp, queueFunc) << endl;
+    p->print();
+    cout << genSearch(p, queueFunc) << endl;
 
     return 0;
 }
@@ -63,9 +63,8 @@ bool genSearch(problem p, qFunc q) {
         // check if any nodes left in queue
         if (n->empty()) return false; // didn't find solution
         node old = n->front();
-        n->pop();
         // are you the goal state
-        if (*n->front() == *goal)
+        if (*old == *goal)
             return true; // found the solution
         *n = q(n, expand);
         cout << "now testing\n";
@@ -98,7 +97,11 @@ vector<node> expand(node current, problem p) {
 
 nodes queueFunc(nodes* n, exPnd exp) {
     nodes ret;
-    exp(n->front(), n->front());
-    
+    vector<node> newNodes = exp(n->front(), n->front());
+    n->pop(); //remove old element
+    // push all the new nodes that were expanded in the expand function
+    for (int i = 0; i != newNodes.size(); ++i) {
+        n->push(newNodes.at(i));
+    }
     return ret;
 }
