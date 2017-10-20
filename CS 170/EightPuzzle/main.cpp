@@ -19,15 +19,16 @@ using namespace std;
 typedef Slide* node;
 typedef Slide* problem;
 typedef queue<problem> nodes;
-typedef node(*exPnd)(node, problem);
-typedef nodes(*qFunc)(nodes,exPnd); // function pointer
+/*************** function pointers **********************/
+typedef vector<node>(*exPnd)(node, problem);
+typedef nodes(*qFunc)(nodes*, exPnd);
 /*********************************************************/
 
 void operators(Slide*);
 
 /****************  the algorithm functions  ***************/
 bool genSearch(problem, qFunc);
-nodes queueFunc(nodes n, exPnd) {;return n;} // FOR TESTING PURPOSES
+nodes queueFunc(nodes* n, exPnd); // FOR TESTING PURPOSES
 vector<node> expand(node, problem);
 
 /********* will be used for the queueing function ***********/
@@ -50,22 +51,25 @@ int main() {
  *****************  function definitions  *****************
  *********************************************************/
 
-bool genSearch(problem s, qFunc q) {
-    Slide *goal = new Slide(s->getInputSize()); // goal state
+bool genSearch(problem p, qFunc q) {
+    Slide *goal = new Slide(p->getInputSize()); // goal state
     
     // initialize the queue with the initial state
     nodes *n = new queue<node>;
-    n->push(s);
+    n->push(p);
     
     // look for a solution
     do {
         // check if any nodes left in queue
         if (n->empty()) return false; // didn't find solution
-        
+        node old = n->front();
+        n->pop();
         // are you the goal state
         if (*n->front() == *goal)
             return true; // found the solution
-
+        *n = q(n, expand);
+        cout << "now testing\n";
+        n->front()->print();
         
     } while (true);
 }
@@ -90,4 +94,11 @@ vector<node> expand(node current, problem p) {
     }
     
     return newNodes;
+}
+
+nodes queueFunc(nodes* n, exPnd exp) {
+    nodes ret;
+    exp(n->front(), n->front());
+    
+    return ret;
 }
