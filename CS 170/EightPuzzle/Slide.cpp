@@ -19,7 +19,7 @@ Slide::Slide(int* input, int size):inputSize(size) {
     //grid = new int[gridSize];
     grid = vecInt(gridSize);
     for (int i = 0; i != gridSize; ++i) {
-        grid[i] = input[i];
+        grid.at(i) = input[i];
         if (input[i] == 0 ){
             blankPos = i;
         }
@@ -30,20 +30,19 @@ Slide::Slide(int* input, int size):inputSize(size) {
 void Slide::create(int n) {
     gridSize = inputSize * inputSize;
     blankPos = gridSize - 1;
-    //grid = new int[gridSize];
     grid = vecInt(gridSize);
     for (int i = 0; i!= gridSize; ++i) {
-        grid[i] = i+1;
+        grid.at(i) = i+1;
     }
-    grid[gridSize-1] = 0;
+    grid.at(gridSize-1) = 0;
 }
 
 void Slide::print() const{
     for (int i = 0; i != gridSize; ++i) {
         if ((i != 0) && (i % inputSize == 0))
             cout << endl;
-        if (grid[i] == 0) cout << "    ";
-        else cout << setw(4) << grid[i];
+        if (grid.at(i) == 0) cout << "    ";
+        else cout << setw(4) << grid.at(i);
     }
     cout << endl << endl;
 }
@@ -51,8 +50,8 @@ void Slide::print() const{
 bool Slide::moveLeft() {
     if ( blankPos % inputSize != 0) {
         int temp = grid[--blankPos];
-        grid[blankPos] = 0;
-        grid[blankPos+1] = temp;
+        grid.at(blankPos) = 0;
+        grid.at(blankPos+1) = temp;
         return true;                // move was successful
     }
     return false;                   // move could not be executed
@@ -136,7 +135,6 @@ int Slide::mhatDist() const {
             // pass in the misplaced tile
             dist += mhat(grid[i]);
     }
-    
     return dist;
 }
 

@@ -13,6 +13,8 @@ public:
     
     int getInputSize() const { return inputSize;}
     void print() const;
+    bool isGoal() {return this->grid == goal;}
+    
     
     // operators allowed
     bool moveLeft();
@@ -34,10 +36,12 @@ public:
     
 private:
     vecInt grid;      // will hold the n*n grid as a 1-d array
+    const vecInt goal = {1, 2, 3, 4, 5, 6, 7, 8, 0};
     int inputSize;  // input of size n
     int gridSize;   // grid size of nxn
     int blankPos;   // keep track of where the blank is for moving it around
     const int gn=1;         // cost to move tile
+    
     
     // utility functions
     void create(int);           // for constructor
@@ -47,15 +51,16 @@ private:
 class mhatSlide: public Slide {
 public:
     mhatSlide(int* a,int n):Slide(a,n){}
-    int getFn()const  {return getGn()+mhatDist();}
-    bool operator< (const Slide& rhs) const {return this->getFn()<rhs.getFn();}
+    int getFn()const  {return mhatDist();}
+    bool operator< (const mhatSlide& rhs) const {return this->getFn()<rhs.getFn();}
 };
 
 class misSlide: public Slide {
 public:
     misSlide(int* a, int n):Slide(a,n){}
-    int getFn() const {return getGn()+misTiles();}
-    bool operator< (const Slide& rhs) const {return this->getFn()<rhs.getFn();}
+    misSlide(const Slide& rhs): Slide(rhs){}
+    int getFn() const {return misTiles();}
+    bool operator< (const misSlide& rhs) const {return this->getFn()<rhs.getFn();}
 };
 
 #endif
