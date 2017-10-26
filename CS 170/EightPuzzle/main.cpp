@@ -13,27 +13,15 @@
 
 using namespace std;
 
-/*********************  some typedefs ********************
- ** to make the code more similar to the given algorithm *
- *********************************************************/
-typedef Slide* node;
-typedef Slide* problem;
-typedef priority_queue<problem> nodes;
+typedef Slide node;
+typedef queue<Slide> nodes;
 
-/*************** function pointers **********************/
-typedef vector<node>(*exPnd)(node, problem);
-typedef nodes(*qFunc)(nodes*, exPnd);
 
-/****************  the algorithm functions  ***************/
-bool genSearch(problem, qFunc);
-nodes queueFunc(nodes* n, exPnd); // FOR TESTING PURPOSES
-vector<node> expand(node, problem);
+nodes qFunc(nodes, vector<node>);
 
-vector<Slide*> repeated;
-bool haveSeen(node);
-bool compare(Slide* lhs, Slide* rhs) {
-    return *lhs < *rhs;
-}
+nodes expand(node*);
+
+//bool generalSearch(problem p);
 
 int main() {
     int n = 3; // default grid size n*n
@@ -49,25 +37,12 @@ int main() {
     Slide *easy = new mhatSlide(e, n);
     Slide *doable = new mhatSlide(d, n);
 
-    priority_queue<Slide*> testing;
-    testing.push(ohBoy);
-    testing.push(trivial);
-    testing.push(easy);
-    testing.push(trivial);
-    testing.push(doable);
-    
-    while(!testing.empty()) {
-        cout << "hn: " << testing.top()->getFn() << endl;
-        testing.top()->print();
+    nodes testing = expand(ohBoy);
+    while (!testing.empty()) {
+        testing.front().print();
         testing.pop();
     }
     
-    //cout << genSearch(trivial, queueFunc) << endl;
-    cout << "repeated size: " << repeated.size()<< endl;
-    for (int i = 0; i != repeated.size(); ++i) {
-        repeated.at(i)->print();
-    }
-
     return 0;
 }
 
@@ -75,78 +50,23 @@ int main() {
  *****************  function definitions  *****************
  *********************************************************/
 
-bool genSearch(problem p, qFunc que) {
-    // initialize the queue with the initial state
-    nodes *n = new priority_queue<node>;
-    n->push(p);
-    repeated.push_back(p);
-    // look for a solution
-    do {
-        // check if any nodes left in queue
-        if (n->empty()) return false; // didn't find solution
-        cout << "now testing\n";
-        n->top()->print();
-        cout << "Has highest fn at: " << n->top()->getFn() << endl;
-        // are you the goal state
-        if (n->top()->isGoal()) return true; // found the solution
-        *n = que(n, expand);
-    } while (true);
-}
-
-// takes a node and expands it using operators
-// returns a vector with the expanded nodes
-// i.e, a vector containing only valid states
-vector<node> expand(node current, problem p) {
-    vector<node> newNodes;
-
+nodes expand(node* current) {
+    nodes newNodes;
     if (current->moveLeft()) {
-        newNodes.push_back(new misSlide(*current));
+        newNodes.push(*current);
         current->moveRight();           // reset the tile
     }
     if (current->moveRight()) {
-        newNodes.push_back(new misSlide(*current));
+        newNodes.push(*current);
         current->moveLeft();           // reset the tile
     }
     if (current->moveUp()) {
-        newNodes.push_back(new misSlide(*current));
+        newNodes.push(*current);
         current->moveDown();           // reset the tile
     }
     if (current->moveDown()) {
-        newNodes.push_back(new misSlide(*current));
+        newNodes.push(*current);
         current->moveUp();           // reset the tile
     }
     return newNodes;
-}
-
-nodes queueFunc(nodes* n, exPnd exp) {
-    vector<node> newNodes = exp(n->top(), n->top()); // expand the nodes
-    delete n->top();                                  // free memory
-    n->pop();                                       //remove expanded element
-    // push all the new nodes that were expanded in the expand function
-    for (int i = 0; i != newNodes.size(); ++i) {
-        // check if we've seen the node before
-        if (!haveSeen(newNodes.at(i))){
-            // we haven't, so push it onto the queue
-            n->push(newNodes.at(i));
-            // push previously unseen node onto list of repeated nodes
-            repeated.push_back(newNodes.at(i));
-        }
-    }
-    // return them
-    return *n;
-}
-
-
-bool haveSeen(node current) {
-    for (int i = 0; i != repeated.size(); ++i) {
-        if (*repeated.at(i) == *current) {
-            cout << "************************\n";
-            repeated.at(i)->print();
-            cout << "*********\n";
-            current->print();
-            cout << "************************\n";
-            return true;
-        }
-    }
-    return false;
 }
