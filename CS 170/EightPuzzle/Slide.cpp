@@ -111,6 +111,10 @@ bool Slide::operator==(const Slide& rhs) const {
     return true;
 }
 
+bool Slide::operator< (const Slide&rhs) const {
+    return this->getFn() < rhs.getFn();
+}
+
 // returns the number of misplaced tiles, not including the blank tile
 int Slide::misTiles() const {
     int nMisplaced = 0;             // number of misplaced tiles

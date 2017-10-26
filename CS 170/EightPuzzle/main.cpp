@@ -24,17 +24,11 @@ typedef queue<problem> nodes;
 /*************** function pointers **********************/
 typedef vector<node>(*exPnd)(node, problem);
 typedef nodes(*qFunc)(nodes*, exPnd);
-/*********************************************************/
-
-void operators(Slide*);
 
 /****************  the algorithm functions  ***************/
 bool genSearch(problem, qFunc);
 nodes queueFunc(nodes* n, exPnd); // FOR TESTING PURPOSES
 vector<node> expand(node, problem);
-
-/********* will be used for the queueing function ***********/
-nodes mhat(nodes, exPnd);
 
 vector<node> repeated;
 bool haveSeen(node);
@@ -45,7 +39,7 @@ int main() {
     int t[] = {1, 2, 3, 4, 5, 6, 7, 8, 0};          // trivial
     int e[] = {1, 2, 0, 4, 5, 3, 7, 8, 6};          // easy
     int d[] = {0, 1, 2, 4, 5, 3, 7, 8, 6};          // doable
-    int ob[] = {8,7,1,6,0,2,5,4,3};                 // ob= oh boy
+    int ob[] = {8, 7, 1, 6, 0, 2, 5, 4, 3};         // ob= oh boy
     int b[] = {1, 2, 3, 4, 5, 6, 8, 7, 0};          // broken. should not work
     
     Slide *ohBoy = new Slide(ob, n);
@@ -55,13 +49,23 @@ int main() {
     Slide *broken = new Slide(b, n);
 
     
+    
 //    vector<node> result = expand(ohBoy, ohBoy);
 //    for (int i = 0; i != result.size(); ++i) {
 //        result.at(i)->print();
 //        delete result.at(i); // free memory
 //    }
 
-    cout << genSearch(ohBoy, queueFunc) << endl;
+    //cout << genSearch(broken, queueFunc) << endl;
+    Slide *mhatTest = new mhatSlide(e,n);
+    Slide *misTest = new misSlide(e,n);
+    Slide *mhatTest2 = new mhatSlide(ob,n);
+    cout << easy->mhatDist() << endl;
+    cout << mhatTest->getFn() << endl;
+    cout << misTest->getFn() << endl;
+    cout << (*ohBoy < *easy) << endl;
+    
+    
     return 0;
 }
 
@@ -97,23 +101,19 @@ vector<node> expand(node current, problem p) {
     vector<node> newNodes;
 
     if (current->moveLeft()) {
-        if (!haveSeen(current))
-            newNodes.push_back(new Slide(*current));
+        newNodes.push_back(new Slide(*current));
         current->moveRight();           // reset the tile
     }
     if (current->moveRight()) {
-        if (!haveSeen(current))
-            newNodes.push_back(new Slide(*current));
+        newNodes.push_back(new Slide(*current));
         current->moveLeft();           // reset the tile
     }
     if (current->moveUp()) {
-        if (!haveSeen(current))
-            newNodes.push_back(new Slide(*current));
+        newNodes.push_back(new Slide(*current));
         current->moveDown();           // reset the tile
     }
     if (current->moveDown()) {
-        if (!haveSeen(current))
-            newNodes.push_back(new Slide(*current));
+        newNodes.push_back(new Slide(*current));
         current->moveUp();           // reset the tile
     }
     return newNodes;
@@ -125,7 +125,13 @@ nodes queueFunc(nodes* n, exPnd exp) {
     n->pop();                                       //remove expanded element
     // push all the new nodes that were expanded in the expand function
     for (int i = 0; i != newNodes.size(); ++i) {
-        n->push(newNodes.at(i));
+        // check if we've seen the node before
+        if (!haveSeen(newNodes.at(i))){
+            // we haven't, so push it onto the queue
+            n->push(newNodes.at(i));
+            // push previously unseen node onto list of repeated nodes
+            repeated.push_back(newNodes.at(i));
+        }
     }
     // return them
     return *n;
@@ -133,15 +139,10 @@ nodes queueFunc(nodes* n, exPnd exp) {
 
 
 bool haveSeen(node current) {
-    cout << "TESTING:\n";
-    current->print();
-    cout << "Calling have seen\n";
     for (int i = 0; i != repeated.size(); ++i) {
         if (*repeated.at(i) == *current) {
-            cout << "SEEN IT" << endl;
             return true;
         }
     }
-    repeated.push_back(current);
     return false;
 }
