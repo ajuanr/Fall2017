@@ -5,7 +5,7 @@
 
 // System header files
 #include <iostream>
-#include <queue>
+#include <queue>        // FIFO
 #include <vector>       // stores the expanded nodes before added to queue
 
 // User header files
@@ -19,6 +19,7 @@ using namespace std;
 typedef Slide* node;
 typedef Slide* problem;
 typedef queue<problem> nodes;
+
 /*************** function pointers **********************/
 typedef vector<node>(*exPnd)(node, problem);
 typedef nodes(*qFunc)(nodes*, exPnd);
@@ -36,24 +37,22 @@ nodes mhat(nodes, exPnd);
 
 
 int main() {
-    //Slide *sp = new Slide(3);
-    int b[] = {8,7,1,6,0,2,5,4,3};
+    /* testing these configurations */
+    int ob[] = {8,7,1,6,0,2,5,4,3};                 // ob= oh boy
+    int t[] = {1, 2, 3, 4, 5, 6, 7, 8, 0};          // trivial
+    int e[] = {1, 2, 0, 4, 5, 3, 7, 8, 6};          // easy
     
-    Slide *test = new Slide(b, 3);
-    Slide *copy = new Slide(*test);
-    test->moveLeft();
-//    copy->print();
-    //delete test;
-//    copy->print();
+    Slide *ohBoy = new Slide(ob, 3);
+    Slide *trivial = new Slide(t,3);
+    Slide *easy = new Slide(e, 3);
     
-    vector<node> result = expand(test, test);
-    for (int i = 0; i != result.size(); ++i) {
-        result.at(i)->print();
-        delete result.at(i); // free memory
-    }
-    
-    
-    //cout << genSearch(test, queueFunc) << endl;
+//    vector<node> result = expand(ohBoy, ohBoy);
+//    for (int i = 0; i != result.size(); ++i) {
+//        result.at(i)->print();
+//        delete result.at(i); // free memory
+//    }
+
+    cout << genSearch(easy, queueFunc) << endl;
 
     return 0;
 }
@@ -110,12 +109,14 @@ vector<node> expand(node current, problem p) {
 }
 
 nodes queueFunc(nodes* n, exPnd exp) {
-    nodes ret;
-    vector<node> newNodes = exp(n->front(), n->front());
-    n->pop(); //remove old element
+    vector<node> newNodes = exp(n->front(), n->front()); // expand the nodes
+    delete n->front();                                  // free memory
+    n->pop();                                       //remove expanded element
+    
     // push all the new nodes that were expanded in the expand function
     for (int i = 0; i != newNodes.size(); ++i) {
         n->push(newNodes.at(i));
     }
-    return ret;
+    // return them
+    return *n;
 }
