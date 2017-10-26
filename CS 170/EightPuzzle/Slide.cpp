@@ -50,7 +50,7 @@ Slide& Slide::operator=(const Slide& rhs) {
 }
 
 bool Slide::operator< (const Slide& rhs) const {
-    return this->getFn() < rhs.getFn();
+    return this->getFn() > rhs.getFn();
 }
 
 bool Slide::operator> (const Slide& rhs) const {
@@ -107,14 +107,11 @@ bool Slide::moveDown() {
     // blank is on last row, can't move down
     if (blankPos >= (inputSize * (inputSize-1)))
         return false;
-    
     blankPos += inputSize;                  // move the blank
-    
     // swap the values
     int temp = grid[blankPos];
     grid.at(blankPos) = 0;
     grid.at(blankPos-inputSize) = temp;
-    
     return true;
 }
 
@@ -122,11 +119,9 @@ bool Slide::moveDown() {
 // assumes we'll only compare two grids that are the same size
 bool Slide::operator==(const Slide& rhs) const {
     // compare every value in both grids
-    for (int i = 0; i != this->gridSize; ++i) {
-        if (this->grid != rhs.grid) {
+    for (int i = 0; i != this->gridSize; ++i)
+        if (this->grid != rhs.grid)
             return false;
-        }
-    }
     return true;
 }
 
@@ -158,11 +153,9 @@ int Slide::mhatDist() const {
 int Slide::mhat(int n) const {
     int displacement = 0;
     // find the index where the misplaced value n currently is
-    for (int i = 0; i != gridSize; ++i) {
-        if (n == grid.at(i)) {
+    for (int i = 0; i != gridSize; ++i)
+        if (n == grid.at(i))
             displacement = i;
-        }
-    }
     displacement = abs(displacement - (n-1)); // n-1 is the position in the array
     int mDistance = (displacement / inputSize) + (displacement % inputSize);
     return mDistance;

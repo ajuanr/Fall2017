@@ -13,9 +13,10 @@ public:
     
     int getInputSize() const { return inputSize;}
     void print() const;
-    bool isGoal() {return this->grid == goal;}
+    bool isGoal() const {return this->grid == goal;}
+    void incrementG() {++gn;}
     int getGn() const {return gn;} // returns the g(n) value
-    virtual int getFn() const {return getGn();}
+    virtual int getFn() const {return mhatDist();}
     
     // operators allowed
     bool moveLeft();
@@ -26,8 +27,6 @@ public:
     // Overloaded operators
     bool operator== (const Slide&) const;
     Slide& operator= (const Slide&);
-    int& operator[](int index) { return grid.at(index);}
-    const int& operator[](int index) const { return grid.at(index);}
     virtual bool operator< (const Slide&) const;
     virtual bool operator> (const Slide&) const;
 
@@ -41,7 +40,7 @@ private:
     int inputSize;  // input of size n
     int gridSize;   // grid size of nxn
     int blankPos;   // keep track of where the blank is for moving it around
-    const int gn=1;         // cost to move tile
+    int gn=1;         // cost to move tile
     
     // utility functions
     void create(int);           // for constructor
@@ -51,6 +50,7 @@ private:
 class mhatSlide: public Slide {
 public:
     mhatSlide(int* a,int n):Slide(a,n){}
+    mhatSlide(const Slide& rhs): Slide(rhs){}
     int getFn()const  {return mhatDist();}
 };
 
