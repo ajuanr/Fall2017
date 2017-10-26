@@ -10,8 +10,6 @@ public:
     Slide();                // create a default grid of size 3x3
     Slide(int);             // create a default grid of size nxn
     Slide(int*, int);       // initialize the grid from an array
-//    Slide(const Slide&);    // copy constructor
-    //~Slide() { delete [] grid;}
     
     int getInputSize() const { return inputSize;}
     void print() const;
@@ -39,7 +37,6 @@ private:
     
     // utility functions
     void create(int);           // for constructor
-    void create(const Slide&);
     int mhat(int) const;      // for mhatDist heuristic
 };
 

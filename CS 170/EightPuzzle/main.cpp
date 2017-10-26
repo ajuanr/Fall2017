@@ -41,7 +41,7 @@ int main() {
     
     Slide *test = new Slide(b, 3);
     Slide *copy = new Slide(*test);
-   // p->moveLeft();
+    test->moveLeft();
 //    copy->print();
     //delete test;
 //    copy->print();
@@ -84,25 +84,24 @@ bool genSearch(problem p, qFunc q) {
     } while (true);
 }
 
+// takes a node and expands it using operators
+// returns a vector with the expanded nodes
+// i.e, a vector containing only valid states
 vector<node> expand(node current, problem p) {
     vector<node> newNodes;
     if (current->moveLeft()) {
-        cout << "left\n";
         newNodes.push_back(new Slide(*current));
         current->moveRight();           // reset the tile
     }
     if (current->moveRight()) {
-        cout << "right\n";
         newNodes.push_back(new Slide(*current));
         current->moveLeft();           // reset the tile
     }
     if (current->moveUp()) {
-        cout << "up\n";
         newNodes.push_back(new Slide(*current));
         current->moveDown();           // reset the tile
     }
     if (current->moveDown()) {
-        cout << "down\n";
         newNodes.push_back(new Slide(*current));
         current->moveUp();           // reset the tile
     }
