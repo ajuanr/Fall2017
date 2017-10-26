@@ -14,9 +14,6 @@ public:
     int getInputSize() const { return inputSize;}
     void print() const;
     bool isGoal() const {return this->grid == goal;}
-    void incrementG() {++gn;}
-    int getGn() const {return gn;} // returns the g(n) value
-    virtual int getFn() const {return mhatDist();}
     
     // operators allowed
     bool moveLeft();
@@ -34,13 +31,17 @@ public:
     int misTiles() const;
     int mhatDist() const;
     
+    void incrementG() {++gn;}
+    int getGn() const {return gn;} // returns the g(n) value
+    virtual int getFn() const {return getGn() + mhatDist();}
+    
 private:
     vecInt grid;      // will hold the n*n grid as a 1-d array
     const vecInt goal = {1, 2, 3, 4, 5, 6, 7, 8, 0};
     int inputSize;  // input of size n
     int gridSize;   // grid size of nxn
     int blankPos;   // keep track of where the blank is for moving it around
-    int gn=1;         // cost to move tile
+    int gn=0;         // cost to move tile
     
     // utility functions
     void create(int);           // for constructor
