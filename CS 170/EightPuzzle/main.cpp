@@ -36,22 +36,24 @@ nodes mhat(nodes, exPnd);
 
 
 int main() {
-    Slide *sp = new Slide(3);
+    //Slide *sp = new Slide(3);
     int b[] = {8,7,1,6,0,2,5,4,3};
     
-    Slide *p = new Slide(b, 3);
-    Slide *copy;
+    Slide *test = new Slide(b, 3);
+    Slide *copy = new Slide(*test);
    // p->moveLeft();
-    p->print();
-    //copy = p;
-    //delete p;
-    //copy->print();
+//    copy->print();
+    //delete test;
+//    copy->print();
     
-    vector<node> result = expand(p, p);
-    for (int i = 0; i != result.size(); ++i)
+    vector<node> result = expand(test, test);
+    for (int i = 0; i != result.size(); ++i) {
         result.at(i)->print();
+        delete result.at(i); // free memory
+    }
     
-    //cout << genSearch(p, queueFunc) << endl;
+    
+    //cout << genSearch(test, queueFunc) << endl;
 
     return 0;
 }
@@ -86,22 +88,22 @@ vector<node> expand(node current, problem p) {
     vector<node> newNodes;
     if (current->moveLeft()) {
         cout << "left\n";
-        newNodes.push_back(current);
+        newNodes.push_back(new Slide(*current));
         current->moveRight();           // reset the tile
     }
     if (current->moveRight()) {
         cout << "right\n";
-        newNodes.push_back(current);
+        newNodes.push_back(new Slide(*current));
         current->moveLeft();           // reset the tile
     }
     if (current->moveUp()) {
         cout << "up\n";
-        newNodes.push_back(current);
+        newNodes.push_back(new Slide(*current));
         current->moveDown();           // reset the tile
     }
     if (current->moveDown()) {
         cout << "down\n";
-        newNodes.push_back(current);
+        newNodes.push_back(new Slide(*current));
         current->moveUp();           // reset the tile
     }
     
