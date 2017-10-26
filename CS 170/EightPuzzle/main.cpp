@@ -7,6 +7,7 @@
 #include <iostream>
 #include <queue>        // FIFO
 #include <vector>       // stores the expanded nodes before added to queue
+#include <map>
 
 // User header files
 #include "Slide.h"
@@ -35,16 +36,21 @@ vector<node> expand(node, problem);
 /********* will be used for the queueing function ***********/
 nodes mhat(nodes, exPnd);
 
-
 int main() {
+    int n = 3; // default grid size n*n
     /* testing these configurations */
-    int ob[] = {8,7,1,6,0,2,5,4,3};                 // ob= oh boy
     int t[] = {1, 2, 3, 4, 5, 6, 7, 8, 0};          // trivial
     int e[] = {1, 2, 0, 4, 5, 3, 7, 8, 6};          // easy
+    int d[] = {0, 1, 2, 4, 5, 3, 7, 8, 6};          // doable
+    int ob[] = {8,7,1,6,0,2,5,4,3};                 // ob= oh boy
+//    int b[] = {1, 2, 3, 4, 5, 6, 8, 7, 0};          // broken. should not work
     
-    Slide *ohBoy = new Slide(ob, 3);
-    Slide *trivial = new Slide(t,3);
-    Slide *easy = new Slide(e, 3);
+    Slide *ohBoy = new Slide(ob, n);
+//    Slide *trivial = new Slide(t,n);
+    Slide *easy = new Slide(e, n);
+//    Slide *doable = new Slide(d, n);
+//    Slide *broken = new Slide(b, n);
+
     
 //    vector<node> result = expand(ohBoy, ohBoy);
 //    for (int i = 0; i != result.size(); ++i) {
@@ -72,14 +78,14 @@ bool genSearch(problem p, qFunc q) {
     do {
         // check if any nodes left in queue
         if (n->empty()) return false; // didn't find solution
-        node old = n->front();
-        // are you the goal state
-        if (*old == *goal)
-            return true; // found the solution
-        *n = q(n, expand);
         cout << "now testing\n";
+        node old = n->front();
         n->front()->print();
         
+        // are you the goal state
+        if (*old == *goal) return true; // found the solution
+        
+        *n = q(n, expand);
     } while (true);
 }
 
@@ -88,6 +94,7 @@ bool genSearch(problem p, qFunc q) {
 // i.e, a vector containing only valid states
 vector<node> expand(node current, problem p) {
     vector<node> newNodes;
+
     if (current->moveLeft()) {
         newNodes.push_back(new Slide(*current));
         current->moveRight();           // reset the tile
@@ -104,7 +111,6 @@ vector<node> expand(node current, problem p) {
         newNodes.push_back(new Slide(*current));
         current->moveUp();           // reset the tile
     }
-    
     return newNodes;
 }
 
@@ -112,7 +118,7 @@ nodes queueFunc(nodes* n, exPnd exp) {
     vector<node> newNodes = exp(n->front(), n->front()); // expand the nodes
     delete n->front();                                  // free memory
     n->pop();                                       //remove expanded element
-    
+    if(newNodes.empty()) return *n;
     // push all the new nodes that were expanded in the expand function
     for (int i = 0; i != newNodes.size(); ++i) {
         n->push(newNodes.at(i));
