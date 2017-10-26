@@ -104,7 +104,7 @@ bool Slide::moveDown() {
 bool Slide::operator==(const Slide& rhs) const {
     // compare every value in both grids
     for (int i = 0; i != this->gridSize; ++i) {
-        if (this->grid[i] != rhs[i]) {
+        if (this->grid != rhs.grid) {
             return false;
         }
     }
