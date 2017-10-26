@@ -14,7 +14,8 @@ public:
     int getInputSize() const { return inputSize;}
     void print() const;
     bool isGoal() {return this->grid == goal;}
-    
+    int getGn() const {return gn;} // returns the g(n) value
+    virtual int getFn() const {return getGn();}
     
     // operators allowed
     bool moveLeft();
@@ -24,12 +25,12 @@ public:
     
     // Overloaded operators
     bool operator== (const Slide&) const;
+    Slide& operator= (const Slide&);
     int& operator[](int index) { return grid.at(index);}
     const int& operator[](int index) const { return grid.at(index);}
     virtual bool operator< (const Slide&) const;
-    virtual int getFn() const { return gn;}
-    int getGn() const {return gn;} // returns the g(n) value
-    
+    virtual bool operator> (const Slide&) const;
+
     //heuristics
     int misTiles() const;
     int mhatDist() const;
@@ -42,7 +43,6 @@ private:
     int blankPos;   // keep track of where the blank is for moving it around
     const int gn=1;         // cost to move tile
     
-    
     // utility functions
     void create(int);           // for constructor
     int mhat(int) const;      // for mhatDist heuristic
@@ -52,7 +52,6 @@ class mhatSlide: public Slide {
 public:
     mhatSlide(int* a,int n):Slide(a,n){}
     int getFn()const  {return mhatDist();}
-    bool operator< (const mhatSlide& rhs) const {return this->getFn()<rhs.getFn();}
 };
 
 class misSlide: public Slide {
@@ -60,7 +59,6 @@ public:
     misSlide(int* a, int n):Slide(a,n){}
     misSlide(const Slide& rhs): Slide(rhs){}
     int getFn() const {return misTiles();}
-    bool operator< (const misSlide& rhs) const {return this->getFn()<rhs.getFn();}
 };
 
 #endif

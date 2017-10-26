@@ -31,6 +31,9 @@ vector<node> expand(node, problem);
 
 vector<Slide*> repeated;
 bool haveSeen(node);
+bool compare(Slide* lhs, Slide* rhs) {
+    return *lhs < *rhs;
+}
 
 int main() {
     int n = 3; // default grid size n*n
@@ -41,20 +44,29 @@ int main() {
     int ob[] = {8, 7, 1, 6, 0, 2, 5, 4, 3};         // ob= oh boy
     int b[] = {1, 2, 3, 4, 5, 6, 8, 7, 0};          // broken. should not work
     
-//    Slide *ohBoy = new Slide(ob, n);
-    Slide *trivial = new Slide(t,n);
-//    Slide *easy = new Slide(e, n);
-    //Slide *doable = new Slide(d, n);
+    Slide *ohBoy = new mhatSlide(ob, n);
+    Slide *trivial = new mhatSlide(t,n);
+    Slide *easy = new mhatSlide(e, n);
+    Slide *doable = new mhatSlide(d, n);
+
+    priority_queue<Slide*> testing;
+    testing.push(ohBoy);
+    testing.push(trivial);
+    testing.push(easy);
+    testing.push(trivial);
+    testing.push(doable);
     
-    //Slide *broken = new Slide(b, n);
-
-    Slide *doable = new misSlide(d, n);
-
-    cout << genSearch(trivial, queueFunc) << endl;
+    while(!testing.empty()) {
+        cout << "hn: " << testing.top()->getFn() << endl;
+        testing.top()->print();
+        testing.pop();
+    }
+    
+    //cout << genSearch(trivial, queueFunc) << endl;
     cout << "repeated size: " << repeated.size()<< endl;
-//    for (int i = 0; i != repeated.size(); ++i) {
-//        repeated.at(i)->print();
-//    }
+    for (int i = 0; i != repeated.size(); ++i) {
+        repeated.at(i)->print();
+    }
 
     return 0;
 }

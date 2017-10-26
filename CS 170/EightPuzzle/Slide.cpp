@@ -6,6 +6,7 @@
 
 using namespace std;
 
+// default constructor
 Slide::Slide():inputSize(3) {
     create(inputSize);
 }
@@ -37,6 +38,25 @@ void Slide::create(int n) {
     grid.at(gridSize-1) = 0;
 }
 
+Slide& Slide::operator=(const Slide& rhs) {
+    // protect against self assignment
+    if (this != &rhs) {
+        this->grid = rhs.grid;
+        this->inputSize = rhs.inputSize;
+        this->gridSize = rhs.gridSize;
+        this->blankPos = rhs.blankPos;
+    }
+    return *this;
+}
+
+bool Slide::operator< (const Slide& rhs) const {
+    return this->getFn() < rhs.getFn();
+}
+
+bool Slide::operator> (const Slide& rhs) const {
+    return !(*this < rhs);
+}
+
 void Slide::print() const{
     for (int i = 0; i != gridSize; ++i) {
         if ((i != 0) && (i % inputSize == 0))
@@ -60,8 +80,8 @@ bool Slide::moveLeft() {
 bool Slide::moveRight() {
     if (blankPos % inputSize != (inputSize-1)) {
         int temp = grid[++blankPos];
-        grid[blankPos] = 0;
-        grid[blankPos-1] = temp;
+        grid.at(blankPos) = 0;
+        grid.at(blankPos-1) = temp;
         return true;                // move was successful
     }
     return false;                   // move could not be executed
@@ -77,8 +97,8 @@ bool Slide::moveUp() {
     
     // swap the values
     int temp = grid[blankPos];
-    grid[blankPos] = 0;
-    grid[blankPos+inputSize] = temp;
+    grid.at(blankPos) = 0;
+    grid.at(blankPos+inputSize) = temp;
     
     return true;
 }
@@ -92,8 +112,8 @@ bool Slide::moveDown() {
     
     // swap the values
     int temp = grid[blankPos];
-    grid[blankPos] = 0;
-    grid[blankPos-inputSize] = temp;
+    grid.at(blankPos) = 0;
+    grid.at(blankPos-inputSize) = temp;
     
     return true;
 }
@@ -108,10 +128,6 @@ bool Slide::operator==(const Slide& rhs) const {
         }
     }
     return true;
-}
-
-bool Slide::operator< (const Slide&rhs) const {
-    return this->getFn() < rhs.getFn();
 }
 
 // returns the number of misplaced tiles, not including the blank tile
@@ -143,7 +159,7 @@ int Slide::mhat(int n) const {
     int displacement = 0;
     // find the index where the misplaced value n currently is
     for (int i = 0; i != gridSize; ++i) {
-        if (n == grid[i]) {
+        if (n == grid.at(i)) {
             displacement = i;
         }
     }
