@@ -1,6 +1,7 @@
 #include <iostream>
-#include <iomanip> // for setw
+#include <iomanip>      // for setw
 #include <cmath>        // for abs
+#include <algorithm>    // for swap
 
 #include "Slide.h"
 
@@ -38,6 +39,16 @@ void Slide::create(int n) {
     grid.at(gridSize-1) = 0;
 }
 
+// return true if lhs == rhs
+// assumes we'll only compare two grids that are the same size
+bool Slide::operator==(const Slide& rhs) const {
+    // compare every value in both grids
+    for (int i = 0; i != this->gridSize; ++i)
+        if (this->grid != rhs.grid)
+            return false;
+    return true;
+}
+
 Slide& Slide::operator=(const Slide& rhs) {
     // protect against self assignment
     if (this != &rhs) {
@@ -61,28 +72,28 @@ void Slide::print() const{
     cout << endl << endl;
 }
 
-bool Slide::moveLeft() {
+bool Slide::moveLeft(int n) {
     if ( blankPos % inputSize != 0) {
-        int temp = grid[--blankPos];
-        grid.at(blankPos) = 0;
-        grid.at(blankPos+1) = temp;
+        --blankPos; // move the blank
+        swap(grid.at(blankPos), grid.at(blankPos+1));
+
         return true;                // move was successful
     }
     return false;                   // move could not be executed
 }
 
-bool Slide::moveRight() {
+bool Slide::moveRight(int n) {
     if (blankPos % inputSize != (inputSize-1)) {
-        int temp = grid[++blankPos];
-        grid.at(blankPos) = 0;
-        grid.at(blankPos-1) = temp;
+        ++blankPos; // move the blank
+        swap(grid.at(blankPos), grid.at(blankPos-1));
+
         return true;                // move was successful
     }
     return false;                   // move could not be executed
     
 }
 
-bool Slide::moveUp() {
+bool Slide::moveUp(int n) {
     // blank is already on first row, can't move up
     if (blankPos < inputSize)
         return false;
@@ -90,32 +101,19 @@ bool Slide::moveUp() {
     blankPos -= inputSize;                  // move the blank
     
     // swap the values
-    int temp = grid[blankPos];
-    grid.at(blankPos) = 0;
-    grid.at(blankPos+inputSize) = temp;
+    swap(grid.at(blankPos), grid.at(blankPos+inputSize));
     
     return true;
 }
 
-bool Slide::moveDown() {
+bool Slide::moveDown(int n) {
     // blank is on last row, can't move down
     if (blankPos >= (inputSize * (inputSize-1)))
         return false;
     blankPos += inputSize;                  // move the blank
     // swap the values
-    int temp = grid[blankPos];
-    grid.at(blankPos) = 0;
-    grid.at(blankPos-inputSize) = temp;
-    return true;
-}
+    swap(grid.at(blankPos), grid.at(blankPos-inputSize));
 
-// return true if lhs == rhs
-// assumes we'll only compare two grids that are the same size
-bool Slide::operator==(const Slide& rhs) const {
-    // compare every value in both grids
-    for (int i = 0; i != this->gridSize; ++i)
-        if (this->grid != rhs.grid)
-            return false;
     return true;
 }
 
@@ -136,9 +134,9 @@ int Slide::mhatDist() const {
     for (int i = 0; i != gridSize; ++i) {
         // only need to calculate the distance if tile is in wrong location
         // ignore the blank tiles
-        if (grid[i] != i+1 && grid[i] != 0)
+        if (grid.at(i) != i+1 && grid.at(i) != 0)
             // pass in the misplaced tile
-            dist += mhat(grid[i]);
+            dist += mhat(grid.at(i));
     }
     return dist;
 }
@@ -150,7 +148,7 @@ int Slide::mhat(int n) const {
     for (int i = 0; i != gridSize; ++i)
         if (n == grid.at(i))
             displacement = i;
-    displacement = abs(displacement - (n-1)); // n-1 is the position in the array
+    displacement = abs(displacement - (n-1)); //n-1 is the position in the array
     int mDistance = (displacement / inputSize) + (displacement % inputSize);
     return mDistance;
 }

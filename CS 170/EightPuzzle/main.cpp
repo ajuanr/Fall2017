@@ -32,9 +32,9 @@ vecNode EXPAND(node*, problem);
 
 vector<Slide> repeated; // the nodes we've already seen
 
+/***************************functions **********************/
 bool haveSeen(node*);
 nodes* callHeuristic(int);
-
 void callInfo(int, node);
 
 /*********************** comparison functions ************/
@@ -76,7 +76,7 @@ int main() {
 bool genSearch(problem p, qFunc que) {
     int numExpanded = 0;    // the number of nodes expanded
     int maxNodes=0;           // the maximum number of nodes at one time
-    int choice = 2;
+    int choice = 3;
     
     //initializing
     nodes *n = callHeuristic(3); // the queue

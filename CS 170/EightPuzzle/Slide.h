@@ -17,10 +17,10 @@ public:
     bool isGoal() const {return this->grid == goal;}
     
     // operators allowed
-    bool moveLeft();
-    bool moveRight();
-    bool moveUp();
-    bool moveDown();
+    bool moveLeft(int=1);
+    bool moveRight(int=1);
+    bool moveUp(int=1);
+    bool moveDown(int=1);
     
     // Overloaded operators
     bool operator== (const Slide&) const;
