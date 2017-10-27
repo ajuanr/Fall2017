@@ -20,11 +20,10 @@ typedef Slide node;
 typedef Slide problem;
 typedef priority_queue<node, vector<node>, bool(*)(node, node)> nodes;
 typedef vector<node> vecNode;
-
+typedef vector<bool(*)()> operators;
 /*************** function pointers **********************/
 typedef vecNode(*exPnd)(node*, problem);
 typedef nodes(*qFunc)(nodes*, exPnd);
-typedef bool(*ops)();
 
 /****************  the algorithm functions  ***************/
 bool genSearch(problem, qFunc);
@@ -32,14 +31,19 @@ nodes queueFunc(nodes* n, exPnd); // FOR TESTING PURPOSES
 vecNode EXPAND(node*, problem);
 
 vector<Slide> repeated; // the nodes we've already seen
-int maxNodes=0;           // the maximum number of nodes at one time
 
 bool haveSeen(node*);
+nodes* callHeuristic(int);
+
+void callInfo(int, node);
+
+/*********************** comparison functions ************/
 bool cmpUniform(Slide a, Slide b);
 bool cmpMhat(Slide a, Slide b);
 bool cmpTiles(Slide a, Slide b);
 
 
+/************************ main *************************/
 int main() {
     int n = 3; // default grid size n*n
     /* testing these configurations */
@@ -48,6 +52,7 @@ int main() {
     int d[] = {0, 1, 2, 4, 5, 3, 7, 8, 6};          // doable
     int ob[] = {8, 7, 1, 6, 0, 2, 5, 4, 3};         // ob= oh boy
     int b[] = {1, 2, 3, 4, 5, 6, 8, 7, 0};          // broken. should not work
+    int w[] = {8, 6, 7, 2, 5, 4, 3, 0, 1};          // worst case
     
     int test[] = {1,2,3,4,8,0,7,6,5};
     Slide testing(test,n);
@@ -57,6 +62,7 @@ int main() {
     Slide easy(e, n);
     Slide doable(d, n);
     Slide broken(b, n);
+    Slide worst(w,n);
     
     cout << genSearch(ohBoy, queueFunc) << endl;
     
@@ -69,30 +75,33 @@ int main() {
 
 bool genSearch(problem p, qFunc que) {
     int numExpanded = 0;    // the number of nodes expanded
-    // initialize the queue with the initial state
-//    nodes *n = new nodes(cmpTiles);
-    nodes *n = new nodes(cmpMhat);
-//    nodes *n = new nodes(cmpUniform);
-    n->push(p);
-    repeated.push_back(p);
+    int maxNodes=0;           // the maximum number of nodes at one time
+    int choice = 2;
+    
+    //initializing
+    nodes *n = callHeuristic(3); // the queue
+    n->push(p);                 // push the problem
+    repeated.push_back(p);      // nodes we've seen
+    
     // look for a solution
     do {
         // check if any nodes left in queue
         if (n->empty()) return false; // didn't find solution
-        cout << "now testing\n";
-        cout << "With G(n)= " << n->top().getGn() <<
-                " and H(n)= " << n->top().misTiles() << endl;
+        // update maxNodes in queue
+        maxNodes=maxNodes > n->size() ? maxNodes : static_cast<int>(n->size());
+        callInfo(choice, n->top());
         n->top().print();
-        cout << "number of nodes expanded: " << ++numExpanded << endl;
         // are you the goal state
         if (n->top().isGoal()){
             cout << "The puzzle is done\n";
             n->top().print();
+            cout << "number of nodes expanded: " << numExpanded << endl;
             cout << "At depth: " << n->top().getDepth() << endl;
             cout << "Maximum number of nodes in queue "
                  << "at any one time: " << maxNodes << endl;
             return true; // found the solution
         }
+        ++numExpanded; // if here, a node had to be expanded
         *n = que(n, EXPAND);
     } while (true);
 }
@@ -105,30 +114,26 @@ vecNode EXPAND(node *current, problem p) {
     int i = 0;
     if (current->moveLeft()) {
         newNodes.push_back(*current);
-        newNodes.at(i).incrementG();
+        newNodes.at(i).incrementGn();
         newNodes.at(i++).incrementDepth();
-        ++maxNodes;
         current->moveRight();           // reset the tile
     }
     if (current->moveRight()) {
         newNodes.push_back(*current);
-        newNodes.at(i).incrementG();
+        newNodes.at(i).incrementGn();
         newNodes.at(i++).incrementDepth();
-        ++maxNodes;
         current->moveLeft();           // reset the tile
     }
     if (current->moveUp()) {
         newNodes.push_back(*current);
-        newNodes.at(i).incrementG();
+        newNodes.at(i).incrementGn();
         newNodes.at(i++).incrementDepth();
-        ++maxNodes;
         current->moveDown();           // reset the tile
     }
     if (current->moveDown()) {
         newNodes.push_back(*current);
-        newNodes.at(i).incrementG();
+        newNodes.at(i).incrementGn();
         newNodes.at(i++).incrementDepth();
-        ++maxNodes;
         current->moveUp();           // reset the tile
     }
     return newNodes;
@@ -139,7 +144,6 @@ nodes queueFunc(nodes* n, exPnd exp) {
     vecNode newNodes = exp(&temp, n->top()); // expand the nodes
 
     n->pop();                                       //remove expanded element
-    --maxNodes;
     // push all the new nodes that were expanded in the expand function
     for (int i = 0; i != newNodes.size(); ++i) {
         // check if we've seen the node before
@@ -159,6 +163,23 @@ bool haveSeen(node *current) {
     for (int i = 0; i != repeated.size(); ++i)
         if (repeated.at(i) == *current) return true;
     return false;
+}
+
+// call the appropriate heuristic
+nodes* callHeuristic(int choice) {
+    switch(choice) {
+        case 1:
+            return new nodes(cmpUniform);
+            break;
+        case 2:
+            return new nodes(cmpTiles);
+            break;
+        case 3:
+            return new nodes(cmpMhat);
+            break;
+        default:
+            return new nodes(cmpUniform);
+    }
 }
 
 /***********************************************************
@@ -182,4 +203,25 @@ bool cmpTiles(Slide a, Slide b) {
     if (a.getGn() + a.misTiles() == (b.getGn() + b.misTiles()))
         return (a.misTiles() > b.misTiles());
     return (a.getGn() + a.misTiles()) > (b.getGn() + b.misTiles());
+}
+/************************************************************/
+
+// print information for the current node being expanded
+void callInfo(int choice, node current) {
+    cout << "The best state to expand with g(n)=" << current.getGn();
+    switch(choice) {
+        case 1:
+            cout << " and h(n)=" << current.uniCost();
+            break;
+        case 2:
+            cout << " and h(n)=" << current.misTiles();
+            break;
+        case 3:
+            cout << " and h(n)=" << current.mhatDist();
+            break;
+        default:
+            cout << " and h(n)=" << current.uniCost();
+            break;
+    }
+    cout << endl;
 }

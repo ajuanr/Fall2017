@@ -25,20 +25,17 @@ public:
     // Overloaded operators
     bool operator== (const Slide&) const;
     Slide& operator= (const Slide&);
-//    virtual bool operator< (const Slide&) const;
-//    virtual bool operator> (const Slide&) const;
 
-    //heuristics
+    // get heuristic values
     int misTiles() const;
     int mhatDist() const;
     int uniCost() const { return 0;} // h(n) set to zero
     
     bool compareMhat(const Slide&, const Slide&) const;
     
-    void incrementG() {++gn;}
+    void incrementGn() {++gn;}
     void incrementDepth() {++depth;}
     int getGn() const {return gn;} // returns the g(n) value
-    virtual int getFn() const {return getGn() + misTiles();}
     
 private:
     vecInt grid;      // will hold the n*n grid as a 1-d array
