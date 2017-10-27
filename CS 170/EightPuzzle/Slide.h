@@ -24,8 +24,8 @@ public:
     // Overloaded operators
     bool operator== (const Slide&) const;
     Slide& operator= (const Slide&);
-    virtual bool operator< (const Slide&) const;
-    virtual bool operator> (const Slide&) const;
+//    virtual bool operator< (const Slide&) const;
+//    virtual bool operator> (const Slide&) const;
 
     //heuristics
     int misTiles() const;

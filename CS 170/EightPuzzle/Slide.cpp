@@ -50,13 +50,13 @@ Slide& Slide::operator=(const Slide& rhs) {
     return *this;
 }
 
-bool Slide::operator< (const Slide& rhs) const {
-    return this->getFn() > rhs.getFn();
-}
-
-bool Slide::operator> (const Slide& rhs) const {
-    return !(*this < rhs);
-}
+//bool Slide::operator< (const Slide& rhs) const {
+//    return this->getFn() > rhs.getFn();
+//}
+//
+//bool Slide::operator> (const Slide& rhs) const {
+//    return !(*this < rhs);
+//}
 
 void Slide::print() const{
     for (int i = 0; i != gridSize; ++i) {
