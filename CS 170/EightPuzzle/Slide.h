@@ -30,6 +30,9 @@ public:
     //heuristics
     int misTiles() const;
     int mhatDist() const;
+    int uniCost() const { return 0;} // h(n) set to zero
+    
+    bool compareMhat(const Slide&, const Slide&) const;
     
     void incrementG() {++gn;}
     int getGn() const {return gn;} // returns the g(n) value

@@ -7,6 +7,7 @@
 #include <iostream>
 #include <queue>        // FIFO
 #include <vector>       // stores the expanded nodes before added to queue
+#include <algorithm>
 
 // User header files
 #include "Slide.h"
@@ -18,22 +19,26 @@ using namespace std;
  *********************************************************/
 typedef Slide node;
 typedef Slide problem;
-typedef priority_queue<problem> nodes;
+typedef priority_queue<node> nodes;
 typedef vector<node> vecNode;
 
 /*************** function pointers **********************/
 typedef vecNode(*exPnd)(node*, problem);
 typedef nodes(*qFunc)(nodes*, exPnd);
 typedef bool(*ops)();
+typedef bool(*my_cmp)(node, node);
 
 /****************  the algorithm functions  ***************/
 bool genSearch(problem, qFunc);
 nodes queueFunc(nodes* n, exPnd); // FOR TESTING PURPOSES
 vecNode EXPAND(node*, problem);
 
-vector<Slide> repeated;
+vector<Slide> repeated; // the nodes we've already seen
 
 bool haveSeen(node*);
+bool cmpUniform(Slide a, Slide b) {return a.getGn() < b.getGn();}
+bool cmpMhat(Slide, Slide);
+bool cmpMis(Slide, Slide);
 bool my_compare(Slide lhs, Slide rhs) {
     return lhs < rhs;
 }
@@ -47,8 +52,8 @@ int main() {
     int ob[] = {8, 7, 1, 6, 0, 2, 5, 4, 3};         // ob= oh boy
     int b[] = {1, 2, 3, 4, 5, 6, 8, 7, 0};          // broken. should not work
     
-    //int test[] = {0, 1, 3, 4,2,5,7,8,6};
-    //Slide testing(test,n);
+    int test[] = {1,2,3,4,8,0,7,6,5};
+    Slide testing(test,n);
     
     Slide ohBoy(ob, n);
     Slide trivial(t,n);
@@ -56,20 +61,7 @@ int main() {
     Slide doable(d, n);
     Slide broken(b, n);
     
-    priority_queue<Slide> testing;
-    testing.push(ohBoy);
-    testing.push(trivial);
-    testing.push(easy);
-    testing.push(trivial);
-    testing.push(doable);
-
-//    while(!testing.empty()) {
-//        cout << "hn: " << testing.top().getFn() << endl;
-//        testing.top().print();
-//        testing.pop();
-//    }
-    
-    cout << genSearch(ohBoy, queueFunc) << endl;
+    cout << genSearch(easy, queueFunc) << endl;
     
     return 0;
 }
@@ -79,7 +71,8 @@ int main() {
  *********************************************************/
 
 bool genSearch(problem p, qFunc que) {
-    int numExpanded = 0;
+    int numExpanded = 0;    // the number of nodes expanded
+    int maxNodes=0;           // the maximum number of nodes at one time
     // initialize the queue with the initial state
     nodes *n = new priority_queue<node>;
     n->push(p);
@@ -88,11 +81,18 @@ bool genSearch(problem p, qFunc que) {
     do {
         // check if any nodes left in queue
         if (n->empty()) return false; // didn't find solution
+        ++maxNodes;
+        // are you the goal state
+        if (n->top().isGoal()){
+            cout << "Maximum number of nodes in queue "
+                 << "at any one time: " << maxNodes << endl;
+            return true; // found the solution
+        }
+        // update max nodes in queue
+        maxNodes=(maxNodes > n->size()) ? maxNodes:static_cast<int>(n->size());
         cout << "now testing\n";
         n->top().print();
         cout << "G(n)= : " << n->top().getGn() << endl;
-        // are you the goal state
-        if (n->top().isGoal()) return true; // found the solution
         cout << "number of nodes expanded: " << ++numExpanded << endl;
         *n = que(n, EXPAND);
     } while (true);
@@ -112,18 +112,19 @@ vecNode EXPAND(node *current, problem p) {
     if (current->moveRight()) {
         newNodes.push_back(*current);
         newNodes.at(i++).incrementG();
-        current->moveLeft();           // reset the tile
+        current->moveLeft();            // reset the tile
     }
     if (current->moveUp()) {
         newNodes.push_back(*current);
         newNodes.at(i++).incrementG();
-        current->moveDown();           // reset the tile
+        current->moveDown();            // reset the tile
     }
     if (current->moveDown()) {
         newNodes.push_back(*current);
         newNodes.at(i++).incrementG();
-        current->moveUp();           // reset the tile
+        current->moveUp();              // reset the tile
     }
+    sort(newNodes.begin(), newNodes.end(),my_compare);
     return newNodes;
 }
 
@@ -146,7 +147,7 @@ nodes queueFunc(nodes* n, exPnd exp) {
     return *n;
 }
 
-// return true if a node has been seen previously
+// returns true if a node has been seen previously
 bool haveSeen(node *current) {
     for (int i = 0; i != repeated.size(); ++i)
         if (repeated.at(i) == *current) return true;
