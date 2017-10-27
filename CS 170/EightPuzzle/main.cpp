@@ -7,7 +7,6 @@
 #include <iostream>
 #include <queue>        // FIFO
 #include <vector>       // stores the expanded nodes before added to queue
-#include <algorithm>
 
 // User header files
 #include "Slide.h"
@@ -19,14 +18,13 @@ using namespace std;
  *********************************************************/
 typedef Slide node;
 typedef Slide problem;
-typedef priority_queue<node> nodes;
+typedef priority_queue<node, vector<node>, bool(*)(node, node)> nodes;
 typedef vector<node> vecNode;
 
 /*************** function pointers **********************/
 typedef vecNode(*exPnd)(node*, problem);
 typedef nodes(*qFunc)(nodes*, exPnd);
 typedef bool(*ops)();
-typedef bool(*my_cmp)(node, node);
 
 /****************  the algorithm functions  ***************/
 bool genSearch(problem, qFunc);
@@ -36,12 +34,10 @@ vecNode EXPAND(node*, problem);
 vector<Slide> repeated; // the nodes we've already seen
 
 bool haveSeen(node*);
-bool cmpUniform(Slide a, Slide b) {return a.getGn() < b.getGn();}
-bool cmpMhat(Slide, Slide);
-bool cmpMis(Slide, Slide);
-bool my_compare(Slide lhs, Slide rhs) {
-    return lhs < rhs;
-}
+bool cmpUniform(Slide a, Slide b);
+bool cmpMhat(Slide a, Slide b);
+bool cmpTiles(Slide a, Slide b);
+
 
 int main() {
     int n = 3; // default grid size n*n
@@ -61,7 +57,7 @@ int main() {
     Slide doable(d, n);
     Slide broken(b, n);
     
-    cout << genSearch(easy, queueFunc) << endl;
+    cout << genSearch(ohBoy, queueFunc) << endl;
     
     return 0;
 }
@@ -74,7 +70,7 @@ bool genSearch(problem p, qFunc que) {
     int numExpanded = 0;    // the number of nodes expanded
     int maxNodes=0;           // the maximum number of nodes at one time
     // initialize the queue with the initial state
-    nodes *n = new priority_queue<node>;
+    nodes *n = new nodes(cmpMhat);
     n->push(p);
     repeated.push_back(p);
     // look for a solution
@@ -84,6 +80,8 @@ bool genSearch(problem p, qFunc que) {
         ++maxNodes;
         // are you the goal state
         if (n->top().isGoal()){
+            cout << "The puzzle is done\n";
+            n->top().print();
             cout << "Maximum number of nodes in queue "
                  << "at any one time: " << maxNodes << endl;
             return true; // found the solution
@@ -92,7 +90,7 @@ bool genSearch(problem p, qFunc que) {
         maxNodes=(maxNodes > n->size()) ? maxNodes:static_cast<int>(n->size());
         cout << "now testing\n";
         n->top().print();
-        cout << "G(n)= : " << n->top().getGn() << endl;
+        cout << "H(n)= : " << n->top().misTiles() << endl;
         cout << "number of nodes expanded: " << ++numExpanded << endl;
         *n = que(n, EXPAND);
     } while (true);
@@ -112,19 +110,18 @@ vecNode EXPAND(node *current, problem p) {
     if (current->moveRight()) {
         newNodes.push_back(*current);
         newNodes.at(i++).incrementG();
-        current->moveLeft();            // reset the tile
+        current->moveLeft();           // reset the tile
     }
     if (current->moveUp()) {
         newNodes.push_back(*current);
         newNodes.at(i++).incrementG();
-        current->moveDown();            // reset the tile
+        current->moveDown();           // reset the tile
     }
     if (current->moveDown()) {
         newNodes.push_back(*current);
         newNodes.at(i++).incrementG();
-        current->moveUp();              // reset the tile
+        current->moveUp();           // reset the tile
     }
-    sort(newNodes.begin(), newNodes.end(),my_compare);
     return newNodes;
 }
 
@@ -152,4 +149,21 @@ bool haveSeen(node *current) {
     for (int i = 0; i != repeated.size(); ++i)
         if (repeated.at(i) == *current) return true;
     return false;
+}
+
+/***********************************************************
+ *******************Comparison Functions *******************
+ * ***************** Return true if a > b ******************
+ * Want to priority queue to have smallest elelment on top *
+ ********************************************************* */
+bool cmpUniform(Slide a, Slide b) {
+    return a.getGn() > b.getGn();
+}
+
+bool cmpMhat(Slide a, Slide b) {
+    return (a.getGn()+a.mhatDist()) > (b.getGn()+b.mhatDist());
+}
+
+bool cmpTiles(Slide a, Slide b) {
+    return (a.getGn()+a.misTiles()) > (b.getGn()+b.misTiles());
 }

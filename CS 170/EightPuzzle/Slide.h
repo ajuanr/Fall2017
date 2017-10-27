@@ -36,7 +36,7 @@ public:
     
     void incrementG() {++gn;}
     int getGn() const {return gn;} // returns the g(n) value
-    virtual int getFn() const {return getGn() + mhatDist();}
+    virtual int getFn() const {return getGn() + misTiles();}
     
 private:
     vecInt grid;      // will hold the n*n grid as a 1-d array
@@ -45,24 +45,11 @@ private:
     int gridSize;   // grid size of nxn
     int blankPos;   // keep track of where the blank is for moving it around
     int gn=0;         // cost to move tile
+    std::vector<bool(*)()> operations;
     
     // utility functions
     void create(int);           // for constructor
     int mhat(int) const;      // for mhatDist heuristic
-};
-
-class mhatSlide: public Slide {
-public:
-    mhatSlide(int* a,int n):Slide(a,n){}
-    mhatSlide(const Slide& rhs): Slide(rhs){}
-    int getFn()const  {return mhatDist();}
-};
-
-class misSlide: public Slide {
-public:
-    misSlide(int* a, int n):Slide(a,n){}
-    misSlide(const Slide& rhs): Slide(rhs){}
-    int getFn() const {return misTiles();}
 };
 
 #endif
