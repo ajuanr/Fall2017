@@ -12,6 +12,7 @@ public:
     Slide(int*, int);       // initialize the grid from an array
     
     int getInputSize() const { return inputSize;}
+    int getDepth() const {return depth;}
     void print() const;
     bool isGoal() const {return this->grid == goal;}
     
@@ -35,6 +36,7 @@ public:
     bool compareMhat(const Slide&, const Slide&) const;
     
     void incrementG() {++gn;}
+    void incrementDepth() {++depth;}
     int getGn() const {return gn;} // returns the g(n) value
     virtual int getFn() const {return getGn() + misTiles();}
     
@@ -46,6 +48,7 @@ private:
     int blankPos;   // keep track of where the blank is for moving it around
     int gn=0;         // cost to move tile
     std::vector<bool(*)()> operations;
+    int depth = 0;
     
     // utility functions
     void create(int);           // for constructor

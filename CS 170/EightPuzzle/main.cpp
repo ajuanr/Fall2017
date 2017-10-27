@@ -70,9 +70,9 @@ int main() {
 bool genSearch(problem p, qFunc que) {
     int numExpanded = 0;    // the number of nodes expanded
     // initialize the queue with the initial state
-    //nodes *n = new nodes(cmpTiles);
-   // nodes *n = new nodes(cmpMhat);
-    nodes *n = new nodes(cmpUniform);
+//    nodes *n = new nodes(cmpTiles);
+    nodes *n = new nodes(cmpMhat);
+//    nodes *n = new nodes(cmpUniform);
     n->push(p);
     repeated.push_back(p);
     // look for a solution
@@ -81,13 +81,14 @@ bool genSearch(problem p, qFunc que) {
         if (n->empty()) return false; // didn't find solution
         cout << "now testing\n";
         cout << "With G(n)= " << n->top().getGn() <<
-                " and H(n): " << n->top().misTiles() << endl;
+                " and H(n)= " << n->top().misTiles() << endl;
         n->top().print();
         cout << "number of nodes expanded: " << ++numExpanded << endl;
         // are you the goal state
         if (n->top().isGoal()){
             cout << "The puzzle is done\n";
             n->top().print();
+            cout << "At depth: " << n->top().getDepth() << endl;
             cout << "Maximum number of nodes in queue "
                  << "at any one time: " << maxNodes << endl;
             return true; // found the solution
@@ -104,25 +105,29 @@ vecNode EXPAND(node *current, problem p) {
     int i = 0;
     if (current->moveLeft()) {
         newNodes.push_back(*current);
-        newNodes.at(i++).incrementG();
+        newNodes.at(i).incrementG();
+        newNodes.at(i++).incrementDepth();
         ++maxNodes;
         current->moveRight();           // reset the tile
     }
     if (current->moveRight()) {
         newNodes.push_back(*current);
-        newNodes.at(i++).incrementG();
+        newNodes.at(i).incrementG();
+        newNodes.at(i++).incrementDepth();
         ++maxNodes;
         current->moveLeft();           // reset the tile
     }
     if (current->moveUp()) {
         newNodes.push_back(*current);
-        newNodes.at(i++).incrementG();
+        newNodes.at(i).incrementG();
+        newNodes.at(i++).incrementDepth();
         ++maxNodes;
         current->moveDown();           // reset the tile
     }
     if (current->moveDown()) {
         newNodes.push_back(*current);
-        newNodes.at(i++).incrementG();
+        newNodes.at(i).incrementG();
+        newNodes.at(i++).incrementDepth();
         ++maxNodes;
         current->moveUp();           // reset the tile
     }

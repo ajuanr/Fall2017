@@ -46,6 +46,7 @@ Slide& Slide::operator=(const Slide& rhs) {
         this->gridSize = rhs.gridSize;
         this->blankPos = rhs.blankPos;
         this->gn = rhs.gn;
+        this->depth = rhs.depth;
     }
     return *this;
 }
