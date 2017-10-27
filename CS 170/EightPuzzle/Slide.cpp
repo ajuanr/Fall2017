@@ -72,7 +72,7 @@ void Slide::print() const{
     cout << endl << endl;
 }
 
-bool Slide::moveLeft(int n) {
+bool Slide::moveLeft() {
     if ( blankPos % inputSize != 0) {
         --blankPos; // move the blank
         swap(grid.at(blankPos), grid.at(blankPos+1));
@@ -82,7 +82,7 @@ bool Slide::moveLeft(int n) {
     return false;                   // move could not be executed
 }
 
-bool Slide::moveRight(int n) {
+bool Slide::moveRight() {
     if (blankPos % inputSize != (inputSize-1)) {
         ++blankPos; // move the blank
         swap(grid.at(blankPos), grid.at(blankPos-1));
@@ -93,7 +93,7 @@ bool Slide::moveRight(int n) {
     
 }
 
-bool Slide::moveUp(int n) {
+bool Slide::moveUp() {
     // blank is already on first row, can't move up
     if (blankPos < inputSize)
         return false;
@@ -106,7 +106,7 @@ bool Slide::moveUp(int n) {
     return true;
 }
 
-bool Slide::moveDown(int n) {
+bool Slide::moveDown() {
     // blank is on last row, can't move down
     if (blankPos >= (inputSize * (inputSize-1)))
         return false;
