@@ -1,7 +1,7 @@
 #include <iostream>
-#include <iomanip>      // for setw
-#include <cmath>        // for abs
-#include <algorithm>    // for swap
+#include <iomanip>          // for setw
+#include <cmath>            // for abs
+#include <algorithm>        // for swap
 
 #include "Slide.h"
 
@@ -9,7 +9,6 @@ using namespace std;
 
 Slide::Slide(int* input, int size):inputSize(size) {
     gridSize = inputSize * inputSize;
-    //grid = new int[gridSize];
     grid = vecInt(gridSize);
     for (int i = 0; i != gridSize; ++i) {
         grid.at(i) = input[i];
@@ -22,10 +21,8 @@ Slide::Slide(int* input, int size):inputSize(size) {
 // return true if lhs == rhs
 // assumes we'll only compare two grids that are the same size
 bool Slide::operator==(const Slide& rhs) const {
-    // compare every value in both grids
-    for (int i = 0; i != this->gridSize; ++i)
-        if (this->grid != rhs.grid)
-            return false;
+    if (this->grid != rhs.grid)
+        return false;
     return true;
 }
 
@@ -56,11 +53,10 @@ int Slide::myHash() const {
     int hash = 0;
     int multiplier = 1;
     for (int i = 0; i != grid.size(); ++i) {
-        hash += (grid.at(i) * multiplier);
-        ++multiplier;
+        hash += (grid.at(i) * multiplier++);
     }
-    hash *= (blankPos+1);
-    return hash-156;
+    hash *= (blankPos+1); // values [156,1836]
+    return hash-156; // want the range to be [0,1680]
 }
 
 bool Slide::moveLeft() {
@@ -79,7 +75,6 @@ bool Slide::moveRight() {
         return true;                // move was successful
     }
     return false;                   // move could not be executed
-    
 }
 
 bool Slide::moveUp() {
@@ -87,11 +82,8 @@ bool Slide::moveUp() {
     if (blankPos < inputSize)
         return false;
     
-    blankPos -= inputSize;                  // move the blank
-    
-    // swap the values
-    swap(grid.at(blankPos), grid.at(blankPos+inputSize));
-    
+    blankPos -= inputSize;                                  // move the blank
+    swap(grid.at(blankPos), grid.at(blankPos+inputSize));   // swap the values
     return true;
 }
 
@@ -99,10 +91,9 @@ bool Slide::moveDown() {
     // blank is on last row, can't move down
     if (blankPos >= (inputSize * (inputSize-1)))
         return false;
-    blankPos += inputSize;                  // move the blank
-    // swap the values
-    swap(grid.at(blankPos), grid.at(blankPos-inputSize));
-
+    
+    blankPos += inputSize;                                  // move the blank
+    swap(grid.at(blankPos), grid.at(blankPos-inputSize));   // swap the values
     return true;
 }
 
@@ -111,7 +102,7 @@ int Slide::misTiles() const {
     int nMisplaced = 0;             // number of misplaced tiles
     for (int i = 0; i != gridSize; ++i) {
         // check if a tile is misplaced, but ignore the blank tile
-        if (grid[i] != i+1 && grid[i] != 0)
+        if (grid.at(i) != i+1 && grid.at(i) != 0)
             ++nMisplaced;
     }
     return nMisplaced;

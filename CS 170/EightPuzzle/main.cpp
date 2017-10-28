@@ -68,10 +68,12 @@ int main() {
     Slide broken(b, n);
     Slide worst(w,n);
     
-    int t1 = time(0);
-    cout << genSearch(worst, queueFunc) << endl;
-    int t2 = time(0);
-    cout << "time: " <<  t2-t1 << endl;
+//    int t1 = time(0);
+    if( genSearch(ohBoy, queueFunc)) {
+        cout << "Goal!!!\n";
+    }
+//    int t2 = time(0);
+//    cout << "time: " <<  t2-t1 << endl;
     return 0;
 }
 
@@ -235,5 +237,5 @@ void callInfo(int choice, node current) {
             cout << " and h(n)=" << current.uniCost();
             break;
     }
-    cout << endl;
+    cout << " is..." << endl;
 }

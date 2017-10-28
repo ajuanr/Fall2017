@@ -9,7 +9,7 @@ class Slide{
 public:
     Slide(int*, int);       // Initialize grid from array
     
-    int getInputSize() const { return inputSize;}
+    // some functions
     int getDepth() const {return depth;}
     void print() const;
     bool isGoal() const {return this->grid == goal;}
@@ -30,10 +30,8 @@ public:
     int mhatDist() const;
     int uniCost() const { return 0;} // h(n) set to zero
     
-    bool compareMhat(const Slide&, const Slide&) const;
-    
-    void incrementGn() {++gn;}
-    void incrementDepth() {++depth;}
+    void incrementGn() {++gn;}          // increment the G(n) value
+    void incrementDepth() {++depth;}    // increment the depth
     int getGn() const {return gn;} // returns the g(n) value
     
 private:
