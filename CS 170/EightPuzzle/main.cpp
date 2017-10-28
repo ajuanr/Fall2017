@@ -68,7 +68,7 @@ int main() {
     Slide worst(w,n);
     
     int t1 = time(0);
-    cout << genSearch(ohBoy, queueFunc) << endl;
+    cout << genSearch(worst, queueFunc) << endl;
     int t2 = time(0);
     cout << "time: " <<  t2-t1 << endl;
     return 0;
