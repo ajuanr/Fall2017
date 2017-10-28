@@ -15,23 +15,25 @@
 
 using namespace std;
 
-/*********************  some typedefs ********************/
+/*********************  some typedefs ********************
+ ** to make the code more similar to the given algorithm *
+ *********************************************************/
 typedef Slide node;
+typedef Slide problem;
 typedef priority_queue<node, vector<node>, bool(*)(node, node)> nodes;
 typedef vector<node> vecNode;
-typedef vector<bool(Slide::*)()> operators;
-typedef map<int, vector<Slide> > repeatMap;
+typedef vector<bool(*)()> operators;typedef map<int, vector<Slide> > repeatMap;
 
 /*************** function pointers **********************/
-typedef vecNode(*exPnd)(node*, operators);
+typedef vecNode(*exPnd)(node*, problem);
 typedef nodes(*qFunc)(nodes*, exPnd);
 
 /****************  the algorithm functions  ***************/
-bool genSearch(node, qFunc);
+bool genSearch(problem, qFunc);
 nodes queueFunc(nodes* n, exPnd); // FOR TESTING PURPOSES
-vecNode EXPAND(node*, operators);
+vecNode EXPAND(node*, problem);
 
-/**************** utitility functions ********************/
+/***************************functions **********************/
 bool haveSeen(node*);
 nodes* callHeuristic(int);
 void callInfo(int, node);
@@ -41,6 +43,7 @@ bool cmpUniform(Slide a, Slide b);
 bool cmpMhat(Slide a, Slide b);
 bool cmpTiles(Slide a, Slide b);
 
+// structures for holding repeated states
 int repeats[1861] = {0};
 repeatMap repeat;
 
@@ -65,9 +68,9 @@ int main() {
     Slide broken(b, n);
     Slide worst(w,n);
     
-    long int t1 = time(0);
+    int t1 = time(0);
     cout << genSearch(worst, queueFunc) << endl;
-    long int t2 = time(0);
+    int t2 = time(0);
     cout << "time: " <<  t2-t1 << endl;
     return 0;
 }
@@ -76,10 +79,10 @@ int main() {
  *****************  function definitions  *****************
  *********************************************************/
 
-bool genSearch(node p, qFunc que) {
+bool genSearch(problem p, qFunc que) {
     int numExpanded = 0;    // the number of nodes expanded
     int maxNodes=0;           // the maximum number of nodes at one time
-    int choice = 2;
+    int choice = 3;
     
     //initializing
     nodes *n = callHeuristic(choice); // the queue
@@ -101,7 +104,7 @@ bool genSearch(node p, qFunc que) {
             cout << "number of nodes expanded: " << numExpanded << endl;
             cout << "At depth: " << n->top().getDepth() << endl;
             cout << "Maximum number of nodes in queue "
-                 << "at any one time: " << maxNodes << endl;
+            << "at any one time: " << maxNodes << endl;
             return true; // found the solution
         }
         ++numExpanded; // if here, a node had to be expanded
@@ -112,7 +115,7 @@ bool genSearch(node p, qFunc que) {
 // takes a node and expands it using operators
 // returns a vector with the expanded nodes
 // i.e, a vector containing only valid states
-vecNode EXPAND(node *current, operators ops) {
+vecNode EXPAND(node *current, problem p) {
     vecNode newNodes;
     int i = 0;
     if (current->moveLeft()) {
@@ -144,9 +147,8 @@ vecNode EXPAND(node *current, operators ops) {
 
 nodes queueFunc(nodes* n, exPnd exp) {
     node temp = n->top();
-    operators op = n->top().getOps();
-    vecNode newNodes = exp(&temp,op); // expand the nodes
-
+    vecNode newNodes = exp(&temp, n->top()); // expand the nodes
+    
     n->pop();                                       //remove expanded element
     // push all the new nodes that were expanded in the expand function
     for (int i = 0; i != newNodes.size(); ++i) {

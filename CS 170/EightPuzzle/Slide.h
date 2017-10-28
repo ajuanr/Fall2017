@@ -7,9 +7,7 @@ typedef std::vector<int> vecInt;
 
 class Slide{
 public:
-    Slide();                // create a default grid of size 3x3
-    Slide(int);             // create a default grid of size nxn
-    Slide(int*, int);       // initialize the grid from an array
+    Slide(int*, int);       // Initialize grid from array
     
     int getInputSize() const { return inputSize;}
     int getDepth() const {return depth;}
@@ -37,20 +35,17 @@ public:
     void incrementGn() {++gn;}
     void incrementDepth() {++depth;}
     int getGn() const {return gn;} // returns the g(n) value
-    std::vector<bool(Slide::*)()> getOps() const {return operations;}
     
 private:
-    vecInt grid;      // will hold the n*n grid as a 1-d array
-    const vecInt goal = {1, 2, 3, 4, 5, 6, 7, 8, 0};
-    int inputSize;  // input of size n
-    int gridSize;   // grid size of nxn
-    int blankPos;   // keep track of where the blank is for moving it around
-    int gn=0;         // cost to move tile
-    std::vector<bool(Slide::*)()> operations;
-    int depth = 0;
+    vecInt grid;                        // holds the n*n grid as a 1d array
+    const vecInt goal = {1, 2, 3, 4, 5, 6, 7, 8, 0}; // goal state
+    int inputSize;                      // input of size n
+    int gridSize;                       // grid size of nxn
+    int blankPos;                       // where the blank
+    int gn=0;                           // cost to move tile
+    int depth = 0;                      // depth of the node
     
     // utility functions
-    void create(int);           // for constructor
     int mhat(int) const;      // for mhatDist heuristic
 };
 

@@ -7,15 +7,6 @@
 
 using namespace std;
 
-// default constructor
-Slide::Slide():inputSize(3) {
-    create(inputSize);
-}
-
-Slide::Slide(int n):inputSize(n){
-    create(inputSize);
-}
-
 Slide::Slide(int* input, int size):inputSize(size) {
     gridSize = inputSize * inputSize;
     //grid = new int[gridSize];
@@ -26,22 +17,6 @@ Slide::Slide(int* input, int size):inputSize(size) {
             blankPos = i;
         }
     }
-}
-
-// initialize the grid
-void Slide::create(int n) {
-    gridSize = inputSize * inputSize;
-    blankPos = gridSize - 1;
-    grid = vecInt(gridSize);
-    for (int i = 0; i!= gridSize; ++i) {
-        grid.at(i) = i+1;
-    }
-    grid.at(gridSize-1) = 0;
-    
-    operations.push_back(&Slide::moveLeft);
-    operations.push_back(&Slide::moveRight);
-    operations.push_back(&Slide::moveUp);
-    operations.push_back(&Slide::moveDown);
 }
 
 // return true if lhs == rhs
@@ -92,7 +67,6 @@ bool Slide::moveLeft() {
     if ( blankPos % inputSize != 0) {
         --blankPos; // move the blank
         swap(grid.at(blankPos), grid.at(blankPos+1));
-
         return true;                // move was successful
     }
     return false;                   // move could not be executed
@@ -102,7 +76,6 @@ bool Slide::moveRight() {
     if (blankPos % inputSize != (inputSize-1)) {
         ++blankPos; // move the blank
         swap(grid.at(blankPos), grid.at(blankPos-1));
-
         return true;                // move was successful
     }
     return false;                   // move could not be executed
@@ -165,6 +138,7 @@ int Slide::mhat(int n) const {
         if (n == grid.at(i))
             displacement = i;
     displacement = abs(displacement - (n-1)); //n-1 is the position in the array
+    // columns shifted over and rows shifted over
     int mDistance = (displacement / inputSize) + (displacement % inputSize);
     return mDistance;
 }
