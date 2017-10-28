@@ -72,6 +72,18 @@ void Slide::print() const{
     cout << endl << endl;
 }
 
+int Slide::myHash() const {
+    int hash = 0;
+    int multiplier = 1;
+    for (int i = 0; i != grid.size(); ++i) {
+        cout << grid.at(i) << " * " << multiplier << endl;
+        hash += (grid.at(i) * multiplier);
+        ++multiplier;
+    }
+    hash *= (blankPos+1);
+    return hash-156;
+}
+
 bool Slide::moveLeft() {
     if ( blankPos % inputSize != 0) {
         --blankPos; // move the blank

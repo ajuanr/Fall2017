@@ -15,6 +15,7 @@ public:
     int getDepth() const {return depth;}
     void print() const;
     bool isGoal() const {return this->grid == goal;}
+    int myHash() const;
     
     // operators allowed
     bool moveLeft();
