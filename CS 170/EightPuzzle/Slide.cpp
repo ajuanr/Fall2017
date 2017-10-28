@@ -37,6 +37,11 @@ void Slide::create(int n) {
         grid.at(i) = i+1;
     }
     grid.at(gridSize-1) = 0;
+    
+    operations.push_back(&Slide::moveLeft);
+    operations.push_back(&Slide::moveRight);
+    operations.push_back(&Slide::moveUp);
+    operations.push_back(&Slide::moveDown);
 }
 
 // return true if lhs == rhs

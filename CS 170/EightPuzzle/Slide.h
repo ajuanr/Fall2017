@@ -37,6 +37,7 @@ public:
     void incrementGn() {++gn;}
     void incrementDepth() {++depth;}
     int getGn() const {return gn;} // returns the g(n) value
+    std::vector<bool(Slide::*)()> getOps() const {return operations;}
     
 private:
     vecInt grid;      // will hold the n*n grid as a 1-d array
@@ -45,7 +46,7 @@ private:
     int gridSize;   // grid size of nxn
     int blankPos;   // keep track of where the blank is for moving it around
     int gn=0;         // cost to move tile
-    std::vector<bool(*)()> operations;
+    std::vector<bool(Slide::*)()> operations;
     int depth = 0;
     
     // utility functions

@@ -15,25 +15,23 @@
 
 using namespace std;
 
-/*********************  some typedefs ********************
- ** to make the code more similar to the given algorithm *
- *********************************************************/
+/*********************  some typedefs ********************/
 typedef Slide node;
-typedef Slide problem;
 typedef priority_queue<node, vector<node>, bool(*)(node, node)> nodes;
 typedef vector<node> vecNode;
-typedef vector<bool(*)()> operators;typedef map<int, vector<Slide> > repeatMap;
+typedef vector<bool(Slide::*)()> operators;
+typedef map<int, vector<Slide> > repeatMap;
 
 /*************** function pointers **********************/
-typedef vecNode(*exPnd)(node*, problem);
+typedef vecNode(*exPnd)(node*, operators);
 typedef nodes(*qFunc)(nodes*, exPnd);
 
 /****************  the algorithm functions  ***************/
-bool genSearch(problem, qFunc);
+bool genSearch(node, qFunc);
 nodes queueFunc(nodes* n, exPnd); // FOR TESTING PURPOSES
-vecNode EXPAND(node*, problem);
+vecNode EXPAND(node*, operators);
 
-/***************************functions **********************/
+/**************** utitility functions ********************/
 bool haveSeen(node*);
 nodes* callHeuristic(int);
 void callInfo(int, node);
@@ -67,9 +65,9 @@ int main() {
     Slide broken(b, n);
     Slide worst(w,n);
     
-    int t1 = time(0);
+    long int t1 = time(0);
     cout << genSearch(worst, queueFunc) << endl;
-    int t2 = time(0);
+    long int t2 = time(0);
     cout << "time: " <<  t2-t1 << endl;
     return 0;
 }
@@ -78,7 +76,7 @@ int main() {
  *****************  function definitions  *****************
  *********************************************************/
 
-bool genSearch(problem p, qFunc que) {
+bool genSearch(node p, qFunc que) {
     int numExpanded = 0;    // the number of nodes expanded
     int maxNodes=0;           // the maximum number of nodes at one time
     int choice = 2;
@@ -114,7 +112,7 @@ bool genSearch(problem p, qFunc que) {
 // takes a node and expands it using operators
 // returns a vector with the expanded nodes
 // i.e, a vector containing only valid states
-vecNode EXPAND(node *current, problem p) {
+vecNode EXPAND(node *current, operators ops) {
     vecNode newNodes;
     int i = 0;
     if (current->moveLeft()) {
@@ -146,7 +144,8 @@ vecNode EXPAND(node *current, problem p) {
 
 nodes queueFunc(nodes* n, exPnd exp) {
     node temp = n->top();
-    vecNode newNodes = exp(&temp, n->top()); // expand the nodes
+    operators op = n->top().getOps();
+    vecNode newNodes = exp(&temp,op); // expand the nodes
 
     n->pop();                                       //remove expanded element
     // push all the new nodes that were expanded in the expand function
