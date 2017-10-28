@@ -76,7 +76,6 @@ int Slide::myHash() const {
     int hash = 0;
     int multiplier = 1;
     for (int i = 0; i != grid.size(); ++i) {
-        cout << grid.at(i) << " * " << multiplier << endl;
         hash += (grid.at(i) * multiplier);
         ++multiplier;
     }

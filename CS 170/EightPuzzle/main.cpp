@@ -42,13 +42,12 @@ bool cmpUniform(Slide a, Slide b);
 bool cmpMhat(Slide a, Slide b);
 bool cmpTiles(Slide a, Slide b);
 
+int repeats[1861] = {0};
 
 /************************ main *************************/
 int main() {
     int n = 3; // default grid size n*n
     /* testing these configurations */
-    int def[] = {1,2,3,4,5,6,7,8,0};
-    int rev[] = {0,8,7,6,5,4,3,2,1};
     int t[] = {1, 2, 3, 4, 5, 6, 7, 0, 8};          // trivial
     int e[] = {1, 2, 0, 4, 5, 3, 7, 8, 6};          // easy
     int d[] = {0, 1, 2, 4, 5, 3, 7, 8, 6};          // doable
@@ -59,11 +58,6 @@ int main() {
     int test[] = {1,2,3,4,8,0,7,6,5};
     Slide testing(test,n);
     
-    Slide deflt(def,n);
-    Slide revrs(rev,n);
-    cout << deflt.myHash() << endl;
-    cout << revrs.myHash() << endl;
-    
     Slide ohBoy(ob, n);
     Slide trivial(t,n);
     Slide easy(e, n);
@@ -71,7 +65,7 @@ int main() {
     Slide broken(b, n);
     Slide worst(w,n);
     
-//    cout << genSearch(ohBoy, queueFunc) << endl;
+    cout << genSearch(ohBoy, queueFunc) << endl;
     
     return 0;
 }
@@ -89,6 +83,7 @@ bool genSearch(problem p, qFunc que) {
     nodes *n = callHeuristic(choice); // the queue
     n->push(p);                 // push the problem
     repeated.push_back(p);      // nodes we've seen
+    repeats[p.myHash()] = 1;
     
     // look for a solution
     do {
@@ -158,7 +153,6 @@ nodes queueFunc(nodes* n, exPnd exp) {
             // we haven't, so push it onto the queue
             n->push(newNodes.at(i));
             // push previously unseen node onto list of repeated nodes
-            repeated.push_back(newNodes.at(i));
         }
     }
     // return them
@@ -169,6 +163,8 @@ nodes queueFunc(nodes* n, exPnd exp) {
 bool haveSeen(node *current) {
     for (int i = 0; i != repeated.size(); ++i)
         if (repeated.at(i) == *current) return true;
+    
+    repeated.push_back(*current);
     return false;
 }
 
