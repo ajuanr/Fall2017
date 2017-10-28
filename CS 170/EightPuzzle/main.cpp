@@ -7,6 +7,8 @@
 #include <iostream>
 #include <queue>        // FIFO
 #include <vector>       // stores the expanded nodes before added to queue
+#include <map>
+#include <ctime>
 
 // User header files
 #include "Slide.h"
@@ -20,7 +22,8 @@ typedef Slide node;
 typedef Slide problem;
 typedef priority_queue<node, vector<node>, bool(*)(node, node)> nodes;
 typedef vector<node> vecNode;
-typedef vector<bool(*)()> operators;
+typedef vector<bool(*)()> operators;typedef map<int, vector<Slide> > repeatMap;
+
 /*************** function pointers **********************/
 typedef vecNode(*exPnd)(node*, problem);
 typedef nodes(*qFunc)(nodes*, exPnd);
@@ -29,8 +32,6 @@ typedef nodes(*qFunc)(nodes*, exPnd);
 bool genSearch(problem, qFunc);
 nodes queueFunc(nodes* n, exPnd); // FOR TESTING PURPOSES
 vecNode EXPAND(node*, problem);
-
-vector<Slide> repeated; // the nodes we've already seen
 
 /***************************functions **********************/
 bool haveSeen(node*);
@@ -43,6 +44,7 @@ bool cmpMhat(Slide a, Slide b);
 bool cmpTiles(Slide a, Slide b);
 
 int repeats[1861] = {0};
+repeatMap repeat;
 
 /************************ main *************************/
 int main() {
@@ -65,8 +67,10 @@ int main() {
     Slide broken(b, n);
     Slide worst(w,n);
     
+    int t1 = time(0);
     cout << genSearch(ohBoy, queueFunc) << endl;
-    
+    int t2 = time(0);
+    cout << "time: " <<  t2-t1 << endl;
     return 0;
 }
 
@@ -82,8 +86,7 @@ bool genSearch(problem p, qFunc que) {
     //initializing
     nodes *n = callHeuristic(choice); // the queue
     n->push(p);                 // push the problem
-    repeated.push_back(p);      // nodes we've seen
-    repeats[p.myHash()] = 1;
+    repeat[p.myHash()].push_back(p);
     
     // look for a solution
     do {
@@ -161,10 +164,15 @@ nodes queueFunc(nodes* n, exPnd exp) {
 
 // returns true if a node has been seen previously
 bool haveSeen(node *current) {
-    for (int i = 0; i != repeated.size(); ++i)
-        if (repeated.at(i) == *current) return true;
-    
-    repeated.push_back(*current);
+    repeatMap::iterator iter = repeat.find(current->myHash());
+    if (iter != repeat.end()) {
+        for(vector<Slide>::iterator i = iter->second.begin();
+            i != iter->second.end(); ++i) {
+            if (*i == *current)
+                return true;
+        }
+    }
+    repeat[current->myHash()].push_back(*current);
     return false;
 }
 
