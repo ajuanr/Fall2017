@@ -22,7 +22,7 @@ typedef Slide node;
 typedef Slide problem;
 typedef priority_queue<node, vector<node>, bool(*)(node, node)> nodes;
 typedef vector<node> vecNode;
-typedef vector<bool(*)()> operators;typedef map<int, vector<Slide> > repeatMap;
+typedef map<int, vector<Slide> > repeatMap;
 
 /*************** function pointers **********************/
 typedef vecNode(*exPnd)(node*, problem);
@@ -37,15 +37,14 @@ vecNode EXPAND(node*, problem);
 bool haveSeen(node*);
 nodes* callHeuristic(int);
 void callInfo(int, node);
+int selectSearch();
 
 /*********************** comparison functions ************/
 bool cmpUniform(Slide a, Slide b);
 bool cmpMhat(Slide a, Slide b);
 bool cmpTiles(Slide a, Slide b);
 
-// structures for holding repeated states
-int repeats[1861] = {0};
-repeatMap repeat;
+repeatMap repeats;   // holds the states we've already seen
 
 /************************ main *************************/
 int main() {
@@ -69,7 +68,7 @@ int main() {
     Slide worst(w,n);
     
 //    int t1 = time(0);
-    if( genSearch(ohBoy, queueFunc)) {
+    if( genSearch(testing, queueFunc)) {
         cout << "Goal!!!\n";
     }
 //    int t2 = time(0);
@@ -84,12 +83,12 @@ int main() {
 bool genSearch(problem p, qFunc que) {
     int numExpanded = 0;    // the number of nodes expanded
     int maxNodes=0;           // the maximum number of nodes at one time
-    int choice = 3;
+    int choice = selectSearch();
     
     //initializing
     nodes *n = callHeuristic(choice); // the queue
     n->push(p);                 // push the problem
-    repeat[p.myHash()].push_back(p);
+    repeats[p.myHash()].push_back(p);
     
     // look for a solution
     do {
@@ -167,39 +166,24 @@ nodes queueFunc(nodes* n, exPnd exp) {
 
 // returns true if a node has been seen previously
 bool haveSeen(node *current) {
-    repeatMap::iterator iter = repeat.find(current->myHash());
-    if (iter != repeat.end()) {
+    // look for the hashehd key
+    repeatMap::iterator iter = repeats.find(current->myHash());
+    if (iter != repeats.end()) {
+        // key found, check if puzzle state is there
         for(vector<Slide>::iterator i = iter->second.begin();
             i != iter->second.end(); ++i) {
             if (*i == *current)
                 return true;
         }
     }
-    repeat[current->myHash()].push_back(*current);
+    // new hash. Add it to repeats
+    repeats[current->myHash()].push_back(*current);
     return false;
 }
 
-// call the appropriate heuristic
-nodes* callHeuristic(int choice) {
-    switch(choice) {
-        case 1:
-            return new nodes(cmpUniform);
-            break;
-        case 2:
-            return new nodes(cmpTiles);
-            break;
-        case 3:
-            return new nodes(cmpMhat);
-            break;
-        default:
-            return new nodes(cmpUniform);
-    }
-}
-
-/***********************************************************
- *******************Comparison Functions *******************
+ /******************Comparison Functions *******************
  * ***************** Return true if a > b ******************
- * Want to priority queue to have smallest elelment on top *
+ ** Want priority queue to have smallest elelment on top ***
  ********************************************************* */
 bool cmpUniform(Slide a, Slide b) {
     return a.getGn() > b.getGn();
@@ -220,6 +204,23 @@ bool cmpTiles(Slide a, Slide b) {
 }
 /************************************************************/
 
+// call the appropriate heuristic
+nodes* callHeuristic(int choice) {
+    switch(choice) {
+        case 1:
+            return new nodes(cmpUniform);
+            break;
+        case 2:
+            return new nodes(cmpTiles);
+            break;
+        case 3:
+            return new nodes(cmpMhat);
+            break;
+        default:
+            return new nodes(cmpUniform);
+    }
+}
+
 // print information for the current node being expanded
 void callInfo(int choice, node current) {
     cout << "The best state to expand with g(n)=" << current.getGn();
@@ -238,4 +239,14 @@ void callInfo(int choice, node current) {
             break;
     }
     cout << " is..." << endl;
+}
+
+int selectSearch() {
+    int choice=0;
+    cout << "Enter your choice of algorithm\n"
+            "1. Uniform cost search\n"
+            "2. A* with Misplaced tile heurisic\n"
+            "3. A* with Manhattan Distance heuristic\n>> ";
+    cin >> choice;
+    return choice;
 }
