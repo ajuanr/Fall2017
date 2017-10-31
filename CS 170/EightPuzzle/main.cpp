@@ -103,7 +103,7 @@ bool genSearch(problem p, qFunc que) {
             cout << "The puzzle is done\n";
             n->top().print();
             cout << "number of nodes expanded: " << numExpanded << endl;
-            cout << "At depth: " << n->top().getDepth() << endl;
+            cout << "At depth: " << n->top().getGn() << endl;
             cout << "Maximum number of nodes in queue "
             << "at any one time: " << maxNodes << endl;
             return true; // found the solution
@@ -121,26 +121,22 @@ vecNode EXPAND(node *current, problem p) {
     int i = 0;
     if (current->moveLeft()) {
         newNodes.push_back(*current);
-        newNodes.at(i).incrementGn();
-        newNodes.at(i++).incrementDepth();
+        newNodes.at(i++).incrementGn();
         current->moveRight();           // reset the tile
     }
     if (current->moveRight()) {
         newNodes.push_back(*current);
-        newNodes.at(i).incrementGn();
-        newNodes.at(i++).incrementDepth();
+        newNodes.at(i++).incrementGn();
         current->moveLeft();           // reset the tile
     }
     if (current->moveUp()) {
         newNodes.push_back(*current);
-        newNodes.at(i).incrementGn();
-        newNodes.at(i++).incrementDepth();
+        newNodes.at(i++).incrementGn();
         current->moveDown();           // reset the tile
     }
     if (current->moveDown()) {
         newNodes.push_back(*current);
-        newNodes.at(i).incrementGn();
-        newNodes.at(i++).incrementDepth();
+        newNodes.at(i++).incrementGn();
         current->moveUp();           // reset the tile
     }
     return newNodes;
