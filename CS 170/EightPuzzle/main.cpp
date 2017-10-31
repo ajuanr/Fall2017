@@ -6,7 +6,6 @@
 // System header files
 #include <iostream>
 #include <queue>        // FIFO
-#include <vector>       // stores the expanded nodes before added to queue
 #include <map>
 #include <ctime>
 
@@ -68,7 +67,7 @@ int main() {
     Slide worst(w,n);
     
 //    int t1 = time(0);
-    if( genSearch(testing, queueFunc)) {
+    if( genSearch(ohBoy, queueFunc)) {
         cout << "Goal!!!\n";
     }
 //    int t2 = time(0);
