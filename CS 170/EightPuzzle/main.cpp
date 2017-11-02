@@ -1,7 +1,6 @@
 // Juan Ruiz
-// main.cpp
 // CS 170 - Fall 2017
-// Eight-puzzle programming problem
+// Eight-puzzle programming project
 
 // System header files
 #include <iostream>     // for I/O
@@ -27,10 +26,10 @@ typedef nodes(*qFunc)(nodes*, exPnd);
 
 /**************** the algorithm functions ***************/
 bool genSearch(problem, qFunc);
-nodes queueFunc(nodes* n, exPnd); // FOR TESTING PURPOSES
+nodes queueFunc(nodes* n, exPnd);
 vecNode EXPAND(node*, problem);
 
-/***************************functions **********************/
+/*********************** functions **********************/
 bool haveSeen(node*);
 nodes* callHeuristic(int);
 void callInfo(int, const node);
@@ -43,7 +42,7 @@ bool cmpUniform(node a, node b);
 bool cmpMhat(node a, node b);
 bool cmpTiles(node a, node b);
 
-repeatMap repeats;   // holds the states we've already seen
+repeatMap repeats;      // holds the states we've already seen
 
 /************************ main *************************/
 int main() {
@@ -51,7 +50,7 @@ int main() {
     return 0;
 }
 
-/* *****************  function definitions  *****************/
+/************************ main *************************/
 bool genSearch(problem p, qFunc que) {
     int numExpanded = 0;    // the number of nodes expanded
     int maxNodes=0;           // the maximum number of nodes at one time
@@ -85,7 +84,6 @@ bool genSearch(problem p, qFunc que) {
 
 // takes a node and expands it using operators
 // returns a vector with the expanded nodes
-// i.e, a vector containing only valid states
 vecNode EXPAND(node *current, problem p) {
     vecNode newNodes;
     int i = 0;
@@ -145,10 +143,7 @@ bool haveSeen(node *current) {
     return false;
 }
 
- /******************Comparison Functions *******************
- * ***************** Return true if a > b ******************
- ** Want priority queue to have smallest elelment on top ***
- ********************************************************* */
+ /***************** comparison functions *********************/
 bool cmpUniform(node a, node b) {
     return a.getGn() > b.getGn();
 }
@@ -160,9 +155,8 @@ bool cmpMhat(node a, node b) {
 bool cmpTiles(node a, node b) {
     return (a.getGn() + a.misTiles()) > (b.getGn() + b.misTiles());
 }
-/************************************************************/
-
-// call the appropriate heuristic
+/******************** user input functions *********************/
+// calls the appropriate heuristic
 nodes* callHeuristic(int choice) {
     switch(choice) {
         case 1:
@@ -171,11 +165,8 @@ nodes* callHeuristic(int choice) {
         case 2:
             return new nodes(cmpTiles);
             break;
-        case 3:
+        default: // default to calling manhattan if 1 or 2 not chosen
             return new nodes(cmpMhat);
-            break;
-        default:
-            return new nodes(cmpUniform);
     }
 }
 
@@ -189,16 +180,13 @@ void callInfo(int choice, const node current) {
         case 2:
             cout << " and h(n)=" << current.misTiles();
             break;
-        case 3:
+        default: // manhattan is choice 3, but default since it's the fastest
             cout << " and h(n)=" << current.mhatDist();
-            break;
-        default:
-            cout << " and h(n)=" << current.uniCost();
             break;
     }
     cout << " is..." << endl;
 }
-
+// return value with which search to call
 int selectSearch() {
     int choice=0;
     cout << "Enter your choice of algorithm\n"
@@ -210,6 +198,7 @@ int selectSearch() {
     return choice;
 }
 
+// get initial problem state from user. Return the problem
 problem input() {
     int n = 3; // default grid size n*n
     /* testing these configurations */
@@ -240,6 +229,7 @@ problem input() {
     return ret;
 }
 
+// output the results of the search if successful
 void output(nodes* q, int numExpanded, int maxNodes) {
     cout << "Goal!!!\n\n"
             "To solve this problem the search algorithm "
