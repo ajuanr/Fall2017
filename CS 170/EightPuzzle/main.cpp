@@ -4,19 +4,16 @@
 // Eight-puzzle programming problem
 
 // System header files
-#include <iostream>
-#include <queue>        // FIFO
-#include <map>
-#include <ctime>
+#include <iostream>     // for I/O
+#include <queue>        // for priority queue
+#include <map>          // map to hold repeated states
 
 // User header files
 #include "Slide.h"
 
 using namespace std;
 
-/*********************  some typedefs ********************
- ** to make the code more similar to the given algorithm *
- *********************************************************/
+/******************** typedefs **************************/
 typedef Slide node;
 typedef Slide problem;
 typedef priority_queue<node, vector<node>, bool(*)(node, node)> nodes;
@@ -27,7 +24,7 @@ typedef map<int, vector<Slide> > repeatMap;
 typedef vecNode(*exPnd)(node*, problem);
 typedef nodes(*qFunc)(nodes*, exPnd);
 
-/****************  the algorithm functions  ***************/
+/**************** the algorithm functions ***************/
 bool genSearch(problem, qFunc);
 nodes queueFunc(nodes* n, exPnd); // FOR TESTING PURPOSES
 vecNode EXPAND(node*, problem);
@@ -35,8 +32,9 @@ vecNode EXPAND(node*, problem);
 /***************************functions **********************/
 bool haveSeen(node*);
 nodes* callHeuristic(int);
-void callInfo(int, node);
+void callInfo(int, const node);
 int selectSearch();
+void output(nodes*, int, int);
 
 /*********************** comparison functions ************/
 bool cmpUniform(Slide a, Slide b);
@@ -49,29 +47,10 @@ repeatMap repeats;   // holds the states we've already seen
 int main() {
     int n = 3; // default grid size n*n
     /* testing these configurations */
-    int t[] = {1, 2, 3, 4, 5, 6, 7, 0, 8};          // trivial
-    int e[] = {1, 2, 0, 4, 5, 3, 7, 8, 6};          // easy
-    int d[] = {0, 1, 2, 4, 5, 3, 7, 8, 6};          // doable
     int ob[] = {8, 7, 1, 6, 0, 2, 5, 4, 3};         // ob= oh boy
-    int b[] = {1, 2, 3, 4, 5, 6, 8, 7, 0};          // broken. should not work
-    int w[] = {8, 6, 7, 2, 5, 4, 3, 0, 1};          // worst case
-    
-    int test[] = {1,2,3,4,8,0,7,6,5};
-    Slide testing(test,n);
     
     Slide ohBoy(ob, n);
-    Slide trivial(t,n);
-    Slide easy(e, n);
-    Slide doable(d, n);
-    Slide broken(b, n);
-    Slide worst(w,n);
-    
-//    int t1 = time(0);
-    if( genSearch(ohBoy, queueFunc)) {
-        cout << "Goal!!!\n";
-    }
-//    int t2 = time(0);
-//    cout << "time: " <<  t2-t1 << endl;
+    genSearch(ohBoy, queueFunc);
     return 0;
 }
 
@@ -92,19 +71,17 @@ bool genSearch(problem p, qFunc que) {
     // look for a solution
     do {
         // check if any nodes left in queue
-        if (n->empty()) return false; // didn't find solution
+        if (n->empty()) {
+            cout << "No solution\n";
+            return false; // didn't find solution
+        }
         // update maxNodes in queue
         maxNodes=maxNodes > n->size() ? maxNodes : static_cast<int>(n->size());
         callInfo(choice, n->top());
         n->top().print();
         // are you the goal state
         if (n->top().isGoal()){
-            cout << "The puzzle is done\n";
-            n->top().print();
-            cout << "number of nodes expanded: " << numExpanded << endl;
-            cout << "At depth: " << n->top().getGn() << endl;
-            cout << "Maximum number of nodes in queue "
-            << "at any one time: " << maxNodes << endl;
+            output(n, numExpanded, maxNodes);
             return true; // found the solution
         }
         ++numExpanded; // if here, a node had to be expanded
@@ -185,16 +162,10 @@ bool cmpUniform(Slide a, Slide b) {
 }
 
 bool cmpMhat(Slide a, Slide b) {
-    // check for ties in F(n). G(n) all equal so prefer smaller h(n)
-    if (a.getGn() + a.mhatDist() == (b.getGn() + b.mhatDist()))
-        return (a.mhatDist() > b.mhatDist());
     return (a.getGn() + a.mhatDist()) > (b.getGn() + b.mhatDist());
 }
 
 bool cmpTiles(Slide a, Slide b) {
-    // check for ties in F(n). G(n) all equal so prefer smaller h(n)
-    if (a.getGn() + a.misTiles() == (b.getGn() + b.misTiles()))
-        return (a.misTiles() > b.misTiles());
     return (a.getGn() + a.misTiles()) > (b.getGn() + b.misTiles());
 }
 /************************************************************/
@@ -217,7 +188,7 @@ nodes* callHeuristic(int choice) {
 }
 
 // print information for the current node being expanded
-void callInfo(int choice, node current) {
+void callInfo(int choice, const node current) {
     cout << "The best state to expand with g(n)=" << current.getGn();
     switch(choice) {
         case 1:
@@ -244,4 +215,13 @@ int selectSearch() {
             "3. A* with Manhattan Distance heuristic\n>> ";
     cin >> choice;
     return choice;
+}
+
+void output(nodes* q, int numExpanded, int maxNodes) {
+    q->top().print();
+    cout << "Goal!!!\n";
+    cout << "number of nodes expanded: " << numExpanded << endl;
+    cout << "At depth: " << q->top().getGn() << endl;
+    cout << "Maximum number of nodes in queue "
+    << "at any one time: " << maxNodes << endl;
 }
