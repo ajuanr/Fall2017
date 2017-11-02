@@ -47,9 +47,23 @@ repeatMap repeats;   // holds the states we've already seen
 int main() {
     int n = 3; // default grid size n*n
     /* testing these configurations */
-    int ob[] = {8, 7, 1, 6, 0, 2, 5, 4, 3};         // ob= oh boy
+    //int ob[] = {8, 7, 1, 6, 0, 2, 5, 4, 3};         // ob= oh boy
     
-    Slide ohBoy(ob, n);
+    int *values = new int[n*n];
+    int val;
+    cout << "Enter your data: " << endl;
+    for (int i = 0; i != n*n; ++i) {
+        cin >> val;
+        *(values+i) = val;
+    }
+    
+    for (int i = 0; i != n*n; ++i) {
+        cout << *(values+i) << " ";
+    }
+    cout << endl;
+    
+    Slide ohBoy(values, n);
+    delete[] values;
     genSearch(ohBoy, queueFunc);
     return 0;
 }
