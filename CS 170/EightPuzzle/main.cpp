@@ -7,6 +7,7 @@
 #include <iostream>     // for I/O
 #include <queue>        // for priority queue
 #include <map>          // map to hold repeated states
+#include <iomanip>
 
 // User header files
 #include "Slide.h"
@@ -18,7 +19,7 @@ typedef Slide node;
 typedef Slide problem;
 typedef priority_queue<node, vector<node>, bool(*)(node, node)> nodes;
 typedef vector<node> vecNode;
-typedef map<int, vector<Slide> > repeatMap;
+typedef map<int, vector<node> > repeatMap;
 
 /*************** function pointers **********************/
 typedef vecNode(*exPnd)(node*, problem);
@@ -35,42 +36,22 @@ nodes* callHeuristic(int);
 void callInfo(int, const node);
 int selectSearch();
 void output(nodes*, int, int);
+problem input();
 
 /*********************** comparison functions ************/
-bool cmpUniform(Slide a, Slide b);
-bool cmpMhat(Slide a, Slide b);
-bool cmpTiles(Slide a, Slide b);
+bool cmpUniform(node a, node b);
+bool cmpMhat(node a, node b);
+bool cmpTiles(node a, node b);
 
 repeatMap repeats;   // holds the states we've already seen
 
 /************************ main *************************/
 int main() {
-    int n = 3; // default grid size n*n
-    /* testing these configurations */
-    //int ob[] = {8, 7, 1, 6, 0, 2, 5, 4, 3};         // ob= oh boy
-    
-    int *values = new int[n*n];
-    int val;
-    cout << "Enter your data: " << endl;
-    for (int i = 0; i != n*n; ++i) {
-        cin >> val;
-        *(values+i) = val;
-    }
-    
-    for (int i = 0; i != n*n; ++i) {
-        cout << *(values+i) << " ";
-    }
-    cout << endl;
-    
-    Slide ohBoy(values, n);
-    delete[] values;
-    genSearch(ohBoy, queueFunc);
+    genSearch(input(), queueFunc);
     return 0;
 }
 
-/**********************************************************
- *****************  function definitions  *****************
- *********************************************************/
+/* *****************  function definitions  *****************/
 
 bool genSearch(problem p, qFunc que) {
     int numExpanded = 0;    // the number of nodes expanded
@@ -156,7 +137,7 @@ bool haveSeen(node *current) {
     repeatMap::iterator iter = repeats.find(current->myHash());
     if (iter != repeats.end()) {
         // key found, check if puzzle state is there
-        for(vector<Slide>::iterator i = iter->second.begin();
+        for(vector<node>::iterator i = iter->second.begin();
             i != iter->second.end(); ++i) {
             if (*i == *current)
                 return true;
@@ -171,15 +152,15 @@ bool haveSeen(node *current) {
  * ***************** Return true if a > b ******************
  ** Want priority queue to have smallest elelment on top ***
  ********************************************************* */
-bool cmpUniform(Slide a, Slide b) {
+bool cmpUniform(node a, node b) {
     return a.getGn() > b.getGn();
 }
 
-bool cmpMhat(Slide a, Slide b) {
+bool cmpMhat(node a, node b) {
     return (a.getGn() + a.mhatDist()) > (b.getGn() + b.mhatDist());
 }
 
-bool cmpTiles(Slide a, Slide b) {
+bool cmpTiles(node a, node b) {
     return (a.getGn() + a.misTiles()) > (b.getGn() + b.misTiles());
 }
 /************************************************************/
@@ -228,11 +209,41 @@ int selectSearch() {
             "2. A* with Misplaced tile heurisic\n"
             "3. A* with Manhattan Distance heuristic\n>> ";
     cin >> choice;
+    cout << endl;
     return choice;
 }
 
+problem input() {
+    int n = 3; // default grid size n*n
+    /* testing these configurations */
+    cout << "Welcome to Juan Ruiz's 8-puzzle solver\n"
+       << "Type 1 to use a default puzzle, or 2 to enter your own puzzle:\n>> ";
+    int choice;
+    cin >> choice;
+    if (choice != 2) { // any value not equal to 2 gets the default puzzle
+        int t[] = {1, 2, 3, 4, 0, 6, 7, 5, 8};         // traced by hand
+        return problem(t, n);
+    
+    }
+    int *values = new int[n*n];             // will hold the data
+    int val;
+    cout << "Enter your puzzle. Use a zero to represent the blank" << endl;
+    const char* ROWS[] = {"first ", "second", "third "};
+    for (int i = 0; i != n; ++i) {
+        cout  <<  "Enter the " << ROWS[i] << " row. "
+        << "Use space or tabs between numbers:\t" << setw(10);
+        for (int j = 0; j != n; ++j) {
+            cin >> val;
+            *(values+(i*n+j)) = val;
+        }
+    }
+    cout << endl;
+    problem ret(values, n);
+    delete[] values;
+    return ret;
+}
+
 void output(nodes* q, int numExpanded, int maxNodes) {
-    q->top().print();
     cout << "Goal!!!\n";
     cout << "number of nodes expanded: " << numExpanded << endl;
     cout << "At depth: " << q->top().getGn() << endl;
