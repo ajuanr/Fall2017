@@ -6,8 +6,8 @@
 // System header files
 #include <iostream>     // for I/O
 #include <queue>        // for priority queue
-#include <map>          // map to hold repeated states
-#include <iomanip>
+#include <map>          // for map to hold repeated states
+#include <iomanip>      // for setw
 
 // User header files
 #include "Slide.h"
@@ -52,7 +52,6 @@ int main() {
 }
 
 /* *****************  function definitions  *****************/
-
 bool genSearch(problem p, qFunc que) {
     int numExpanded = 0;    // the number of nodes expanded
     int maxNodes=0;           // the maximum number of nodes at one time
@@ -67,7 +66,7 @@ bool genSearch(problem p, qFunc que) {
     do {
         // check if any nodes left in queue
         if (n->empty()) {
-            cout << "No solution\n";
+            cout << "No solution was found\n";
             return false; // didn't find solution
         }
         // update maxNodes in queue
@@ -115,8 +114,7 @@ vecNode EXPAND(node *current, problem p) {
 
 nodes queueFunc(nodes* n, exPnd exp) {
     node temp = n->top();
-    vecNode newNodes = exp(&temp, n->top()); // expand the nodes
-    
+    vecNode newNodes = exp(&temp, n->top());        // expand the nodes
     n->pop();                                       //remove expanded element
     // push all the new nodes that were expanded in the expand function
     for (int i = 0; i != newNodes.size(); ++i) {
@@ -124,7 +122,6 @@ nodes queueFunc(nodes* n, exPnd exp) {
         if (!haveSeen(&newNodes.at(i))){
             // we haven't, so push it onto the queue
             n->push(newNodes.at(i));
-            // push previously unseen node onto list of repeated nodes
         }
     }
     // return them
@@ -223,8 +220,8 @@ problem input() {
     if (choice != 2) { // any value not equal to 2 gets the default puzzle
         int t[] = {1, 2, 3, 4, 0, 6, 7, 5, 8};         // traced by hand
         return problem(t, n);
-    
     }
+    
     int *values = new int[n*n];             // will hold the data
     int val;
     cout << "Enter your puzzle. Use a zero to represent the blank" << endl;
@@ -244,9 +241,10 @@ problem input() {
 }
 
 void output(nodes* q, int numExpanded, int maxNodes) {
-    cout << "Goal!!!\n";
-    cout << "number of nodes expanded: " << numExpanded << endl;
-    cout << "At depth: " << q->top().getGn() << endl;
-    cout << "Maximum number of nodes in queue "
-    << "at any one time: " << maxNodes << endl;
+    cout << "Goal!!!\n\n"
+            "To solve this problem the search algorithm "
+            "expanded a total of " << numExpanded << " nodes\n"
+            "The maximum number of nodes in queue "
+            "at any one time was " << maxNodes << endl <<
+            "The depth of the goal node was " << q->top().getGn() << endl;
 }
