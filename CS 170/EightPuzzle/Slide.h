@@ -32,14 +32,14 @@ public:
     int uniCost() const { return 0;} // h(n) set to zero
     
 private:
-    vecInt grid;                        // holds the n*n grid as a 1d array
-    int inputSize;                      // input of size n
-    int gridSize;                       // grid size of nxn
-    int blankPos;                       // where the blank
-    int gn=0;                           // cost to move tile
-    const vecInt goal = {1, 2, 3, 4, 5, 6, 7, 8, 0}; // goal state
+    vecInt grid;                     // holds the n*n grid as a 1d array
+    int inputSize;                  // input of size n
+    int gridSize;                   // grid size of nxn
+    int blankPos;                   // where the blank
+    int gn=0;                       // number times blank moved
+    const vecInt goal = {1, 2, 3, 4, 5, 6, 7, 8, 0};
     
-    int mhat(int) const;      // calculates manhattan distance for single tile
+    int mhat(int) const;   // manhattan distance for single tile
 };
 
 #endif
