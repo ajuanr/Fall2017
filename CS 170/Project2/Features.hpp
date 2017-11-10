@@ -16,7 +16,9 @@ typedef std::vector<int> vecInt;
 class Features {
 public:
     Features();
-    Features(const vecInt);
+    Features(const vecInt data):features(data) { }
+    int numFeatures() const { return static_cast<int>(features.size());}
+    int getFeature(int index) const { return features.at(index);}
 private:
     vecInt features;
 };
