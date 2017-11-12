@@ -31,6 +31,7 @@ void classify(const fvVec&, fvVec&);
 float featrMean(const fvVec&, int);
 float stdDev(const fvVec&, int);
 void zNormalize(fvVec&);
+float accuracy(const fvVec&, const fvVec&, int, int);
 
 int main(int argc, const char * argv[]) {
     fvVec data = readData();
@@ -40,16 +41,16 @@ int main(int argc, const char * argv[]) {
     zNormalize(data);
     cout << "Done\n";
     
-    int start=10;
-    int end= 20;
+    int start=0;
+    int end= start+10;
     fvVec validation = valData(data,start,end);
     fvVec testing = testData(data,start,end);
-    
-    print(testing);
+
     cout << "***************************************************************\n";
     classify(validation, testing);
     print(testing);
     
+    cout << accuracy(data, testing, start, end) << endl;;
     return 0;
 }
 
@@ -98,7 +99,7 @@ int numFeats(const string line) {
     return count;
 }
 
-// print the data table
+// prints the data table
 void print(const fvVec &data) {
     for (int i = 0; i != data.size(); ++i) {
         for (int j = 0; j != data.at(i).size(); ++j) {
@@ -108,6 +109,8 @@ void print(const fvVec &data) {
     }
 }
 
+// input: dataset, features to compare
+// returns class of nearest value
 float kNearest(const fvVec &data, const fVec &testing) {
     float nearest=-1; // invalid value
     float closest = 10000; // should be greater > any nearest neighbor
@@ -156,12 +159,15 @@ fvVec testData(const fvVec &data, int start, int end) {
 }
 
 // input: validation data, test data
+// alters the values in the test data
 void classify(const fvVec& val, fvVec &test) {
     for (int i = 0; i != test.size(); ++i) {
         test.at(i).at(0) = kNearest(val, test.at(i));
     }
 }
 
+// input: the dataset and the feature whose mean to calculate
+// returns the mean of the feature
 float featrMean(const fvVec& data, int feature) {
     float sum = 0.0;
     for (int i = 0; i != data.size(); ++i) {
@@ -170,6 +176,8 @@ float featrMean(const fvVec& data, int feature) {
     return sum/data.size();
 }
 
+// input: the dataset and the feature whose std. deviation to calulate
+// returns the std deviation of the feature
 float stdDev(const fvVec& data, int featr) {
     float mu = featrMean(data, featr);
     float sum = 0.0;
@@ -180,6 +188,8 @@ float stdDev(const fvVec& data, int featr) {
     
 }
 
+// input: the dataset
+// alters the datset, with the normalized values, except for the class column
 void zNormalize(fvVec& data) {
     for (int i = 0; i != data.size(); ++i) {
         for (int j = 1; j != data.at(i).size(); ++j) {
@@ -187,4 +197,12 @@ void zNormalize(fvVec& data) {
             data.at(i).at(j) /= stdDev(data, j);
         }
     }
+}
+
+float accuracy(const fvVec& original, const fvVec& tested, int start, int end){
+    float output = 0;
+    for (int i = start, j=0; i != end; ++i,++j) {
+        if (original.at(i).at(0) == tested.at(j).at(0)) ++output;
+    }
+    return output / (end-start);
 }
