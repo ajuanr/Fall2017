@@ -35,28 +35,32 @@ float accuracy(const fvVec&, const fvVec&, int, int);
 
 int main(int argc, const char * argv[]) {
     fvVec data = readData();
-    //print(data);
-    
-    cout << "Normalizing data...";
-    zNormalize(data);
-    cout << "Done\n";
-    
-    int start=0;
-    int end= start+10;
-    fvVec validation = valData(data,start,end);
-    fvVec testing = testData(data,start,end);
+    if (!data.empty()) {
+        //print(data);
+        
+        cout << "Normalizing data...";
+        zNormalize(data);
+        cout << "Done\n";
+        
+        int start=0;
+        int end= start+10;
+        fvVec validation = valData(data,start,end);
+        fvVec testing = testData(data,start,end);
 
-    cout << "***************************************************************\n";
-    classify(validation, testing);
-    print(testing);
-    
-    cout << accuracy(data, testing, start, end) << endl;;
+        classify(validation, testing);
+        print(testing);
+        
+        cout << accuracy(data, testing, start, end) << endl;
+    }
+    else
+        cout << "There's no data\n";
     return 0;
 }
 
 // Read the data and return a vector containing the data
 fvVec readData(){
     const string fileName = "CS170Smalltestdata__44.txt";
+//    const string fileName = "CS170BIGtestdata__4.txt";
     ifstream input;
     input.open(fileName, ifstream::in);
     fvVec output;
