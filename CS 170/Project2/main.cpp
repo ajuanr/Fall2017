@@ -8,6 +8,7 @@
 
 #include <cmath>                // for square root
 #include <fstream>              // for opening files
+#include <iomanip>              // for set width
 #include <iostream>             // for I/O
 #include <string>               // to get a line of text
 #include <sstream>              // to parse a line of text
@@ -24,15 +25,26 @@ int numFeats(const string);
 void print(const fvVec&);
 float kNearest(const fvVec&, const fVec&);
 float distance(const fVec&, const fVec&);
-
+fvVec valData(const fvVec&, int, int);
+fvVec testData(const fvVec&, int, int);
+void classify(const fvVec&, fvVec&);
 
 
 int main(int argc, const char * argv[]) {
     fvVec data = readData();
-    print(data);
-    float closest = kNearest(data, data.at(22));
-    cout << closest << endl;
-    cout << endl;
+    //print(data);
+    
+    int start=10;
+    int end= 20;
+    fvVec validation = valData(data,start,end);
+    fvVec testing = testData(data,start,end);
+    
+    print(testing);
+    classify(validation, testing);
+    cout << "***************************************************************\n";
+    print(testing);
+    
+    
     return 0;
 }
 
@@ -85,36 +97,62 @@ int numFeats(const string line) {
 void print(const fvVec &data) {
     for (int i = 0; i != data.size(); ++i) {
         for (int j = 0; j != data.at(i).size(); ++j) {
-            cout << data.at(i).at(j) << " ";
+            cout << setprecision(8) << setw(11) << data.at(i).at(j);
         }
         cout << endl;
     }
 }
 
 float kNearest(const fvVec &data, const fVec &testing) {
-    fVec nearest;
+    float nearest=-1; // invalid value
     float closest = 10000; // should be greater > any nearest neighbor
-    for (int i = 1; i != data.size(); ++i) {
-        if (data.at(i) == testing){ continue; }
-        // start at 1 since we're ingoring the class identifier
-        for (int j = 1; j!=data.at(i).size(); ++j) {
+    for (int i = 0; i != data.size(); ++i) {
             float temp = distance(data.at(i), testing);
             if (temp < closest && temp != 0){
                 closest = temp;
-                nearest = data.at(i);
+                nearest = data.at(i).at(0);
             }
         }
-    }
-    cout << "distance is: " << closest << endl;
-    return nearest.at(0);
+    return nearest;
 }
 
 // calculate the distance between to entries
 // assumes x and y are same size;
 float distance(const fVec& x, const fVec &y) {
     float distance = 0;
-    for (int i = 0; i != x.size(); ++i) {
+    // start at one to ignore the class identifier
+    for (int i = 1; i != x.size(); ++i) {
         distance += ((y.at(i) - x.at(i)) * (y.at(i) - x.at(i)));
     }
     return sqrt(distance);
+}
+
+fvVec valData(const fvVec &data, int start, int end) {
+    fvVec output;
+    for (int i = 0; i != data.size(); ++i) {
+        // don't copy [start, end)
+        if (i>=start && i < end) continue;
+        output.push_back(data.at(i));
+    }
+    return output;
+}
+
+// returns data that will be used for testing purposes
+fvVec testData(const fvVec &data, int start, int end) {
+    fvVec output;
+    for (int i = start; i != end; ++i) {
+        output.push_back(data.at(i));
+    }
+    // hide the class
+    for (int i = 0; i != output.size(); ++i) {
+        output.at(i).at(0) = -1;
+    }
+    return output;
+}
+
+// input: validation data, test data
+void classify(const fvVec& val, fvVec &test) {
+    for (int i = 0; i != test.size(); ++i) {
+        test.at(i).at(0) = kNearest(val, test.at(i));
+    }
 }
