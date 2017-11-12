@@ -40,21 +40,18 @@ bool myCompare(fVec a, fVec b) { return a.at(0) < b.at(0);}
 int main(int argc, const char * argv[]) {
     fvVec data = readData();
     if (!data.empty()) {
-        //print(data);
-        
         cout << "Normalizing data...";
         zNormalize(data);
         cout << "Done\n";
 
         int start=0;
-        int end= start+40;
+        int end= start+10;
         fvVec validation = valData(data,start,end);
         fvVec testing = testData(data,start,end);
 
-        classify(validation, testing, 1);
-        //print(testing);
+        classify(validation, testing, 3);
 
-        cout << accuracy(data, testing, start, end) << endl;
+        cout << "Accuracy is: " << accuracy(data, testing, start, end) << "%\n";
     }
     else
         cout << "There's no data\n";
@@ -128,9 +125,7 @@ float kNearest(const fvVec &data, const fVec &testing, int k) {
         fVec tempVec = {temp, data.at(i).at(0)};
         nearestClass.push_back(tempVec);
         }
-    cout << "\n\nprinting poll*************************************************\n";
     sort(nearestClass.begin(), nearestClass.end(), myCompare);
-    print(nearestClass);
     return vote(nearestClass,k);
 }
 
@@ -156,6 +151,7 @@ float distance(const fVec& x, const fVec &y) {
     return sqrt(distance);
 }
 
+// returns the data that will be used for testing
 fvVec valData(const fvVec &data, int start, int end) {
     fvVec output;
     for (int i = 0; i != data.size(); ++i) {
@@ -220,10 +216,11 @@ void zNormalize(fvVec& data) {
     }
 }
 
+// returns the accurary of the tested data
 float accuracy(const fvVec& original, const fvVec& tested, int start, int end){
     float output = 0;
     for (int i = start, j=0; i != end; ++i,++j) {
         if (original.at(i).at(0) == tested.at(j).at(0)) ++output;
     }
-    return output / (end-start);
+    return output / (end-start) * 100;
 }
