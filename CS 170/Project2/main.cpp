@@ -6,13 +6,14 @@
 //  Copyright © 2017 Juan Ruiz. All rights reserved.
 //
 
-#include <cmath>                // for square root
-#include <fstream>              // for opening files
-#include <iomanip>              // for set width
-#include <iostream>             // for I/O
-#include <string>               // to get a line of text
-#include <sstream>              // to parse a line of text
-#include <vector>               // to hold the data.
+#include <algorithm>                // for sort function
+#include <cmath>                    // for square root
+#include <fstream>                  // for opening files
+#include <iomanip>                  // for set width
+#include <iostream>                 // for I/O
+#include <string>                   // to get a line of text
+#include <sstream>                  // to parse a line of text
+#include <vector>                   // to hold the data.
 
 using namespace std;
 
@@ -23,16 +24,19 @@ fvVec readData();
 fVec parseLine(const string);
 int numFeats(const string);
 void print(const fvVec&);
-float kNearest(const fvVec&, const fVec&);
+float kNearest(const fvVec&, const fVec&, int);
 float distance(const fVec&, const fVec&);
 fvVec valData(const fvVec&, int, int);
 fvVec testData(const fvVec&, int, int);
-void classify(const fvVec&, fvVec&);
+void classify(const fvVec&, fvVec&, int k);
 float featrMean(const fvVec&, int);
 float stdDev(const fvVec&, int);
 void zNormalize(fvVec&);
 float accuracy(const fvVec&, const fvVec&, int, int);
+float vote(const fvVec&, int);
+bool myCompare(fVec a, fVec b) { return a.at(0) < b.at(0);}
 
+/*****************************************************************************/
 int main(int argc, const char * argv[]) {
     fvVec data = readData();
     if (!data.empty()) {
@@ -41,26 +45,27 @@ int main(int argc, const char * argv[]) {
         cout << "Normalizing data...";
         zNormalize(data);
         cout << "Done\n";
-        
+
         int start=0;
-        int end= start+10;
+        int end= start+40;
         fvVec validation = valData(data,start,end);
         fvVec testing = testData(data,start,end);
 
-        classify(validation, testing);
-        print(testing);
-        
+        classify(validation, testing, 1);
+        //print(testing);
+
         cout << accuracy(data, testing, start, end) << endl;
     }
     else
         cout << "There's no data\n";
     return 0;
 }
+/*****************************************************************************/
 
 // Read the data and return a vector containing the data
 fvVec readData(){
-    const string fileName = "CS170Smalltestdata__44.txt";
-//    const string fileName = "CS170BIGtestdata__4.txt";
+//    const string fileName = "CS170Smalltestdata__44.txt";
+    const string fileName = "CS170BIGtestdata__4.txt";
     ifstream input;
     input.open(fileName, ifstream::in);
     fvVec output;
@@ -115,17 +120,29 @@ void print(const fvVec &data) {
 
 // input: dataset, features to compare
 // returns class of nearest value
-float kNearest(const fvVec &data, const fVec &testing) {
-    float nearest=-1; // invalid value
-    float closest = 10000; // should be greater > any nearest neighbor
+float kNearest(const fvVec &data, const fVec &testing, int k) {
+    fvVec nearestClass;
     for (int i = 0; i != data.size(); ++i) {
-            float temp = distance(data.at(i), testing);
-            if (temp < closest && temp != 0){
-                closest = temp;
-                nearest = data.at(i).at(0);
-            }
+        if (testing == data.at(i)) continue; // don't compare testing to itself
+        float temp = distance(data.at(i), testing);
+        fVec tempVec = {temp, data.at(i).at(0)};
+        nearestClass.push_back(tempVec);
         }
-    return nearest;
+    cout << "\n\nprinting poll*************************************************\n";
+    sort(nearestClass.begin(), nearestClass.end(), myCompare);
+    print(nearestClass);
+    return vote(nearestClass,k);
+}
+
+// input: vector with nearest classes, how many nearest neighbors to check
+// returns the class with the most votes
+float vote(const fvVec &poll, int votes) {
+    int results[3] = {0}; // [0] is unused; [1] = class 1; [2] = class 2
+    for (int i = 0; i != votes; ++i) {
+        ++results[static_cast<int>(poll.at(i).at(1))];
+    }
+    // return whichever had more votes
+    return results[1] > results[2] ? 1 : 2;
 }
 
 // calculate the distance between to entries
@@ -164,9 +181,9 @@ fvVec testData(const fvVec &data, int start, int end) {
 
 // input: validation data, test data
 // alters the values in the test data
-void classify(const fvVec& val, fvVec &test) {
+void classify(const fvVec& val, fvVec &test, int k) {
     for (int i = 0; i != test.size(); ++i) {
-        test.at(i).at(0) = kNearest(val, test.at(i));
+        test.at(i).at(0) = kNearest(val, test.at(i), k);
     }
 }
 
