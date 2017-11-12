@@ -28,11 +28,17 @@ float distance(const fVec&, const fVec&);
 fvVec valData(const fvVec&, int, int);
 fvVec testData(const fvVec&, int, int);
 void classify(const fvVec&, fvVec&);
-
+float featrMean(const fvVec&, int);
+float stdDev(const fvVec&, int);
+void zNormalize(fvVec&);
 
 int main(int argc, const char * argv[]) {
     fvVec data = readData();
     //print(data);
+    
+    cout << "Normalizing data...";
+    zNormalize(data);
+    cout << "Done\n";
     
     int start=10;
     int end= 20;
@@ -40,10 +46,9 @@ int main(int argc, const char * argv[]) {
     fvVec testing = testData(data,start,end);
     
     print(testing);
-    classify(validation, testing);
     cout << "***************************************************************\n";
+    classify(validation, testing);
     print(testing);
-    
     
     return 0;
 }
@@ -97,7 +102,7 @@ int numFeats(const string line) {
 void print(const fvVec &data) {
     for (int i = 0; i != data.size(); ++i) {
         for (int j = 0; j != data.at(i).size(); ++j) {
-            cout << setprecision(8) << setw(11) << data.at(i).at(j);
+            cout << setprecision(8) << setw(13) << data.at(i).at(j);
         }
         cout << endl;
     }
@@ -154,5 +159,32 @@ fvVec testData(const fvVec &data, int start, int end) {
 void classify(const fvVec& val, fvVec &test) {
     for (int i = 0; i != test.size(); ++i) {
         test.at(i).at(0) = kNearest(val, test.at(i));
+    }
+}
+
+float featrMean(const fvVec& data, int feature) {
+    float sum = 0.0;
+    for (int i = 0; i != data.size(); ++i) {
+        sum += data.at(i).at(feature);
+    }
+    return sum/data.size();
+}
+
+float stdDev(const fvVec& data, int featr) {
+    float mu = featrMean(data, featr);
+    float sum = 0.0;
+    for (int i = 0; i != data.size(); ++i) {
+    sum += ((data.at(i).at(featr)-mu) * (data.at(i).at(featr)-mu) / data.size());
+    }
+    return sqrt(sum);
+    
+}
+
+void zNormalize(fvVec& data) {
+    for (int i = 0; i != data.size(); ++i) {
+        for (int j = 1; j != data.at(i).size(); ++j) {
+            data.at(i).at(j) -= featrMean(data, j);
+            data.at(i).at(j) /= stdDev(data, j);
+        }
     }
 }
