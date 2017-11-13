@@ -36,6 +36,7 @@ float stdDev(const fvVec&, int);
 void zNormalize(fvVec&);
 float accuracy(const fvVec&, const fvVec&, int, int);
 float vote(const fvVec&, int);
+float kFold(const fvVec&);
 bool myCompare(fVec a, fVec b) { return a.at(0) < b.at(0);}
 
 /*****************************************************************************/
@@ -46,15 +47,9 @@ int main(int argc, const char * argv[]) {
         zNormalize(data);
         cout << "Done\n";
 
-        int start=0;
-        int end= start+10;
-        fvVec validation = valData(data,start,end);
-        fvVec testing = testData(data,start,end);
-
-        classify(validation, testing, 3);
-
-        cout << "Accuracy is: " << accuracy(data, testing, start, end) << "%\n";
+        cout << kFold(data)<< endl;
     }
+        
     else
         cout << "There's no data\n";
     return 0;
@@ -121,7 +116,7 @@ void print(const fvVec &data) {
 // returns class of nearest value
 float kNearest(const fvVec &data, const fVec &testing, int k) {
     fvVec nearestClass;
-    iVec features= {1,2,3,4,5,6,7,8,9,10, 11};   // TESTING
+    iVec features= {1,2,3,4,5,6,7,8,9,10,11};   // TESTING
     for (int i = 0; i != data.size(); ++i) {
         if (testing == data.at(i)) continue; // don't compare testing to itself
         float temp = distance(data.at(i), testing, features);
@@ -237,5 +232,29 @@ float accuracy(const fvVec& original, const fvVec& tested, int start, int end){
     for (int i = start, j=0; i != end; ++i,++j) {
         if (original.at(i).at(0) == tested.at(j).at(0)) ++output;
     }
-    return output / (end-start) * 100;
+    return output / (end-start) * 100.0;
+}
+
+float kFold(const fvVec &data) {
+    int start=0;
+    int end= start+5;
+    int maxKval = 1;
+    while (start+end <= data.size()) {
+        float maxAcc = 0;
+        for (int i = 1; i < data.at(i).size(); i = i+2){
+            fvVec validation = valData(data,start,end);
+            fvVec testing = testData(data,start,end);
+            classify(validation, testing, i);
+            int temp = accuracy(data, testing, start, end);
+            if (temp > maxAcc ) {
+                cout <<"k is: " << i << " accuracy is: " << temp << endl;
+                maxAcc = temp;
+                maxKval = i;
+            }
+        }
+        start = end;
+        end = start+5;
+    }
+    
+    return maxKval;
 }
