@@ -17,8 +17,9 @@
 
 using namespace std;
 
-typedef vector<float> fVec;         // vector of floats
-typedef vector<fVec> fvVec;         // vector of vector-floats
+typedef vector<float> fVec;         // holds the features
+typedef vector<fVec> fvVec;         // holds all the rows
+typedef vector<int> iVec;           // holds which features to look at
 
 fvVec readData();
 fVec parseLine(const string);
@@ -26,6 +27,7 @@ int numFeats(const string);
 void print(const fvVec&);
 float kNearest(const fvVec&, const fVec&, int);
 float distance(const fVec&, const fVec&);
+float distance(const fVec&, const fVec&, const iVec&);
 fvVec valData(const fvVec&, int, int);
 fvVec testData(const fvVec&, int, int);
 void classify(const fvVec&, fvVec&, int k);
@@ -119,9 +121,10 @@ void print(const fvVec &data) {
 // returns class of nearest value
 float kNearest(const fvVec &data, const fVec &testing, int k) {
     fvVec nearestClass;
+    iVec features= {1,2,3,4,5,6,7,8,9,10, 11};   // TESTING
     for (int i = 0; i != data.size(); ++i) {
         if (testing == data.at(i)) continue; // don't compare testing to itself
-        float temp = distance(data.at(i), testing);
+        float temp = distance(data.at(i), testing, features);
         fVec tempVec = {temp, data.at(i).at(0)};
         nearestClass.push_back(tempVec);
         }
@@ -136,7 +139,7 @@ float vote(const fvVec &poll, int votes) {
     for (int i = 0; i != votes; ++i) {
         ++results[static_cast<int>(poll.at(i).at(1))];
     }
-    // return whichever had more votes
+    // return whichever class had more votes
     return results[1] > results[2] ? 1 : 2;
 }
 
@@ -147,6 +150,18 @@ float distance(const fVec& x, const fVec &y) {
     // start at one to ignore the class identifier
     for (int i = 1; i != x.size(); ++i) {
         distance += ((y.at(i) - x.at(i)) * (y.at(i) - x.at(i)));
+    }
+    return sqrt(distance);
+}
+
+// calculate the distance between to entries
+// assumes x and y are same size;
+float distance(const fVec& x, const fVec &y, const iVec &featrs) {
+    float distance = 0;
+    // start at one to ignore the class identifier
+    for(int i = 0; i != featrs.size(); ++i) {
+        int c = featrs.at(i);       // the current feature
+        distance += ((y.at(c) - x.at(c)) * (y.at(c) - x.at(c)));
     }
     return sqrt(distance);
 }
