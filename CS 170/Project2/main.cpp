@@ -11,6 +11,7 @@
 #include <fstream>                  // for opening files
 #include <iomanip>                  // for set width
 #include <iostream>                 // for I/O
+#include <map>
 #include <string>                   // to get a line of text
 #include <sstream>                  // to parse a line of text
 #include <vector>                   // to hold the data.
@@ -25,7 +26,7 @@ fvVec readData();
 fVec parseLine(const string);
 int numFeats(const string);
 void print(const fvVec&);
-float kNearest(const fvVec&, const fVec&, int);
+float knn(const fvVec&, const fVec&, int);
 float distance(const fVec&, const fVec&);
 float distance(const fVec&, const fVec&, const iVec&);
 fvVec valData(const fvVec&, int, int);
@@ -114,7 +115,7 @@ void print(const fvVec &data) {
 
 // input: dataset, features to compare
 // returns class of nearest value
-float kNearest(const fvVec &data, const fVec &testing, int k) {
+float knn(const fvVec &data, const fVec &testing, int k) {
     fvVec nearestClass;
     iVec features= {1,2,3,4,5,6,7,8,9,10,11};   // TESTING
     for (int i = 0; i != data.size(); ++i) {
@@ -189,7 +190,7 @@ fvVec testData(const fvVec &data, int start, int end) {
 // alters the values in the test data
 void classify(const fvVec& val, fvVec &test, int k) {
     for (int i = 0; i != test.size(); ++i) {
-        test.at(i).at(0) = kNearest(val, test.at(i), k);
+        test.at(i).at(0) = knn(val, test.at(i), k);
     }
 }
 
@@ -236,10 +237,13 @@ float accuracy(const fvVec& original, const fvVec& tested, int start, int end){
 }
 
 float kFold(const fvVec &data) {
+    typedef map<int, int> ivMap;
+    ivMap results;
+    int range = 10;
     int start=0;
-    int end= start+5;
-    int maxKval = 1;
-    while (start+end <= data.size()) {
+    int end= start+range;
+    while (end <= data.size()) {
+        cout << "range is: [" << start << ", " << end << "]\n";
         float maxAcc = 0;
         for (int i = 1; i < data.at(i).size(); i = i+2){
             fvVec validation = valData(data,start,end);
@@ -247,14 +251,26 @@ float kFold(const fvVec &data) {
             classify(validation, testing, i);
             int temp = accuracy(data, testing, start, end);
             if (temp > maxAcc ) {
-                cout <<"k is: " << i << " accuracy is: " << temp << endl;
+                results[i]++;//.push_back(temp);
+                cout <<"k is: " << i << " accuracy is: " << temp << endl << endl;
                 maxAcc = temp;
-                maxKval = i;
             }
         }
+        // check the next 5 items
         start = end;
-        end = start+5;
+        end = start+range;
     }
     
-    return maxKval;
+    int bestKval = -1;
+    int numSeen = -1;               // number of times k-val was seen
+    for (ivMap::iterator i = results.begin(); i != results.end(); ++i) {
+        if (i->second > numSeen) {
+            bestKval = i->first;
+            numSeen = i->second;
+        }
+        cout << "k is: " <<  i->first <<
+        "number of times seen: " << i->second << endl;//.size() << endl;
+    }
+    
+    return bestKval;
 }
