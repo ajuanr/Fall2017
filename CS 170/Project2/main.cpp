@@ -12,6 +12,7 @@
 #include <iomanip>                  // for set width
 #include <iostream>                 // for I/O
 #include <map>
+#include <queue>
 #include <string>                   // to get a line of text
 #include <sstream>                  // to parse a line of text
 #include <vector>                   // to hold the data.
@@ -26,6 +27,21 @@ struct bestFeatures{
     float accuracy;
     fVec features;
 };
+
+typedef bestFeatures node;
+typedef bestFeatures problem;
+typedef priority_queue<node, vector<node>, bool(*)(node, node)> nodes;
+typedef vector<node> vecNode;
+typedef map<int, vector<node> > repeatMap;
+
+/*************** function pointers **********************/
+typedef vecNode(*exPnd)(node*, problem);
+typedef nodes(*qFunc)(nodes*, exPnd);
+
+/**************** the algorithm functions ***************/
+bool genSearch(problem, qFunc);
+nodes queueFunc(nodes* n, exPnd);
+vecNode EXPAND(node*, problem);
 
 fvVec readData();
 fVec parseLine(const string);
@@ -44,6 +60,7 @@ float accuracy(const fvVec&, const fvVec&, int, int);
 float vote(const fvVec&, int);
 float bestKnnK(const fvVec&, int);
 bool myCompare(fVec a, fVec b) { return a.at(0) < b.at(0);}
+bool cmpFeatures(bestFeatures a,bestFeatures b){return a.accuracy<b.accuracy;}
 
 /*****************************************************************************/
 int main(int argc, const char * argv[]) {
@@ -282,4 +299,53 @@ float bestKnnK(const fvVec &data, int kSize) {
         }
     }
     return bestKval;
+}
+
+bool genSearch(problem p, qFunc que) {
+    int numExpanded = 0;    // the number of nodes expanded
+    int maxNodes=0;           // the maximum number of nodes at one time
+    
+    //initializing
+    nodes *n = new nodes(cmpFeatures); // the queue
+    n->push(p);                 // push the problem
+//    repeats[p.myHash()].push_back(p);
+    // look for a solution
+    do {
+        // check if any nodes left in queue
+        if (n->empty()) {
+            cout << "No solution was found\n";
+            return false; // didn't find solution
+        }
+        // update maxNodes in queue
+        maxNodes=maxNodes > n->size() ? maxNodes : static_cast<int>(n->size());
+        cout << n->top().accuracy << endl;
+        // are you the goal state
+        if (true){
+            return true; // found the solution
+        }
+        ++numExpanded; // if here, a node had to be expanded
+        *n = que(n, EXPAND);
+    } while (true);
+}
+
+nodes queueFunc(nodes* n, exPnd exp) {
+    node temp = n->top();
+    vecNode newNodes = exp(&temp, n->top());        // expand the nodes
+    n->pop();                                       //remove expanded element
+    // push all the new nodes that were expanded in the expand function
+    for (int i = 0; i != newNodes.size(); ++i) {
+            n->push(newNodes.at(i));
+    }
+    // return them
+    return *n;
+}
+
+// takes a node and expands it using operators
+// returns a vector with the expanded nodes
+vecNode EXPAND(node *current, problem p) {
+    vecNode newNodes;
+    for (int i = 0; i != current->features.size(); ++i) {
+        
+    }
+    return newNodes;
 }
