@@ -22,6 +22,11 @@ typedef vector<float> fVec;         // holds the features
 typedef vector<fVec> fvVec;         // holds all the rows
 typedef vector<int> iVec;           // holds which features to look at
 
+struct bestFeatures{
+    float accuracy;
+    fVec features;
+};
+
 fvVec readData();
 fVec parseLine(const string);
 int numFeats(const string);
@@ -37,7 +42,7 @@ float stdDev(const fvVec&, int);
 void zNormalize(fvVec&);
 float accuracy(const fvVec&, const fvVec&, int, int);
 float vote(const fvVec&, int);
-float bestKnnK(const fvVec&);
+float bestKnnK(const fvVec&, int);
 bool myCompare(fVec a, fVec b) { return a.at(0) < b.at(0);}
 
 /*****************************************************************************/
@@ -48,7 +53,11 @@ int main(int argc, const char * argv[]) {
         zNormalize(data);
         cout << "Done\n";
 
-        cout << bestKnnK(data)<< endl;
+        int start = 0, end = 25;
+        fvVec validation = valData(data,start,end);
+        fvVec testing = testData(data,start,end);
+        classify(validation, testing, bestKnnK(data, end - start));
+        cout << accuracy(data, testing, start, end) << endl;
     }
     else
         cout << "There's no data\n";
@@ -235,10 +244,10 @@ float accuracy(const fvVec& original, const fvVec& tested, int start, int end){
 }
 
 // returns the best k-val for use in knn
-float bestKnnK(const fvVec &data) {
+float bestKnnK(const fvVec &data, int kSize) {
     typedef map<int, int> ivMap;
     ivMap results;
-    int range = 1;
+    int range = kSize;
     int start = 0;
     int end = start+range;
     int bestKval = -1;  // will have best accuracy for any range
