@@ -31,13 +31,13 @@ float distance(const fVec&, const fVec&);
 float distance(const fVec&, const fVec&, const iVec&);
 fvVec valData(const fvVec&, int, int);
 fvVec testData(const fvVec&, int, int);
-void classify(const fvVec&, fvVec&, int k);
+void classify(const fvVec&, fvVec&, int);
 float featrMean(const fvVec&, int);
 float stdDev(const fvVec&, int);
 void zNormalize(fvVec&);
 float accuracy(const fvVec&, const fvVec&, int, int);
 float vote(const fvVec&, int);
-float kFold(const fvVec&);
+float bestKnnK(const fvVec&);
 bool myCompare(fVec a, fVec b) { return a.at(0) < b.at(0);}
 
 /*****************************************************************************/
@@ -48,9 +48,8 @@ int main(int argc, const char * argv[]) {
         zNormalize(data);
         cout << "Done\n";
 
-        cout << kFold(data)<< endl;
+        cout << bestKnnK(data)<< endl;
     }
-        
     else
         cout << "There's no data\n";
     return 0;
@@ -166,8 +165,7 @@ float distance(const fVec& x, const fVec &y, const iVec &featrs) {
 fvVec valData(const fvVec &data, int start, int end) {
     fvVec output;
     for (int i = 0; i != data.size(); ++i) {
-        // don't copy [start, end)
-        if (i>=start && i < end) continue;
+        if (i>=start && i < end) continue;      // don't copy [start, end)
         output.push_back(data.at(i));
     }
     return output;
@@ -187,7 +185,7 @@ fvVec testData(const fvVec &data, int start, int end) {
 }
 
 // input: validation data, test data
-// alters the values in the test data
+// alters the class values in the test data
 void classify(const fvVec& val, fvVec &test, int k) {
     for (int i = 0; i != test.size(); ++i) {
         test.at(i).at(0) = knn(val, test.at(i), k);
@@ -236,41 +234,43 @@ float accuracy(const fvVec& original, const fvVec& tested, int start, int end){
     return output / (end-start) * 100.0;
 }
 
-float kFold(const fvVec &data) {
+// returns the best k-val for use in knn
+float bestKnnK(const fvVec &data) {
     typedef map<int, int> ivMap;
     ivMap results;
-    int range = 10;
-    int start=0;
-    int end= start+range;
-    while (end <= data.size()) {
-        cout << "range is: [" << start << ", " << end << "]\n";
+    int range = 1;
+    int start = 0;
+    int end = start+range;
+    int bestKval = -1;  // will have best accuracy for any range
+    // loop through the data set in range size increments
+    while ((end <= data.size()) && (start < data.size())) {
         float maxAcc = 0;
+        // test k values from [1, data size)
         for (int i = 1; i < data.at(i).size(); i = i+2){
             fvVec validation = valData(data,start,end);
             fvVec testing = testData(data,start,end);
             classify(validation, testing, i);
             int temp = accuracy(data, testing, start, end);
+            // found a k-val with better accuracy
             if (temp > maxAcc ) {
-                results[i]++;//.push_back(temp);
-                cout <<"k is: " << i << " accuracy is: " << temp << endl << endl;
                 maxAcc = temp;
+                bestKval = i;
             }
         }
-        // check the next 5 items
+        results[bestKval]++;
+        // check the next range
         start = end;
         end = start+range;
     }
     
-    int bestKval = -1;
     int numSeen = -1;               // number of times k-val was seen
+    bestKval = -1;
+    // find which k-val was seen the most
     for (ivMap::iterator i = results.begin(); i != results.end(); ++i) {
         if (i->second > numSeen) {
             bestKval = i->first;
             numSeen = i->second;
         }
-        cout << "k is: " <<  i->first <<
-        "number of times seen: " << i->second << endl;//.size() << endl;
     }
-    
     return bestKval;
 }
