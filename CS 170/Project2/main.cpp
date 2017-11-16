@@ -8,6 +8,7 @@
 
 #include <algorithm>                // for sort function
 #include <cmath>                    // for square root
+#include <cstdlib>                  // for rand;
 #include <fstream>                  // for opening files
 #include <iomanip>                  // for set width
 #include <iostream>                 // for I/O
@@ -32,22 +33,24 @@ fvVec readData();
 fVec parseLine(const string);
 int numFeats(const string);
 void print(const fvVec&);
-float knn(const fvVec&, const fVec&, int);
+float knn(const fvVec&, const fVec&,const iVec&, int);
 float distance(const fVec&, const fVec&);
 float distance(const fVec&, const fVec&, const iVec&);
 fvVec valData(const fvVec&, int, int);
 fvVec testData(const fvVec&, int, int);
-void classify(const fvVec&, fvVec&, int);
+void classify(const fvVec&, fvVec&, const iVec&, int);
+//           (const fvVec&, fvVec&, const fVec &f, int k
 float featrMean(const fvVec&, int);
 float stdDev(const fvVec&, int);
 void zNormalize(fvVec&);
 float accuracy(const fvVec&, const fvVec&, int, int);
 float vote(const fvVec&, int);
-float bestKnnK(const fvVec&, int);
+int bestKnnK(const fvVec&, const iVec&, int);
 bool myCompare(fVec a, fVec b) { return a.at(0) < b.at(0);}
 bool cmpFeatures(bestFeatures a,bestFeatures b){return a.accuracy<b.accuracy;}
-
+float leaveOneOutCrossValidation(const fvVec&, const iVec&, int);
 //search stuff
+void featureSearch(const fvVec&);
 
 
 /*****************************************************************************/
@@ -56,13 +59,9 @@ int main(int argc, const char * argv[]) {
     if (!data.empty()) {
         cout << "Normalizing data...";
         zNormalize(data);
-        cout << "Done\n";
-//
-//        int start = 0, end = start+1;
-//        fvVec validation = valData(data,start,end);
-//        fvVec testing = testData(data,start,end);
-//        classify(validation, testing, bestKnnK(data, end - start));
-//        cout << accuracy(data, testing, start, end) << endl;
+        cout << "Done\n\n";
+
+        featureSearch(data);
     }
     else
         cout << "There's no data\n";
@@ -128,9 +127,8 @@ void print(const fvVec &data) {
 
 // input: dataset, features to compare
 // returns class of nearest value
-float knn(const fvVec &data, const fVec &testing, int k) {
+float knn(const fvVec &data, const fVec &testing, const iVec &features, int k) {
     fvVec nearestClass;
-    iVec features= {1,2,3,4,5,6,7,8,9,10,11};   // TESTING
     for (int i = 0; i != data.size(); ++i) {
         if (testing == data.at(i)) continue; // don't compare testing to itself
         float temp = distance(data.at(i), testing, features);
@@ -169,7 +167,7 @@ float distance(const fVec& x, const fVec &y, const iVec &featrs) {
     float distance = 0;
     // start at one to ignore the class identifier
     for(int i = 0; i != featrs.size(); ++i) {
-        int c = featrs.at(i);       // the current feature
+        int c = featrs.at(i);                       // the current feature
         distance += ((y.at(c) - x.at(c)) * (y.at(c) - x.at(c)));
     }
     return sqrt(distance);
@@ -200,9 +198,9 @@ fvVec testData(const fvVec &data, int start, int end) {
 
 // input: validation data, test data
 // alters the class values in the test data
-void classify(const fvVec& val, fvVec &test, int k) {
+void classify(const fvVec& val, fvVec &test, const iVec &f, int k) {
     for (int i = 0; i != test.size(); ++i) {
-        test.at(i).at(0) = knn(val, test.at(i), k);
+        test.at(i).at(0) = knn(val, test.at(i),f, k);
     }
 }
 
@@ -249,7 +247,7 @@ float accuracy(const fvVec& original, const fvVec& tested, int start, int end){
 }
 
 // returns the best k-val for use in knn
-float bestKnnK(const fvVec &data, int kSize) {
+int bestKnnK(const fvVec &data, const iVec &features, int kSize) {
     typedef map<int, int> ivMap;
     ivMap results;
     int range = kSize;
@@ -257,13 +255,12 @@ float bestKnnK(const fvVec &data, int kSize) {
     int end = start+range;
     int bestKval = -1;  // will have best accuracy for any range
     // loop through the data set in range size increments
-    while ((end <= data.size()) && (start < data.size())) {
         float maxAcc = 0;
         // test k values from [1, data size)
         for (int i = 1; i < data.at(i).size(); i = i+2){
             fvVec validation = valData(data,start,end);
             fvVec testing = testData(data,start,end);
-            classify(validation, testing, i);
+            classify(validation, testing, features, i);
             int temp = accuracy(data, testing, start, end);
             // found a k-val with better accuracy
             if (temp > maxAcc ) {
@@ -271,20 +268,52 @@ float bestKnnK(const fvVec &data, int kSize) {
                 bestKval = i;
             }
         }
-        results[bestKval]++;
-        // check the next range
-        start = end;
-        end = start+range;
-    }
-    
-    int numSeen = -1;               // number of times k-val was seen
-    bestKval = -1;
-    // find which k-val was seen the most
-    for (ivMap::iterator i = results.begin(); i != results.end(); ++i) {
-        if (i->second > numSeen) {
-            bestKval = i->first;
-            numSeen = i->second;
-        }
-    }
+//        results[bestKval]++;
+
+//    int numSeen = -1;               // number of times k-val was seen
+//    bestKval = -1;
+//    // find which k-val was seen the most
+//    for (ivMap::iterator i = results.begin(); i != results.end(); ++i) {
+//        if (i->second > numSeen) {
+//            bestKval = i->first;
+//            numSeen = i->second;
+//        }
+//    }
+    cout << "best kval is: " << bestKval << endl;
     return bestKval;
+}
+
+float leaveOneOutCrossValidation(const fvVec& data, const iVec& features,
+                                 int k) {
+    int acc = -1;                   // accuracy
+    int start = 1, end = start+k;
+    fvVec validation = valData(data,start,end);
+    fvVec testing = testData(data,start,end);
+    classify(validation, testing, features, bestKnnK(data, features, end - start));
+    acc = accuracy(data, testing, start, end);
+    return acc;
+}
+
+void featureSearch(const fvVec &data) {
+    iVec currentFeatures;
+    for (int i = 1; i != data.at(i).size(); ++i) {
+        cout << "On the " << i << " th level of the search tree\n";
+        int addAtThisLvl=-1;
+        int bestAccuracy = -1;
+        for (int j = 1; j != data.at(j).size(); ++j){
+            if (find(currentFeatures.begin(),currentFeatures.end(),j)
+                == currentFeatures.end()) {
+                cout << "Considering adding the " << j << " th feature\n";
+                int accuracy = leaveOneOutCrossValidation(data, currentFeatures,j+1);
+                if (accuracy > bestAccuracy) {
+                    bestAccuracy = accuracy;
+                    addAtThisLvl=j;
+                }
+            }
+        }
+        currentFeatures.push_back(addAtThisLvl);
+        cout << "accuracy is " << bestAccuracy << endl;
+        cout << "*****On level " << i << " I added feature " << addAtThisLvl
+        << " to current set\n";
+    }
 }
