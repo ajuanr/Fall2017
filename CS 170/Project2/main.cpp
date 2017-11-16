@@ -36,12 +36,10 @@ fVec parseLine(const string);
 int numFeats(const string);
 void print(const fvVec&);
 float knn(const fvVec&, const fVec&,const iVec&, int);
-float distance(const fVec&, const fVec&);
 float distance(const fVec&, const fVec&, const iVec&);
 fvVec valData(const fvVec&, int, int);
 fvVec testData(const fvVec&, int, int);
 void classify(const fvVec&, fvVec&, const iVec&, int);
-//           (const fvVec&, fvVec&, const fVec &f, int k
 float featrMean(const fvVec&, int);
 float stdDev(const fvVec&, int);
 void zNormalize(fvVec&);
@@ -149,25 +147,13 @@ float vote(const fvVec &poll, int votes) {
         ++results[static_cast<int>(poll.at(i).at(1))];
     }
     // return whichever class had more votes
-    return results[1] > results[2] ? 1 : 2;
-}
-
-// calculate the distance between to entries
-// assumes x and y are same size;
-float distance(const fVec& x, const fVec &y) {
-    float distance = 0;
-    // start at one to ignore the class identifier
-    for (int i = 1; i != x.size(); ++i) {
-        distance += ((y.at(i) - x.at(i)) * (y.at(i) - x.at(i)));
-    }
-    return sqrt(distance);
+    return (results[1] > results[2] ? 1 : 2);
 }
 
 // calculate the distance between to entries
 // assumes x and y are same size;
 float distance(const fVec& x, const fVec &y, const iVec &featrs) {
     float distance = 0;
-    // start at one to ignore the class identifier
     for(int i = 0; i != featrs.size(); ++i) {
         int c = featrs.at(i);                       // the current feature
         distance += ((y.at(c) - x.at(c)) * (y.at(c) - x.at(c)));
@@ -292,15 +278,12 @@ void featureSearch(const fvVec& data) {
     int bestAtThisLevel;
     for (int i = 1; i != data.at(0).size(); ++i) {
         int bestAccuracy = 50;
-        cout << "On the " << i << "th level of the search tree\n";
         for (int j = 1; j != data.at(0).size(); ++j) {
             if (find(features.begin(), features.end(), j) == features.end()) {
                 tempFeatures = features;
-                cout << "Considering adding the " << j << "th feature\n";
                 tempFeatures.push_back(j);
                 int accuracy = leaveOneOutCrossValidation(data, tempFeatures, 1);
                 if ( accuracy > bestAccuracy) {
-                    cout << "adding feature " << j << endl;
                     bestAccuracy = accuracy;
                     bestAtThisLevel = j;
                 }
@@ -310,7 +293,6 @@ void featureSearch(const fvVec& data) {
         bstFeats temp(bestAccuracy, features);
         best.push_back(temp);
     }
-    cout << "best\n";
     sort(best.begin(),best.end(), cmpFeatures);
         cout << best.at(0).accuracy << " ";
         copy(best.at(0).features.begin(), best.at(0).features.end(),
