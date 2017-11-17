@@ -40,7 +40,7 @@ void classify(const fvVec&, fvVec&, const iVec&);
 float featrMean(const fvVec&, int);
 float stdDev(const fvVec&, int);
 void zNormalize(fvVec&);
-float accuracy(const fvVec&, const fvVec&, int, int);
+float accuracy(const fvVec&, const fvVec&, int);
 float vote(const fvVec&, int);
 bool cmpFeatures(const bstFeats &a,const bstFeats &b){return a.accuracy>b.accuracy;}
 //search stuff
@@ -66,8 +66,8 @@ int main(int argc, const char * argv[]) {
 
 // Read the data and return a vector containing the data
 fvVec readData(){
-//    const string fileName = "CS170Smalltestdata__44.txt";
-    const string fileName = "CS170BIGtestdata__4.txt";
+    const string fileName = "CS170Smalltestdata__44.txt";
+//    const string fileName = "CS170BIGtestdata__4.txt";
     ifstream input;
     input.open(fileName, ifstream::in);
     fvVec output;
@@ -211,12 +211,10 @@ void zNormalize(fvVec& data) {
 }
 
 // returns the accurary of the tested data
-float accuracy(const fvVec& original, const fvVec& tested, int start, int end){
+float accuracy(const fvVec& original, const fvVec& tested, int start){
     float output = 0;
-    for (int i = start, j=0; i != end; ++i,++j) {
-        if (original.at(i).at(0) == tested.at(j).at(0)) ++output;
-    }
-    return output / (end-start) * 100.0;
+    if (original.at(start).at(0) == tested.at(0).at(0)) ++output;
+    return output * 100.0;
 }
 
 float leaveOneOutCrossValidation(const fvVec& data, const iVec& features) {
@@ -228,7 +226,7 @@ float leaveOneOutCrossValidation(const fvVec& data, const iVec& features) {
         fvVec testing = testData(data,start,end);
         
         classify(validation, testing, features);
-        acc = accuracy(data, testing, start, end);
+        acc = accuracy(data, testing, start);
         if (acc == 100) ++numCorrect;
         ++start;
         ++end;
