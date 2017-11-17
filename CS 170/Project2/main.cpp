@@ -45,11 +45,10 @@ float stdDev(const fvVec&, int);
 void zNormalize(fvVec&);
 float accuracy(const fvVec&, const fvVec&, int, int);
 float vote(const fvVec&, int);
-int bestKnnK(const fvVec&, const iVec&, int);
 bool myCompare(fVec a, fVec b) { return a.at(0) < b.at(0);}
-bool cmpFeatures(const bstFeats &a,const bstFeats &b){return a.accuracy<b.accuracy;}
-float leaveOneOutCrossValidation(const fvVec&, const iVec&, int);
+bool cmpFeatures(const bstFeats &a,const bstFeats &b){return a.accuracy>b.accuracy;}
 //search stuff
+float leaveOneOutCrossValidation(const fvVec&, const iVec&, int);
 void featureSearch(const fvVec&);
 
 
@@ -61,6 +60,7 @@ int main(int argc, const char * argv[]) {
         zNormalize(data);
         cout << "Done\n\n";
 
+        cout << "number of features: " << data.at(0).size() << endl;
         featureSearch(data);
     }
     else
@@ -71,8 +71,8 @@ int main(int argc, const char * argv[]) {
 
 // Read the data and return a vector containing the data
 fvVec readData(){
-//    const string fileName = "CS170Smalltestdata__44.txt";
-    const string fileName = "CS170BIGtestdata__4.txt";
+    const string fileName = "CS170Smalltestdata__44.txt";
+//    const string fileName = "CS170BIGtestdata__4.txt";
     ifstream input;
     input.open(fileName, ifstream::in);
     fvVec output;
@@ -234,41 +234,22 @@ float accuracy(const fvVec& original, const fvVec& tested, int start, int end){
     return output / (end-start) * 100.0;
 }
 
-// returns the best k-val for use in knn
-int bestKnnK(const fvVec &data, const iVec &features, int kSize) {
-    int range = kSize;
-    int start = 0;
-    int end = start+range;
-    int bestKval = -1;  // will have best accuracy for any range
-    float maxAcc = 0;
-    
-    fvVec validation = valData(data,start,end);
-    fvVec testing = testData(data,start,end);
-    // test k values from [1, data size) in odd increments
-    for (int i = 1; i < data.size(); i = i+2){
-        fvVec valTemp = validation;
-        fvVec testingTemp = testing;
-        classify(valTemp, testingTemp, features, i);
-        int temp = accuracy(data, testingTemp, start, end);
-        // found a k-val with better accuracy
-        if (temp > maxAcc ) {
-            maxAcc = temp;
-            bestKval = i;
-        }
-    }
-    return bestKval;
-}
-
 float leaveOneOutCrossValidation(const fvVec& data, const iVec& features,
                                  int k) {
-    int acc = -1;                   // accuracy
+    float acc = -1;                   // accuracy
     int start = 1, end = start+k;
-    fvVec validation = valData(data,start,end);
-    fvVec testing = testData(data,start,end);
-    
-    classify(validation, testing, features,1);//          bestKnnK(data, features, end - start));
-    acc = accuracy(data, testing, start, end);
-    return acc;
+    float numCorrect=0;
+    while (end <= data.size()) {
+        fvVec validation = valData(data,start,end);
+        fvVec testing = testData(data,start,end);
+        
+        classify(validation, testing, features,1);
+        acc = accuracy(data, testing, start, end);
+        if (acc == 100) ++numCorrect;
+        ++start;
+        ++end;
+    }
+    return numCorrect/data.size()*100.00;
 }
 
 void featureSearch(const fvVec& data) {
@@ -277,9 +258,11 @@ void featureSearch(const fvVec& data) {
     vector<bstFeats> best;
     int bestAtThisLevel;
     for (int i = 1; i != data.at(0).size(); ++i) {
+        cout << "on level " << i << endl;
         int bestAccuracy = 50;
         for (int j = 1; j != data.at(0).size(); ++j) {
             if (find(features.begin(), features.end(), j) == features.end()) {
+                cout << "considering adding: " << j << endl;
                 tempFeatures = features;
                 tempFeatures.push_back(j);
                 int accuracy = leaveOneOutCrossValidation(data, tempFeatures, 1);
@@ -292,11 +275,18 @@ void featureSearch(const fvVec& data) {
         features.push_back(bestAtThisLevel);
         bstFeats temp(bestAccuracy, features);
         best.push_back(temp);
+        sort(best.begin(),best.end(), cmpFeatures);
+        cout << "best accuracy: " << bestAccuracy << endl;
+        if (best.at(0).accuracy > bestAccuracy) {
+            cout << "WARNING: ACCURACY HAS DECREASED\n";
+        }
     }
     sort(best.begin(),best.end(), cmpFeatures);
+//    for (int i = 0; i != best.size(); ++i) {
         cout << best.at(0).accuracy << " ";
         copy(best.at(0).features.begin(), best.at(0).features.end(),
              std::ostream_iterator<int>(std::cout, " "));
         cout << endl;
+//    }
 }
 
