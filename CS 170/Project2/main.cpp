@@ -57,10 +57,15 @@ void featureSearch(const vfVec&);
 int main(int argc, const char * argv[]) {
     vfVec data = readData();
     if (!data.empty()) {
-        cout << "Normalizing data...";
+        cout << "Please wait while I normalize the data...   ";
         zNormalize(data);
         cout << "Done\n\n";
         
+        cout << "This dataset has " << data.at(0).size()-1 <<
+        " features (not including the class attribute) with " <<
+        data.size() << " instances.\n\n";
+        
+        cout << "Beginning Search\n\n";
         featureSearch(data);
     }
     else
@@ -207,26 +212,39 @@ void featureSearch(const vfVec& data) {
     iVec features;
     iVec tempFeatures;
     vector<bstFeats> best;
-    int bestAtThisLevel;
+    int bestAtThisLevel=-1;
+    float defaultAcc = defaultAverage(data);
     for (int i = 1; i != data.at(0).size(); ++i) {
-        float bestAccuracy = defaultAverage(data);
-        cout << "On the " << i << "th level of the search tree\n";
+        float bestAccuracy = defaultAcc;
         for (int j = 1; j != data.at(0).size(); ++j) {
             if (find(features.begin(), features.end(), j) == features.end()) {
                 tempFeatures = features;
-                cout << "Considering adding the " << j << "th feature\n";
                 tempFeatures.push_back(j);
                 float accuracy = leaveOneOutCrossValidation(data, tempFeatures);
                 if ( accuracy > bestAccuracy) {
-                    cout << "adding feature " << j << endl;
                     bestAccuracy = accuracy;
                     bestAtThisLevel = j;
                 }
             }
         }
+//        cout << "Using features: ";
+//        copy(features.begin(),features.end(),
+//             std::ostream_iterator<int>(std::cout, " "));
+//        cout << "  accuracy is : " << bestAccuracy << endl << endl;
         features.push_back(bestAtThisLevel);
         bstFeats temp(bestAccuracy, features);
         best.push_back(temp);
+        sort(best.begin(),best.end(), cmpFeatures);
+        if (best.at(0).accuracy > bestAccuracy) {
+            cout << "(WARNING: Accuracy has decresed. "
+            "Continuing search in case of local maxima.)\n";
+        }
+        else {
+//            cout << "Feature set {";
+//            copy(best.at(0).features.begin(), best.at(0).features.end(),
+//                 std::ostream_iterator<int>(std::cout, " "));
+//            cout << "} was best, accuracy is: " << bestAccuracy << endl << endl;
+        }
     }
     cout << "\nbest\n";
     sort(best.begin(),best.end(), cmpFeatures);
@@ -234,28 +252,30 @@ void featureSearch(const vfVec& data) {
         cout << best.at(0).accuracy *100 << "% {";
         copy(best.at(0).features.begin(), best.at(0).features.end(),
              std::ostream_iterator<int>(std::cout, " "));
-    cout << "}" << endl;
+        cout << "}" << endl;
 //    }
 }
 
 float leaveOneOutCrossValidation(const vfVec& data, const iVec& features) {
-    int index = 0;
+    cout << "Using features: {";
+    copy(features.begin(), features.end(),
+         std::ostream_iterator<int>(std::cout, " "));
     float numCorrect=0;
-    while (index != data.size()) {
+    for (int index = 0; index != data.size(); ++index) {
         fVec validation = validationData(data,index);
         vfVec training = trainingData(data,index);
         int k = chooseBestK(data, training, validation, features, index);
         classify(training, validation, features, k);
         if (accuracy(data, validation, index) == 1) ++numCorrect;
-        ++index;
     }
+    cout << "}, accuracy is: " << numCorrect/data.size() * 100 << "%\n\n";
     return numCorrect/data.size();
 }
 
 int chooseBestK(const vfVec &originalData, const vfVec &training,
                 const fVec &validation, const iVec &features, int index) {
-    // k can't exceed number of data points
     int numberPointstoCheck = static_cast<int>(originalData.size())/3;
+    // k can't exceed number of data points
     for (int k = 1; k < numberPointstoCheck; k = k+2) {
         fVec tempValidation = validation;
         classify(training, tempValidation, features, k);
