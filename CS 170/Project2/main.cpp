@@ -60,7 +60,7 @@ int main(int argc, const char * argv[]) {
         cout << "Normalizing data...";
         zNormalize(data);
         cout << "Done\n\n";
-
+        
         featureSearch(data);
     }
     else
@@ -71,8 +71,10 @@ int main(int argc, const char * argv[]) {
 
 // Read the data and return a vector containing the data
 vfVec readData(){
-//    const string fileName = "CS170Smalltestdata__44.txt";
+    const string fileName = "CS170Smalltestdata__44.txt";
 //    const string fileName = "CS170BIGtestdata__4.txt";
+//    const string fileName =  "CS170BIGtestdata__25.txt";
+//    const string fileName = "CS170BIGtestdata__30.txt";
     
     ifstream input;
     input.open(fileName, ifstream::in);
@@ -126,80 +128,13 @@ void print(const vfVec &data) {
     }
 }
 
-void featureSearch(const vfVec& data) {
-    iVec features;
-    iVec tempFeatures;
-    vector<bstFeats> best;
-    int bestAtThisLevel;
-    for (int i = 1; i != data.at(0).size(); ++i) {
-        cout << "on level " << i << endl;
-        float bestAccuracy = 50.0;
-        for (int j = 1; j != data.at(0).size(); ++j) {
-            if (find(features.begin(), features.end(), j) == features.end()) {
-                cout << "considering adding: " << j << endl;
-                tempFeatures = features;
-                tempFeatures.push_back(j);
-                float accuracy = leaveOneOutCrossValidation(data, tempFeatures);
-                cout << "ACCURACY IS: *************  " << accuracy << endl;
-                if ( accuracy > bestAccuracy) {
-                    bestAccuracy = accuracy;
-                    bestAtThisLevel = j;
-                }
-            }
-        }
-        features.push_back(bestAtThisLevel);
-        bstFeats temp(bestAccuracy, features);
-        best.push_back(temp);
-        sort(best.begin(),best.end(), cmpFeatures);
-        cout << "best accuracy: " << bestAccuracy << endl;
-        if (best.at(0).accuracy > bestAccuracy) {
-            cout << "(WARNING: Accuracy has decreased. "
-            "Continuing search in case of local maxima.)\n";
-        }
-    }
-    sort(best.begin(),best.end(), cmpFeatures);
-    cout << best.at(0).accuracy << " ";
-    copy(best.at(0).features.begin(), best.at(0).features.end(),
-         std::ostream_iterator<int>(std::cout, " "));
-    cout << endl;
-}
-
-float leaveOneOutCrossValidation(const vfVec& data, const iVec& features) {
-    float acc = 0.0;                   // accuracy
-    int index = 0;
-    float numCorrect=0;
-    while (index != data.size()) {
-        fVec validation = validationData(data,index);
-        vfVec training = trainingData(data,index);
-        fVec validationCopy = validation;
-        int k =chooseBestK(data, training, validationCopy, features, index);
-        classify(training, validationCopy, features, k);
-        acc = accuracy(data, validationCopy, index);
-        if (acc == 1) ++numCorrect;
-        ++index;
-    }
-    return rand()%100;//numCorrect/data.size()*100.00;
-}
-
-//input: dataset
-// returns the % chance to be right when guessing the class
-float defaultAverage(const vfVec& data) {
-    map<int, int> numberClassOccurences;
-    for (int i = 0; i != data.size(); ++i) {
-        ++numberClassOccurences[data.at(i).at(0)];
-    }
-    float largestClassSize = numberClassOccurences[1]>numberClassOccurences[2]?
-    numberClassOccurences[1] : numberClassOccurences[2];
-    
-    return largestClassSize / data.size();
-}
-
 // calculate the distance between to entries
 // assumes x and y are same size;
 float distance(const fVec& x, const fVec &y, const iVec &features) {
-    float distance = 0;
+    float distance = 0.0;
     for(int i = 0; i != features.size(); ++i) {
-        distance += ((y.at(i) - x.at(i)) * (y.at(i) - x.at(i)));
+        int c = features.at(i);
+        distance += ((y.at(c) - x.at(c)) * (y.at(c) - x.at(c)));
     }
     return sqrt(distance);
 }
@@ -255,9 +190,72 @@ vfVec trainingData(const vfVec& data, int index) {
     return training;
 }
 
+//input: dataset
+// returns the % chance to be right when guessing the class
+float defaultAverage(const vfVec& data) {
+    map<int, int> numberClassOccurences;
+    for (int i = 0; i != data.size(); ++i) {
+        ++numberClassOccurences[data.at(i).at(0)];
+    }
+    float largestClassSize = numberClassOccurences[1]>numberClassOccurences[2]?
+    numberClassOccurences[1] : numberClassOccurences[2];
+    
+    return largestClassSize / data.size();
+}
+
+void featureSearch(const vfVec& data) {
+    iVec features;
+    iVec tempFeatures;
+    vector<bstFeats> best;
+    int bestAtThisLevel;
+    for (int i = 1; i != data.at(0).size(); ++i) {
+        float
+        bestAccuracy = 50;
+        cout << "On the " << i << "th level of the search tree\n";
+        for (int j = 1; j != data.at(0).size(); ++j) {
+            if (find(features.begin(), features.end(), j) == features.end()) {
+                tempFeatures = features;
+                cout << "Considering adding the " << j << "th feature\n";
+                tempFeatures.push_back(j);
+                float accuracy = leaveOneOutCrossValidation(data, tempFeatures);
+                if ( accuracy > bestAccuracy) {
+                    cout << "adding feature " << j << endl;
+                    bestAccuracy = accuracy;
+                    bestAtThisLevel = j;
+                }
+            }
+        }
+        features.push_back(bestAtThisLevel);
+        bstFeats temp(bestAccuracy, features);
+        best.push_back(temp);
+    }
+    cout << "best\n";
+    sort(best.begin(),best.end(), cmpFeatures);
+    for (int i = 0; i != best.size(); ++i) {
+        cout << best.at(i).accuracy << " ";
+        copy(best.at(i).features.begin(), best.at(i).features.end(),
+             std::ostream_iterator<int>(std::cout, " "));
+        cout << endl;
+    }
+}
+
+float leaveOneOutCrossValidation(const vfVec& data, const iVec& features) {
+    copy(features.begin(), features.end(),std::ostream_iterator<int>(std::cout, " "));
+    int index = 0;
+    float numCorrect=0;
+    while (index != data.size()) {
+        fVec validation = validationData(data,index);
+        vfVec training = trainingData(data,index);
+        int k = chooseBestK(data, training, validation, features, index);
+        classify(training, validation, features, k);
+        if (accuracy(data, validation, index) == 1) ++numCorrect;
+        ++index;
+    }
+    return numCorrect/data.size()*100.00;
+}
+
 int chooseBestK(const vfVec &originalData, const vfVec &training,
                 const fVec &validation, const iVec &features, int index) {
-    
     // k can't exceed number of data points
     for (int k = 1; k != originalData.size()/4; k = k+2) {
         fVec tempValidation = validation;
@@ -301,5 +299,6 @@ int vote(const fiMap& distances, int k) {
         if(i->second == 1) ++classOne;
         else ++classTwo;
     }
+//    cout << "***********VOTING FOR************:" << ((classOne > classTwo) ? 1 : 2) << endl;
     return ((classOne > classTwo) ? 1 : 2);
 }
