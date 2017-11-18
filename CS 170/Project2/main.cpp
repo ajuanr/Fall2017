@@ -60,23 +60,8 @@ int main(int argc, const char * argv[]) {
         cout << "Normalizing data...";
         zNormalize(data);
         cout << "Done\n\n";
-        
-//        for (int index = 0; index != data.size(); ++index) {
-//            cout <<"index is: " << index << endl;
-//            fVec validation = validationData(data, index);
-//            vfVec training = trainingData(data, index);
-//            iVec features;
-//            for (int i =1; i <= validation.size(); ++i) {
-//                fVec tempValidation = validation;
-//                features.push_back(i);
-//                int k =chooseBestK(data, training, tempValidation, features, index);
-//                classify(training, tempValidation, features, k);
-//                cout << "accuracy is : " << accuracy(data, tempValidation, index) << endl;
-//            }
-//        }
-        
-//        featureSearch(data);
-        //       print(data);
+
+        featureSearch(data);
     }
     else
         cout << "There's no data\n";
@@ -86,8 +71,9 @@ int main(int argc, const char * argv[]) {
 
 // Read the data and return a vector containing the data
 vfVec readData(){
-    const string fileName = "CS170Smalltestdata__44.txt";
+//    const string fileName = "CS170Smalltestdata__44.txt";
 //    const string fileName = "CS170BIGtestdata__4.txt";
+    
     ifstream input;
     input.open(fileName, ifstream::in);
     vfVec output;
@@ -167,7 +153,7 @@ void featureSearch(const vfVec& data) {
         sort(best.begin(),best.end(), cmpFeatures);
         cout << "best accuracy: " << bestAccuracy << endl;
         if (best.at(0).accuracy > bestAccuracy) {
-            cout << "(WARNING: Accuracy has decresed. "
+            cout << "(WARNING: Accuracy has decreased. "
             "Continuing search in case of local maxima.)\n";
         }
     }
