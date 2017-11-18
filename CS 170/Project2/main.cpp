@@ -71,8 +71,8 @@ int main(int argc, const char * argv[]) {
 
 // Read the data and return a vector containing the data
 vfVec readData(){
-//    const string fileName = "CS170Smalltestdata__44.txt";
-    const string fileName = "CS170BIGtestdata__4.txt";
+    const string fileName = "CS170Smalltestdata__44.txt";
+//    const string fileName = "CS170BIGtestdata__4.txt";
 //    const string fileName =  "CS170BIGtestdata__25.txt";
 //    const string fileName = "CS170BIGtestdata__30.txt";
     
@@ -209,8 +209,7 @@ void featureSearch(const vfVec& data) {
     vector<bstFeats> best;
     int bestAtThisLevel;
     for (int i = 1; i != data.at(0).size(); ++i) {
-        float
-        bestAccuracy = defaultAverage(data);
+        float bestAccuracy = defaultAverage(data);
         cout << "On the " << i << "th level of the search tree\n";
         for (int j = 1; j != data.at(0).size(); ++j) {
             if (find(features.begin(), features.end(), j) == features.end()) {
@@ -229,13 +228,13 @@ void featureSearch(const vfVec& data) {
         bstFeats temp(bestAccuracy, features);
         best.push_back(temp);
     }
-    cout << "best\n";
+    cout << "\nbest\n";
     sort(best.begin(),best.end(), cmpFeatures);
 //    for (int i = 0; i != best.size(); ++i) {
-        cout << best.at(0).accuracy << " ";
+        cout << best.at(0).accuracy *100 << "% {";
         copy(best.at(0).features.begin(), best.at(0).features.end(),
              std::ostream_iterator<int>(std::cout, " "));
-        cout << endl;
+    cout << "}" << endl;
 //    }
 }
 
@@ -250,13 +249,14 @@ float leaveOneOutCrossValidation(const vfVec& data, const iVec& features) {
         if (accuracy(data, validation, index) == 1) ++numCorrect;
         ++index;
     }
-    return numCorrect/data.size()*100.00;
+    return numCorrect/data.size();
 }
 
 int chooseBestK(const vfVec &originalData, const vfVec &training,
                 const fVec &validation, const iVec &features, int index) {
     // k can't exceed number of data points
-    for (int k = 1; k < originalData.size()/5; k = k+2) {
+    int numberPointstoCheck = static_cast<int>(originalData.size())/3;
+    for (int k = 1; k < numberPointstoCheck; k = k+2) {
         fVec tempValidation = validation;
         classify(training, tempValidation, features, k);
         if (accuracy(originalData, tempValidation, index)){
