@@ -49,7 +49,8 @@ int vote(const fiMap&, int);
 bool myCompare(fVec a, fVec b) { return a.at(0) < b.at(0);}
 bool cmpFeatures(const bstFeats &a,const bstFeats &b){return a.accuracy>b.accuracy;}
 //search stuff
-float leaveOneOutCrossValidation(const vfVec&, const iVec&, int);
+float leaveOneOutCrossValidation(const vfVec&, const iVec&);
+void featureSearch(const vfVec&);
 
 
 /*****************************************************************************/
@@ -60,23 +61,21 @@ int main(int argc, const char * argv[]) {
         zNormalize(data);
         cout << "Done\n\n";
         
-        iVec smallFeatures = {1,2,3,4,5,6,7,8,9,10,11};
+//        for (int index = 0; index != data.size(); ++index) {
+//            cout <<"index is: " << index << endl;
+//            fVec validation = validationData(data, index);
+//            vfVec training = trainingData(data, index);
+//            iVec features;
+//            for (int i =1; i <= validation.size(); ++i) {
+//                fVec tempValidation = validation;
+//                features.push_back(i);
+//                int k =chooseBestK(data, training, tempValidation, features, index);
+//                classify(training, tempValidation, features, k);
+//                cout << "accuracy is : " << accuracy(data, tempValidation, index) << endl;
+//            }
+//        }
         
-        
-        for (int index = 0; index != data.size(); ++index) {
-            cout <<"index is: " << index << endl;
-            fVec validation = validationData(data, index);
-            vfVec training = trainingData(data, index);
-            iVec features;
-            for (int i =1; i <= validation.size(); ++i) {
-                fVec tempValidation = validation;
-                features.push_back(i);
-                int k =chooseBestK(data, training, tempValidation, features, index);
-                classify(training, tempValidation, features, k);
-                cout << "accuracy is : " << accuracy(data, tempValidation, index) << endl;
-            }
-        }
-        
+//        featureSearch(data);
         //       print(data);
     }
     else
@@ -155,6 +154,7 @@ void featureSearch(const vfVec& data) {
                 tempFeatures = features;
                 tempFeatures.push_back(j);
                 float accuracy = leaveOneOutCrossValidation(data, tempFeatures);
+                cout << "ACCURACY IS: *************  " << accuracy << endl;
                 if ( accuracy > bestAccuracy) {
                     bestAccuracy = accuracy;
                     bestAtThisLevel = j;
@@ -176,6 +176,23 @@ void featureSearch(const vfVec& data) {
     copy(best.at(0).features.begin(), best.at(0).features.end(),
          std::ostream_iterator<int>(std::cout, " "));
     cout << endl;
+}
+
+float leaveOneOutCrossValidation(const vfVec& data, const iVec& features) {
+    float acc = 0.0;                   // accuracy
+    int index = 0;
+    float numCorrect=0;
+    while (index != data.size()) {
+        fVec validation = validationData(data,index);
+        vfVec training = trainingData(data,index);
+        fVec validationCopy = validation;
+        int k =chooseBestK(data, training, validationCopy, features, index);
+        classify(training, validationCopy, features, k);
+        acc = accuracy(data, validationCopy, index);
+        if (acc == 1) ++numCorrect;
+        ++index;
+    }
+    return rand()%100;//numCorrect/data.size()*100.00;
 }
 
 //input: dataset
@@ -234,29 +251,6 @@ void zNormalize(vfVec& data) {
     }
 }
 
-// returns the accurary of the tested data
-int accuracy(const vfVec& originalData, const fVec& validation, int index){
-    return (originalData.at(index).at(0) == validation.at(0));
-}
-
-float leaveOneOutCrossValidation(const vfVec& data, const iVec& features,
-                                 int k) {
-    float acc = -1;                   // accuracy
-    int start = 1, end = start+k;
-    float numCorrect=0;
-    while (end <= data.size()) {
-        fVec validation = validationData(data,start);
-        vfVec testing = trainingData(data,start);
-        
-        //        classify(validation, testing, features,k);
-        //        acc = accuracy(data, testing, start);
-        if (acc == 100) ++numCorrect;
-        ++start;
-        ++end;
-    }
-    return numCorrect/data.size()*100.00;
-}
-
 // hide this data.
 fVec validationData(const vfVec& data, int index) {
     fVec validation(data.at(index));
@@ -275,20 +269,41 @@ vfVec trainingData(const vfVec& data, int index) {
     return training;
 }
 
+int chooseBestK(const vfVec &originalData, const vfVec &training,
+                const fVec &validation, const iVec &features, int index) {
+    
+    // k can't exceed number of data points
+    for (int k = 1; k != originalData.size()/4; k = k+2) {
+        fVec tempValidation = validation;
+        classify(training, tempValidation, features, k);
+        if (accuracy(originalData, tempValidation, index)){
+            return k;
+        }
+    }
+    return 1;      // ran out of features. Use 1 nearest neighbor
+}
+
+// returns the accurary of the tested data
+int accuracy(const vfVec& originalData, const fVec& validation, int index){
+    return (originalData.at(index).at(0) == validation.at(0));
+}
+
+void classify(const vfVec &training, fVec &validation,
+              const iVec &features, int k) {
+    validation.at(0) = knn(training, validation, features, k);
+}
 
 // returns class of k-nearest neighbors
 int knn(const vfVec& training, const fVec& validation,
         const iVec& features, int k) {
-    fiMap distances;
+    fiMap distances; // holds classes in order of increasing distance
     // find the nearest points in the training data
     for (int i = 0; i != training.size(); ++i) {
         float tempDistance = distance(training.at(i), validation, features);
         distances[tempDistance] = training.at(i).at(0);
     }
     
-    // choose best k-val
-    
-    return vote(distances,k);//distances.begin()->second;
+    return vote(distances,k); // pick the k-val that was seen the most out of k
 }
 
 int vote(const fiMap& distances, int k) {
@@ -302,23 +317,3 @@ int vote(const fiMap& distances, int k) {
     }
     return ((classOne > classTwo) ? 1 : 2);
 }
-
-// THIS MIGHT BE TOO ACCURATE? NEED TO LOWER SEARCH FOR K?
-int chooseBestK(const vfVec &originalData, const vfVec &training,
-                const fVec &validation, const iVec &features, int index) {
-    // k can't exceed number of data points
-    for (int k = 1; k != originalData.size()/3; k = k+2) {
-        fVec tempValidation = validation;
-        classify(training, tempValidation, features, k);
-        if (accuracy(originalData, tempValidation, index))
-            return k;
-    }
-    return 1;      // ran out of features. Use 1 nearest neighbor
-}
-
-void classify(const vfVec &training, fVec &validation,
-              const iVec &features, int k) {
-    validation.at(0) = knn(training, validation, features, k);
-    
-}
-
