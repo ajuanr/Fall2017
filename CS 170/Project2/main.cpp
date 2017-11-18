@@ -71,8 +71,8 @@ int main(int argc, const char * argv[]) {
 
 // Read the data and return a vector containing the data
 vfVec readData(){
-    const string fileName = "CS170Smalltestdata__44.txt";
-//    const string fileName = "CS170BIGtestdata__4.txt";
+//    const string fileName = "CS170Smalltestdata__44.txt";
+    const string fileName = "CS170BIGtestdata__4.txt";
 //    const string fileName =  "CS170BIGtestdata__25.txt";
 //    const string fileName = "CS170BIGtestdata__30.txt";
     
@@ -210,7 +210,7 @@ void featureSearch(const vfVec& data) {
     int bestAtThisLevel;
     for (int i = 1; i != data.at(0).size(); ++i) {
         float
-        bestAccuracy = 50;
+        bestAccuracy = defaultAverage(data);
         cout << "On the " << i << "th level of the search tree\n";
         for (int j = 1; j != data.at(0).size(); ++j) {
             if (find(features.begin(), features.end(), j) == features.end()) {
@@ -231,16 +231,15 @@ void featureSearch(const vfVec& data) {
     }
     cout << "best\n";
     sort(best.begin(),best.end(), cmpFeatures);
-    for (int i = 0; i != best.size(); ++i) {
-        cout << best.at(i).accuracy << " ";
-        copy(best.at(i).features.begin(), best.at(i).features.end(),
+//    for (int i = 0; i != best.size(); ++i) {
+        cout << best.at(0).accuracy << " ";
+        copy(best.at(0).features.begin(), best.at(0).features.end(),
              std::ostream_iterator<int>(std::cout, " "));
         cout << endl;
-    }
+//    }
 }
 
 float leaveOneOutCrossValidation(const vfVec& data, const iVec& features) {
-    copy(features.begin(), features.end(),std::ostream_iterator<int>(std::cout, " "));
     int index = 0;
     float numCorrect=0;
     while (index != data.size()) {
@@ -257,7 +256,7 @@ float leaveOneOutCrossValidation(const vfVec& data, const iVec& features) {
 int chooseBestK(const vfVec &originalData, const vfVec &training,
                 const fVec &validation, const iVec &features, int index) {
     // k can't exceed number of data points
-    for (int k = 1; k != originalData.size()/4; k = k+2) {
+    for (int k = 1; k < originalData.size()/5; k = k+2) {
         fVec tempValidation = validation;
         classify(training, tempValidation, features, k);
         if (accuracy(originalData, tempValidation, index)){
@@ -299,6 +298,5 @@ int vote(const fiMap& distances, int k) {
         if(i->second == 1) ++classOne;
         else ++classTwo;
     }
-//    cout << "***********VOTING FOR************:" << ((classOne > classTwo) ? 1 : 2) << endl;
     return ((classOne > classTwo) ? 1 : 2);
 }
