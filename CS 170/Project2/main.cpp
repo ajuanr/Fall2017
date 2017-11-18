@@ -220,30 +220,31 @@ void featureSearch(const vfVec& data) {
             if (find(features.begin(), features.end(), j) == features.end()) {
                 tempFeatures = features;
                 tempFeatures.push_back(j);
+                cout << "Using features: {";
+                copy(tempFeatures.begin(), tempFeatures.end(),
+                     std::ostream_iterator<int>(std::cout, " "));
                 float accuracy = leaveOneOutCrossValidation(data, tempFeatures);
+                cout << "}, accuracy is: " << accuracy*100 << "%\n";
                 if ( accuracy > bestAccuracy) {
                     bestAccuracy = accuracy;
                     bestAtThisLevel = j;
                 }
             }
         }
-//        cout << "Using features: ";
-//        copy(features.begin(),features.end(),
-//             std::ostream_iterator<int>(std::cout, " "));
-//        cout << "  accuracy is : " << bestAccuracy << endl << endl;
         features.push_back(bestAtThisLevel);
         bstFeats temp(bestAccuracy, features);
         best.push_back(temp);
         sort(best.begin(),best.end(), cmpFeatures);
+        // print out information on accuracy for the current level
         if (best.at(0).accuracy > bestAccuracy) {
-            cout << "(WARNING: Accuracy has decresed. "
+            cout << "\n(WARNING: Accuracy has decresed. "
             "Continuing search in case of local maxima.)\n";
         }
         else {
-//            cout << "Feature set {";
-//            copy(best.at(0).features.begin(), best.at(0).features.end(),
-//                 std::ostream_iterator<int>(std::cout, " "));
-//            cout << "} was best, accuracy is: " << bestAccuracy << endl << endl;
+            cout << "\nFeature set {";
+            copy(best.at(0).features.begin(), best.at(0).features.end(),
+                 std::ostream_iterator<int>(std::cout, " "));
+            cout << "} was best, accuracy is " << bestAccuracy*100 << endl << endl;
         }
     }
     cout << "\nbest\n";
@@ -257,9 +258,6 @@ void featureSearch(const vfVec& data) {
 }
 
 float leaveOneOutCrossValidation(const vfVec& data, const iVec& features) {
-    cout << "Using features: {";
-    copy(features.begin(), features.end(),
-         std::ostream_iterator<int>(std::cout, " "));
     float numCorrect=0;
     for (int index = 0; index != data.size(); ++index) {
         fVec validation = validationData(data,index);
@@ -268,7 +266,6 @@ float leaveOneOutCrossValidation(const vfVec& data, const iVec& features) {
         classify(training, validation, features, k);
         if (accuracy(data, validation, index) == 1) ++numCorrect;
     }
-    cout << "}, accuracy is: " << numCorrect/data.size() * 100 << "%\n\n";
     return numCorrect/data.size();
 }
 
