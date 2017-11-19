@@ -76,11 +76,9 @@ int main(int argc, const char * argv[]) {
 
 // Read the data and return a vector containing the data
 vfVec readData(){
-    const string fileName = "CS170Smalltestdata__44.txt";
+//    const string fileName = "CS170Smalltestdata__44.txt";
 //    const string fileName = "CS170BIGtestdata__4.txt";
-//    const string fileName =  "CS170BIGtestdata__25.txt";
-//    const string fileName = "CS170BIGtestdata__30.txt";
-    
+    const string fileName = "leaf.txt";
     ifstream input;
     input.open(fileName, ifstream::in);
     vfVec output;
@@ -308,12 +306,22 @@ int knn(const vfVec& training, const fVec& validation,
 
 int vote(const fiMap& distances, int k) {
     int index = 0;
-    int classOne = 0;
-    int classTwo = 0;
+    // count the votes for each class
+    map<int, int> classesSeen; // hold the # of times a class is seen
     for (fiMap::const_iterator i=distances.begin(); i != distances.end(); ++i) {
         if (index++ == k) break;
-        if(i->second == 1) ++classOne;
-        else ++classTwo;
+        ++classesSeen[i->second];
     }
-    return ((classOne > classTwo) ? 1 : 2);
+    
+    // find out which class had the most votes
+    int max = -1;
+    int classificationIs = -1;
+    for (map<int,int>::iterator i = classesSeen.begin(); i != classesSeen.end();
+         ++i) {
+        if (i->second > max ) {
+            max = i->second;
+            classificationIs = i->first;
+        }
+    }
+    return classificationIs;
 }
