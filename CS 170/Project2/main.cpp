@@ -52,7 +52,6 @@ bool cmpFeatures(const bstFeats &a,const bstFeats &b){return a.accuracy>b.accura
 float leaveOneOutCrossValidation(const vfVec&, const iVec&);
 void featureSearch(const vfVec&);
 
-
 /*****************************************************************************/
 int main(int argc, const char * argv[]) {
     vfVec data = readData();
@@ -60,11 +59,11 @@ int main(int argc, const char * argv[]) {
         cout << "Please wait while I normalize the data...   ";
         zNormalize(data);
         cout << "Done\n\n";
-        
+
         cout << "This dataset has " << data.at(0).size()-1 <<
         " features (not including the class attribute) with " <<
         data.size() << " instances.\n\n";
-        
+
         cout << "Beginning Search\n\n";
         featureSearch(data);
     }
@@ -78,7 +77,8 @@ int main(int argc, const char * argv[]) {
 vfVec readData(){
 //    const string fileName = "CS170Smalltestdata__44.txt";
 //    const string fileName = "CS170BIGtestdata__4.txt";
-    const string fileName = "leaf.txt";
+//    const string fileName = "leaf.txt";
+    const string fileName = "wine.txt";
     ifstream input;
     input.open(fileName, ifstream::in);
     vfVec output;
@@ -196,14 +196,20 @@ vfVec trainingData(const vfVec& data, int index) {
 //input: dataset
 // returns the % chance to be right when guessing the class
 float defaultAverage(const vfVec& data) {
-    map<int, int> numberClassOccurences;
+    // count the votes for each class
+    map<int, int> classesSeen; // hold the # of times a class is seen
     for (int i = 0; i != data.size(); ++i) {
-        ++numberClassOccurences[data.at(i).at(0)];
+        ++classesSeen[data.at(i).at(0)];
     }
-    float largestClassSize = numberClassOccurences[1]>numberClassOccurences[2]?
-    numberClassOccurences[1] : numberClassOccurences[2];
-    
-    return largestClassSize / data.size();
+    // find out which class had the most votes
+    int max = -1;
+    for (map<int,int>::iterator i = classesSeen.begin(); i != classesSeen.end();
+         ++i) {
+        if (i->second > max ) {
+            max = i->second;
+        }
+    }
+    return static_cast<float>(max)/data.size();
 }
 
 void featureSearch(const vfVec& data) {
@@ -212,8 +218,9 @@ void featureSearch(const vfVec& data) {
     vector<bstFeats> best;
     int bestAtThisLevel=-1;
     float defaultAcc = defaultAverage(data);
+    cout << "DEFAULT ACCURACY IS: " << defaultAcc << endl;
     for (int i = 1; i != data.at(0).size(); ++i) {
-        float bestAccuracy = defaultAcc;
+        float bestAccuracy =  defaultAcc;
         for (int j = 1; j != data.at(0).size(); ++j) {
             if (find(features.begin(), features.end(), j) == features.end()) {
                 tempFeatures = features;
@@ -235,7 +242,7 @@ void featureSearch(const vfVec& data) {
         sort(best.begin(),best.end(), cmpFeatures);
         // print out information on accuracy for the current level
         if (best.at(0).accuracy > bestAccuracy) {
-            cout << "\n(WARNING: Accuracy has decresed. "
+            cout << "\n(WARNING: Accuracy has decreased. "
             "Continuing search in case of local maxima.)\n";
         }
         else {
