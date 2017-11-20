@@ -193,31 +193,12 @@ vfVec trainingData(const vfVec& data, int index) {
     return training;
 }
 
-//input: dataset
-// returns the % chance to be right when guessing the class
-float defaultAverage(const vfVec& data) {
-    // count the votes for each class
-    map<int, int> classesSeen; // hold the # of times a class is seen
-    for (int i = 0; i != data.size(); ++i) {
-        ++classesSeen[data.at(i).at(0)];
-    }
-    // find out which class had the most votes
-    int max = -1;
-    for (map<int,int>::iterator i = classesSeen.begin(); i != classesSeen.end();
-         ++i) {
-        if (i->second > max ) {
-            max = i->second;
-        }
-    }
-    return static_cast<float>(max)/data.size();
-}
-
 void featureSearch(const vfVec& data) {
     iVec features;
     iVec tempFeatures;
     vector<bstFeats> best;
     int bestAtThisLevel=-1;
-    float defaultAcc = defaultAverage(data);
+    float defaultAcc = .5;          // 50% default accuracy
     cout << "DEFAULT ACCURACY IS: " << defaultAcc << endl;
     for (int i = 1; i != data.at(0).size(); ++i) {
         float bestAccuracy =  defaultAcc;
