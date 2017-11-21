@@ -32,8 +32,8 @@ struct bstFeats{
 
 vfVec readData();
 fVec parseLine(const string);
-int numFeats(const string);
 void print(const vfVec&);
+void print(const iVec&);
 float defaultAverage(const vfVec&);
 int chooseBestK(const vfVec&, const vfVec&, const fVec&, const iVec&, int);
 int knn(const vfVec&, const fVec&,const iVec&, int);
@@ -44,10 +44,10 @@ void classify(const vfVec&, fVec&, const iVec&, int);
 float featrMean(const vfVec&, int);
 float stdDev(const vfVec&, int);
 void zNormalize(vfVec&);
-int accuracy(const vfVec&, const fVec&, int);
+bool accurate(const vfVec&, const fVec&, int);
 int vote(const fiMap&, int);
-bool myCompare(fVec a, fVec b) { return a.at(0) < b.at(0);}
-bool cmpFeatures(const bstFeats &a,const bstFeats &b){return a.accuracy>b.accuracy;}
+bool cmpFeatures(const bstFeats &a,const bstFeats &b)
+    {return a.accuracy>b.accuracy;}
 //search stuff
 float leaveOneOutCrossValidation(const vfVec&, const iVec&);
 void featureSearch(const vfVec&);
@@ -56,8 +56,10 @@ void featureSearch(const vfVec&);
 int main(int argc, const char * argv[]) {
     vfVec data = readData();
     if (!data.empty()) {
+        print(data);
         cout << "Please wait while I normalize the data...   ";
         zNormalize(data);
+
         cout << "Done\n\n";
 
         cout << "This dataset has " << data.at(0).size()-1 <<
@@ -75,10 +77,11 @@ int main(int argc, const char * argv[]) {
 
 // Read the data and return a vector containing the data
 vfVec readData(){
-    const string fileName = "CS170Smalltestdata__44.txt";
+//    const string fileName = "CS170Smalltestdata__44.txt";
 //    const string fileName = "CS170BIGtestdata__4.txt";
 //    const string fileName = "leaf.txt";
 //    const string fileName = "wine.txt";
+    const string fileName = "DataUserModeling.txt";
     ifstream input;
     input.open(fileName, ifstream::in);
     vfVec output;
@@ -96,29 +99,12 @@ vfVec readData(){
 
 // Parse a single line. Return a vector containing the feature data
 vector<float> parseLine(const string line) {
-    stringstream floats;
-    floats << line;
+    stringstream features;
+    features << line;
     fVec output;
-    int index = 0;
-    float *temp = new float[numFeats(line)];
-    while(floats>>temp[index++]) {
-        output.push_back(temp[index-1]);
-    }
-    delete [] temp;
-    
+    float temp;
+    while(features>>temp) {output.push_back(temp);}
     return output;
-}
-
-// Returns a count of the number of features on a line
-int numFeats(const string line) {
-    stringstream output;
-    output << line;
-    int count=0;
-    float word;
-    while(output>>word) {
-        ++count;
-    }
-    return count;
 }
 
 // prints the data table
@@ -129,6 +115,16 @@ void print(const vfVec &data) {
         }
         cout << endl;
     }
+}
+
+// used to print out the features that were checked/used
+void print(const iVec &features) {
+    if (features.empty()) cout << "{ }";
+    cout << "{" << features.at(0);
+    for (int i = 1; i != features.size(); ++i) {
+        cout << " " << features.at(i);
+    }
+    cout << "}";
 }
 
 // calculate the distance between to entries
@@ -158,10 +154,10 @@ float stdDev(const vfVec& data, int featr) {
     float mu = featrMean(data, featr);
     float sum = 0.0;
     for (int i = 0; i != data.size(); ++i) {
-        sum += ((data.at(i).at(featr)-mu) * (data.at(i).at(featr)-mu) / data.size());
+        sum +=
+         ((data.at(i).at(featr)-mu) * (data.at(i).at(featr)-mu) / data.size());
     }
     return sqrt(sum);
-    
 }
 
 // input: the dataset
@@ -185,7 +181,6 @@ fVec validationData(const vfVec& data, int index) {
 // copy the data, minus the validation data
 vfVec trainingData(const vfVec& data, int index) {
     vfVec training;
-    
     for (int i = 0; i != data.size(); ++i) {
         if (i==index) continue;
         training.push_back(data.at(i));
@@ -205,11 +200,11 @@ void featureSearch(const vfVec& data) {
             if (find(features.begin(), features.end(), j) == features.end()) {
                 tempFeatures = features;
                 tempFeatures.push_back(j);
-                cout << "Using features: {";
-                copy(tempFeatures.begin(), tempFeatures.end(),
-                     std::ostream_iterator<int>(std::cout, " "));
+                cout << "Using features: ";
+                print(tempFeatures);
                 float accuracy = leaveOneOutCrossValidation(data, tempFeatures);
-                cout << "}, accuracy is: " << accuracy*100 << "%\n";
+                cout << setprecision(4)
+                    << ", accuracy is: " << accuracy*100 << "%\n";
                 if ( accuracy > bestAccuracy) {
                     bestAccuracy = accuracy;
                     bestAtThisLevel = j;
@@ -227,19 +222,15 @@ void featureSearch(const vfVec& data) {
         }
         else {
             cout << "\nFeature set {";
-            copy(best.at(0).features.begin(), best.at(0).features.end(),
-                 std::ostream_iterator<int>(std::cout, " "));
+            print(best.at(0).features);
             cout << "} was best, accuracy is " << bestAccuracy*100 << "%\n\n";
         }
     }
     cout << "\nbest\n";
-    sort(best.begin(),best.end(), cmpFeatures);
-//    for (int i = 0; i != best.size(); ++i) {
-        cout << best.at(0).accuracy * 100 << "% {";
-        copy(best.at(0).features.begin(), best.at(0).features.end(),
-             std::ostream_iterator<int>(std::cout, " "));
-        cout << "}" << endl;
-//    }
+    sort(best.begin(),best.end(), cmpFeatures); // move best accuracy to front
+    cout << best.at(0).accuracy * 100 << "% {";
+    print(best.at(0).features);
+    cout << endl;
 }
 
 float leaveOneOutCrossValidation(const vfVec& data, const iVec& features) {
@@ -249,7 +240,7 @@ float leaveOneOutCrossValidation(const vfVec& data, const iVec& features) {
         vfVec training = trainingData(data,index);
         int k = chooseBestK(data, training, validation, features, index);
         classify(training, validation, features, k);
-        if (accuracy(data, validation, index) == 1) ++numCorrect;
+        if (accurate(data, validation, index)) ++numCorrect;
     }
     return numCorrect/data.size();
 }
@@ -261,15 +252,16 @@ int chooseBestK(const vfVec &originalData, const vfVec &training,
     for (int k = 1; k < numberPointstoCheck; k = k+2) {
         fVec tempValidation = validation;
         classify(training, tempValidation, features, k);
-        if (accuracy(originalData, tempValidation, index)){
+        if (accurate(originalData, tempValidation, index)){
             return k;
         }
     }
-    return 1;      // ran out of features. Use 1 nearest neighbor
+    return 1;      // ran out of neighbors. Use 1 nearest neighbor
 }
 
-// returns the accurary of the tested data
-int accuracy(const vfVec& originalData, const fVec& validation, int index){
+// returns the accurary of the tested data.
+// using leave one out so it's either correct or incorrect
+bool accurate(const vfVec& originalData, const fVec& validation, int index){
     return (originalData.at(index).at(0) == validation.at(0));
 }
 
@@ -287,7 +279,6 @@ int knn(const vfVec& training, const fVec& validation,
         float tempDistance = distance(training.at(i), validation, features);
         distances[tempDistance] = training.at(i).at(0);
     }
-    
     return vote(distances,k); // pick the k-val that was seen the most out of k
 }
 
