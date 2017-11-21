@@ -56,7 +56,6 @@ void featureSearch(const vfVec&);
 int main(int argc, const char * argv[]) {
     vfVec data = readData();
     if (!data.empty()) {
-        print(data);
         cout << "Please wait while I normalize the data...   ";
         zNormalize(data);
 
@@ -221,14 +220,14 @@ void featureSearch(const vfVec& data) {
             "Continuing search in case of local maxima.)\n";
         }
         else {
-            cout << "\nFeature set {";
+            cout << "\nFeature set ";
             print(best.at(0).features);
-            cout << "} was best, accuracy is " << bestAccuracy*100 << "%\n\n";
+            cout << " was best, accuracy is " << bestAccuracy*100 << "%\n\n";
         }
     }
     cout << "\nbest\n";
     sort(best.begin(),best.end(), cmpFeatures); // move best accuracy to front
-    cout << best.at(0).accuracy * 100 << "% {";
+    cout << best.at(0).accuracy * 100 << "% ";
     print(best.at(0).features);
     cout << endl;
 }
