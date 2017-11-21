@@ -75,10 +75,10 @@ int main(int argc, const char * argv[]) {
 
 // Read the data and return a vector containing the data
 vfVec readData(){
-//    const string fileName = "CS170Smalltestdata__44.txt";
+    const string fileName = "CS170Smalltestdata__44.txt";
 //    const string fileName = "CS170BIGtestdata__4.txt";
 //    const string fileName = "leaf.txt";
-    const string fileName = "wine.txt";
+//    const string fileName = "wine.txt";
     ifstream input;
     input.open(fileName, ifstream::in);
     vfVec output;
@@ -198,8 +198,7 @@ void featureSearch(const vfVec& data) {
     iVec tempFeatures;
     vector<bstFeats> best;
     int bestAtThisLevel=-1;
-    float defaultAcc = .5;          // 50% default accuracy
-    cout << "DEFAULT ACCURACY IS: " << defaultAcc << endl;
+    float defaultAcc = 0.0;          // 50% default accuracy
     for (int i = 1; i != data.at(0).size(); ++i) {
         float bestAccuracy =  defaultAcc;
         for (int j = 1; j != data.at(0).size(); ++j) {
@@ -230,13 +229,13 @@ void featureSearch(const vfVec& data) {
             cout << "\nFeature set {";
             copy(best.at(0).features.begin(), best.at(0).features.end(),
                  std::ostream_iterator<int>(std::cout, " "));
-            cout << "} was best, accuracy is " << bestAccuracy*100 << endl << endl;
+            cout << "} was best, accuracy is " << bestAccuracy*100 << "%\n\n";
         }
     }
     cout << "\nbest\n";
     sort(best.begin(),best.end(), cmpFeatures);
 //    for (int i = 0; i != best.size(); ++i) {
-        cout << best.at(0).accuracy *100 << "% {";
+        cout << best.at(0).accuracy * 100 << "% {";
         copy(best.at(0).features.begin(), best.at(0).features.end(),
              std::ostream_iterator<int>(std::cout, " "));
         cout << "}" << endl;
