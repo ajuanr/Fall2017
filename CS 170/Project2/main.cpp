@@ -77,16 +77,17 @@ int main(int argc, const char * argv[]) {
         cout << "Beginning Search\n\n";
         
         vector<bstFeats> results;
-        int numTrials = 1;
+        int numTrials = 10;
         for (int i =0; i != numTrials; ++i) {
             vfVec newData = randomData(data);
             bstFeats *best = forwardSelection(newData);
             cout << best->accuracy * 100 << "% ";
             print(best->features);
+            cout << endl;
             results.push_back(*best);
         }
         cout << endl << endl;
-        
+        cout << "Number of trials: " << numTrials << endl;
         repeatedtrialResults(results);
         
     }
@@ -98,10 +99,10 @@ int main(int argc, const char * argv[]) {
 
 // Read the data and return a vector containing the data
 vfVec readData(){
-    const string fileName = "CS170Smalltestdata__44.txt";
+//    const string fileName = "CS170Smalltestdata__44.txt";
 //    const string fileName = "CS170BIGtestdata__4.txt";
 //    const string fileName = "leaf.txt";
-//    const string fileName = "wine.txt";
+    const string fileName = "wine.txt";
 //    const string fileName = "DataUserModeling.txt";
     ifstream input;
     input.open(fileName, ifstream::in);
@@ -413,8 +414,9 @@ vfVec randomData(const vfVec &data) {
     srand(static_cast<unsigned int>(time(0)));
     vfVec newData;
     iVec skipThese;
-    int percentToSkip = 10;
-    for (int i = 0; i != percentToSkip; ++i) {
+    float percentToSkip = .05;
+    int numToSkip = data.size() * percentToSkip;
+    for (int i = 0; i != numToSkip; ++i) {
         int temp = rand()%100;
         if (find(skipThese.begin(), skipThese.end(),temp) == skipThese.end()) {
             skipThese.push_back(temp);
@@ -440,7 +442,12 @@ void repeatedtrialResults(const bVec& trials) {
     }
     
     for (iMap::iterator i = results.begin(); i != results.end(); ++i) {
-        cout << i->first << " was seen: " << i->second << " times\n";
+        cout << setw(3) << i->first << " was seen: "
+             << setw(2) << i->second << " times ";
+        for (int k = 0; k != i->second; ++k) {
+            cout << "#";
+        }
+        cout << endl;
     }
     
 }
