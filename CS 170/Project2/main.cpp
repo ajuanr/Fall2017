@@ -18,6 +18,8 @@
 
 using namespace std;
 
+struct bstFeats;                    // forwward declaration
+
 typedef vector<float> fVec;         // holds the features
 typedef vector<fVec> vfVec;         // holds all the rows
 typedef vector<int> iVec;           // holds which features to look at
@@ -75,13 +77,11 @@ int main(int argc, const char * argv[]) {
         cout << "Beginning Search\n\n";
         
         vector<bstFeats> results;
-        int numTrials = 9;
+        int numTrials = 1;
         for (int i =0; i != numTrials; ++i) {
             vfVec newData = randomData(data);
             cout << "data size: " << newData.size() << endl;
             bstFeats *best = forwardSelection(newData);
-            cout << best->accuracy * 100 << "% ";
-            print(best->features);
             results.push_back(*best);
             cout << endl << endl;
         }
@@ -95,7 +95,9 @@ int main(int argc, const char * argv[]) {
 //        cout << best->accuracy * 100 << "% ";
 //        print(best->features);
         cout << endl << endl;
-
+        
+        repeatedtrialResults(results);
+        
     }
     else
         cout << "There's no data\n";
@@ -444,10 +446,16 @@ vfVec randomData(const vfVec &data) {
     return newData;
 }
 
-void repeatedTrialResults(const bVec& trials) {
-    iMap results
-    for (int i = 0; i != trials.size; ++i) {
-        
+void repeatedtrialResults(const bVec& trials) {
+    iMap results;
+    for (int i = 0; i != trials.size(); ++i) {
+        for(int j = 0; j != trials.at(i).features.size(); ++j) {
+            ++results[trials.at(i).features.at(j)];
+        }
+    }
+    
+    for (iMap::iterator i = results.begin(); i != results.end(); ++i) {
+        cout << i->first << " was seen: " << i->second << " times\n";
     }
     
 }
