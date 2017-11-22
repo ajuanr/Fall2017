@@ -50,7 +50,9 @@ bool cmpFeatures(const bstFeats &a,const bstFeats &b)
     {return a.accuracy>b.accuracy;}
 //search stuff
 float leaveOneOutCrossValidation(const vfVec&, const iVec&);
-void featureSearch(const vfVec&);
+void forwardSelection(const vfVec&);
+void backwardElim(const vfVec&);
+iVec allFeatures(const vfVec&);
 
 /*****************************************************************************/
 int main(int argc, const char * argv[]) {
@@ -66,7 +68,8 @@ int main(int argc, const char * argv[]) {
         data.size() << " instances.\n\n";
 
         cout << "Beginning Search\n\n";
-        featureSearch(data);
+//        forwardSelection(data);
+        backwardElim(data);
     }
     else
         cout << "There's no data\n";
@@ -77,10 +80,10 @@ int main(int argc, const char * argv[]) {
 // Read the data and return a vector containing the data
 vfVec readData(){
 //    const string fileName = "CS170Smalltestdata__44.txt";
-//    const string fileName = "CS170BIGtestdata__4.txt";
+    const string fileName = "CS170BIGtestdata__4.txt";
 //    const string fileName = "leaf.txt";
 //    const string fileName = "wine.txt";
-    const string fileName = "DataUserModeling.txt";
+//    const string fileName = "DataUserModeling.txt";
     ifstream input;
     input.open(fileName, ifstream::in);
     vfVec output;
@@ -187,7 +190,7 @@ vfVec trainingData(const vfVec& data, int index) {
     return training;
 }
 
-void featureSearch(const vfVec& data) {
+void forwardSelection(const vfVec& data) {
     iVec features;
     iVec tempFeatures;
     vector<bstFeats> best;
@@ -301,4 +304,61 @@ int vote(const fiMap& distances, int k) {
         }
     }
     return classificationIs;
+}
+
+void backwardElim(const vfVec& data) {
+    iVec features = allFeatures(data);
+    iVec tempFeatures = features;
+    vector<bstFeats> best;
+    int bestAtThisLevel=-1;
+    float defaultAcc = 0.0;
+    for (int i = 1; i != data.at(0).size(); ++i) {
+        float bestAccuracy =  defaultAcc;
+        for (int j = 0; j != features.size(); ++j) {
+            if (find(features.begin(), features.end(), j) != features.end()) {
+                tempFeatures = features;
+                tempFeatures.erase(tempFeatures.begin()+j);
+                cout << "Using features: ";
+                print(tempFeatures);
+                float accuracy = leaveOneOutCrossValidation(data, tempFeatures);
+                cout << setprecision(4)
+                << ", accuracy is: " << accuracy*100 << "%\n";
+                cout << "best accuracy is; " << bestAccuracy << endl;
+                if ( accuracy > bestAccuracy) {
+                    bestAccuracy = accuracy;
+                    bestAtThisLevel = j;
+                }
+            }
+        }
+        if (features.size() == 1) --bestAtThisLevel;
+        features.erase(features.begin() + (bestAtThisLevel));
+        bstFeats temp(bestAccuracy, features);
+        best.push_back(temp);
+        sort(best.begin(),best.end(), cmpFeatures);
+        // print out information on accuracy for the current level
+        if (best.at(0).accuracy > bestAccuracy) {
+            cout << "\n(WARNING: Accuracy has decreased. "
+            "Continuing search in case of local maxima.)\n";
+        }
+        else {
+            cout << "\nFeature set ";
+            print(best.at(0).features);
+            cout << " was best, accuracy is " << bestAccuracy*100 << "%\n\n";
+        }
+    }
+    cout << "\nbest\n";
+    sort(best.begin(),best.end(), cmpFeatures); // move best accuracy to front
+    cout << best.at(0).accuracy * 100 << "% ";
+    print(best.at(0).features);
+    cout << endl;
+}
+
+// returns a vector a value for every feature in the data
+// used for backward elimination;
+iVec allFeatures(const vfVec& data) {
+    iVec features;
+    for (int i = 1; i != data.at(0).size(); ++i) {
+        features.push_back(i);
+    }
+    return features;
 }
