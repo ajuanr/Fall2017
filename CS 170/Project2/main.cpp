@@ -80,20 +80,11 @@ int main(int argc, const char * argv[]) {
         int numTrials = 1;
         for (int i =0; i != numTrials; ++i) {
             vfVec newData = randomData(data);
-            cout << "data size: " << newData.size() << endl;
             bstFeats *best = forwardSelection(newData);
+            cout << best->accuracy * 100 << "% ";
+            print(best->features);
             results.push_back(*best);
-            cout << endl << endl;
         }
-//        sort(results.begin(),results.end(), cmpFeatures);
-        for(int i = 0;i != results.size(); ++i) {
-            cout << results.at(i).accuracy *100 << "% ";
-            print(results.at(i).features);
-            cout << endl;
-        }
-//        cout << "\nbest\n";
-//        cout << best->accuracy * 100 << "% ";
-//        print(best->features);
         cout << endl << endl;
         
         repeatedtrialResults(results);
@@ -305,7 +296,6 @@ float leaveOneOutCrossValidation(const vfVec& data, const iVec& features) {
 
 int chooseBestK(const vfVec &originalData, const vfVec &training,
                 const fVec &validation, const iVec &features, int index) {
-    return 1;
     int numberPointstoCheck = static_cast<int>(originalData.size())/3;
     // k can't exceed number of data points
     for (int k = 1; k < numberPointstoCheck; k = k+2) {
@@ -431,11 +421,6 @@ vfVec randomData(const vfVec &data) {
         }
         else --i;
     }
-    
-    cout <<"NOT using features: ";
-    print(skipThese);
-    cout << endl;
-    
     for (int i = 0; i != data.size(); ++i) {
         if(find(skipThese.begin(), skipThese.end(),i) == skipThese.end()) {
             // not skipping this i
