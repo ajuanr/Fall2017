@@ -21,7 +21,9 @@ using namespace std;
 typedef vector<float> fVec;         // holds the features
 typedef vector<fVec> vfVec;         // holds all the rows
 typedef vector<int> iVec;           // holds which features to look at
+typedef vector<bstFeats> bVec;      // for storing the trials
 typedef map<float, int> fiMap;
+typedef map<int,int> iMap;
 
 struct bstFeats{
     bstFeats():accuracy(50){ }
@@ -50,9 +52,12 @@ bool cmpFeatures(const bstFeats &a,const bstFeats &b)
     {return a.accuracy>b.accuracy;}
 //search stuff
 float leaveOneOutCrossValidation(const vfVec&, const iVec&);
-void forwardSelection(const vfVec&);
-void backwardElim(const vfVec&);
+bstFeats* forwardSelectionDemo(const vfVec&);
+bstFeats* forwardSelection(const vfVec&);
+bstFeats* backwardElim(const vfVec&);
 iVec allFeatures(const vfVec&);
+vfVec randomData(const vfVec&);
+void repeatedtrialResults(const vector<bstFeats>&);
 
 /*****************************************************************************/
 int main(int argc, const char * argv[]) {
@@ -68,8 +73,29 @@ int main(int argc, const char * argv[]) {
         data.size() << " instances.\n\n";
 
         cout << "Beginning Search\n\n";
-//        forwardSelection(data);
-        backwardElim(data);
+        
+        vector<bstFeats> results;
+        int numTrials = 9;
+        for (int i =0; i != numTrials; ++i) {
+            vfVec newData = randomData(data);
+            cout << "data size: " << newData.size() << endl;
+            bstFeats *best = forwardSelection(newData);
+            cout << best->accuracy * 100 << "% ";
+            print(best->features);
+            results.push_back(*best);
+            cout << endl << endl;
+        }
+//        sort(results.begin(),results.end(), cmpFeatures);
+        for(int i = 0;i != results.size(); ++i) {
+            cout << results.at(i).accuracy *100 << "% ";
+            print(results.at(i).features);
+            cout << endl;
+        }
+//        cout << "\nbest\n";
+//        cout << best->accuracy * 100 << "% ";
+//        print(best->features);
+        cout << endl << endl;
+
     }
     else
         cout << "There's no data\n";
@@ -79,8 +105,8 @@ int main(int argc, const char * argv[]) {
 
 // Read the data and return a vector containing the data
 vfVec readData(){
-//    const string fileName = "CS170Smalltestdata__44.txt";
-    const string fileName = "CS170BIGtestdata__4.txt";
+    const string fileName = "CS170Smalltestdata__44.txt";
+//    const string fileName = "CS170BIGtestdata__4.txt";
 //    const string fileName = "leaf.txt";
 //    const string fileName = "wine.txt";
 //    const string fileName = "DataUserModeling.txt";
@@ -190,7 +216,7 @@ vfVec trainingData(const vfVec& data, int index) {
     return training;
 }
 
-void forwardSelection(const vfVec& data) {
+bstFeats* forwardSelectionDemo(const vfVec& data) {
     iVec features;
     iVec tempFeatures;
     vector<bstFeats> best;
@@ -228,11 +254,39 @@ void forwardSelection(const vfVec& data) {
             cout << " was best, accuracy is " << bestAccuracy*100 << "%\n\n";
         }
     }
-    cout << "\nbest\n";
     sort(best.begin(),best.end(), cmpFeatures); // move best accuracy to front
-    cout << best.at(0).accuracy * 100 << "% ";
-    print(best.at(0).features);
-    cout << endl;
+    
+    bstFeats *bestFeature = new bstFeats(best.at(0).accuracy, best.at(0).features);
+    return bestFeature;
+}
+
+bstFeats* forwardSelection(const vfVec& data) {
+    iVec features;
+    iVec tempFeatures;
+    vector<bstFeats> best;
+    int bestAtThisLevel=-1;
+    float defaultAcc = 0.0;          // 50% default accuracy
+    for (int i = 1; i != data.at(0).size(); ++i) {
+        float bestAccuracy =  defaultAcc;
+        for (int j = 1; j != data.at(0).size(); ++j) {
+            if (find(features.begin(), features.end(), j) == features.end()) {
+                tempFeatures = features;
+                tempFeatures.push_back(j);
+                float accuracy = leaveOneOutCrossValidation(data, tempFeatures);
+                if ( accuracy > bestAccuracy) {
+                    bestAccuracy = accuracy;
+                    bestAtThisLevel = j;
+                }
+            }
+        }
+        features.push_back(bestAtThisLevel);
+        bstFeats temp(bestAccuracy, features);
+        best.push_back(temp);
+        sort(best.begin(),best.end(), cmpFeatures);
+    }
+    sort(best.begin(),best.end(), cmpFeatures); // move best accuracy to front
+    bstFeats *bestFeature = new bstFeats(best.at(0).accuracy, best.at(0).features);
+    return bestFeature;
 }
 
 float leaveOneOutCrossValidation(const vfVec& data, const iVec& features) {
@@ -249,6 +303,7 @@ float leaveOneOutCrossValidation(const vfVec& data, const iVec& features) {
 
 int chooseBestK(const vfVec &originalData, const vfVec &training,
                 const fVec &validation, const iVec &features, int index) {
+    return 1;
     int numberPointstoCheck = static_cast<int>(originalData.size())/3;
     // k can't exceed number of data points
     for (int k = 1; k < numberPointstoCheck; k = k+2) {
@@ -306,7 +361,7 @@ int vote(const fiMap& distances, int k) {
     return classificationIs;
 }
 
-void backwardElim(const vfVec& data) {
+bstFeats* backwardElim(const vfVec& data) {
     iVec features = allFeatures(data);
     iVec tempFeatures = features;
     vector<bstFeats> best;
@@ -348,9 +403,8 @@ void backwardElim(const vfVec& data) {
     }
     cout << "\nbest\n";
     sort(best.begin(),best.end(), cmpFeatures); // move best accuracy to front
-    cout << best.at(0).accuracy * 100 << "% ";
-    print(best.at(0).features);
-    cout << endl;
+    bstFeats *bestFeature = new bstFeats(best.at(0).accuracy, best.at(0).features);
+    return bestFeature;
 }
 
 // returns a vector a value for every feature in the data
@@ -361,4 +415,39 @@ iVec allFeatures(const vfVec& data) {
         features.push_back(i);
     }
     return features;
+}
+
+vfVec randomData(const vfVec &data) {
+    srand(static_cast<unsigned int>(time(0)));
+    vfVec newData;
+    iVec skipThese;
+    int percentToSkip = 10;
+    for (int i = 0; i != percentToSkip; ++i) {
+        int temp = rand()%100;
+        if (find(skipThese.begin(), skipThese.end(),temp) == skipThese.end()) {
+            skipThese.push_back(temp);
+        }
+        else --i;
+    }
+    
+    cout <<"NOT using features: ";
+    print(skipThese);
+    cout << endl;
+    
+    for (int i = 0; i != data.size(); ++i) {
+        if(find(skipThese.begin(), skipThese.end(),i) == skipThese.end()) {
+            // not skipping this i
+            newData.push_back(data.at(i));
+        }
+    }
+    
+    return newData;
+}
+
+void repeatedTrialResults(const bVec& trials) {
+    iMap results
+    for (int i = 0; i != trials.size; ++i) {
+        
+    }
+    
 }
