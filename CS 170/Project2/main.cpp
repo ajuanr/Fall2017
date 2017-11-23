@@ -48,7 +48,6 @@ void classify(const vfVec&, fVec&, const iVec&, int);
 float featureMean(const vfVec&, int);
 float stdDev(const vfVec&, int);
 void zNormalize(vfVec&);
-
 bool accurate(const vfVec&, const fVec&, int);
 int vote(const fiMap&, int);
 bool cmpFeatures(const bstFeats &a,const bstFeats &b)
@@ -68,12 +67,22 @@ void repeatedtrialResults(const vector<bstFeats>&);
 void introduction(vfVec&);
 void resultsInfo(const vfVec&);
 
+void testNormalize(vfVec&);
+
 /*****************************************************************************/
 int main(int argc, const char * argv[]) {
     vfVec data = readData();
     if (!data.empty()) {
-        introduction(data);
-        resultsInfo(data);
+        testNormalize(data);
+//        vfVec dataCopy = data;
+//        normalize(data);
+//        print(data);
+//        cout << "\n\n\n";
+//        zNormalize(dataCopy);
+//        print(dataCopy);
+//        introduction(data);
+//        resultsInfo(data);
+//        resultsInfo(data);
     }
     else
         cout << "There's no data\n";
@@ -83,10 +92,10 @@ int main(int argc, const char * argv[]) {
 
 // Read the data and return a vector containing the data
 vfVec readData(){
-    const string fileName = "CS170Smalltestdata__44.txt";
+//    const string fileName = "CS170Smalltestdata__44.txt";
 //    const string fileName = "CS170BIGtestdata__4.txt";
 //    const string fileName = "leaf.txt";
-//    const string fileName = "wine.txt";
+    const string fileName = "wine.txt";
 //    const string fileName = "DataUserModeling.txt";
     ifstream input;
     input.open(fileName, ifstream::in);
@@ -168,11 +177,14 @@ float stdDev(const vfVec& data, int feature) {
 
 // input: the dataset
 // alters the datset, with the normalized values, except for the class column
-void zNormalize(vfVec& data) {
-    for (int i = 0; i != data.size(); ++i) {
-        for (int j = 1; j != data.at(i).size(); ++j) {
-            data.at(i).at(j) -= featureMean(data, j);
-            data.at(i).at(j) /= stdDev(data, j);
+void zNormalize(vfVec &data) {
+    vfVec dataCopy = data;
+    for (int feature = 1; feature != data.at(0).size(); ++feature) {
+        float mean = featureMean(dataCopy, feature);
+        float stdDeviation = stdDev(dataCopy, feature);
+        for (int instance = 0; instance != data.size(); ++instance) {
+            data.at(instance).at(feature) -= mean;
+            data.at(instance).at(feature) /= stdDeviation;
         }
     }
 }
@@ -464,6 +476,7 @@ void repeatedtrialResults(const bVec& trials) {
 
 void introduction(vfVec &data) {
     cout << "Please wait while I normalize the data...   ";
+//    zNormalize(data);
     zNormalize(data);
     cout << "Done\n\n";
     cout << "This dataset has " << data.at(0).size()-1 <<
@@ -486,4 +499,57 @@ void resultsInfo(const vfVec &data) {
     cout << endl << endl;
     cout << "Number of trials: " << numTrials << endl;
     repeatedtrialResults(results);
+}
+
+void testNormalize(vfVec &data) {
+    //7, 4, 12, 5, 4, 10, 9, 6, 9, 4
+    fVec data1 = {0,9};
+    fVec data2 = {0,2};
+    fVec data3 = {0,5};
+    fVec data4 = {0,4};
+    fVec data5 = {0,12};
+    fVec data6 = {0,7};
+    fVec data7 = {0,8};
+    fVec data8 = {0,11};
+    fVec data9 = {0,9};
+    fVec data10 = {0,3};
+    fVec data11 = {0,7};
+    fVec data12 = {0,4};
+    fVec data13 = {0,12};
+    fVec data14 = {0,5};
+    fVec data15 = {0,4};
+    fVec data16 = {0,10};
+    fVec data17 = {0,9};
+    fVec data18 = {0,6};
+    fVec data19 = {0,9};
+    fVec data20 = {0,4};
+    vfVec d;
+    d.push_back(data1);
+    d.push_back(data2);
+    d.push_back(data3);
+    d.push_back(data4);
+    d.push_back(data5);
+    d.push_back(data6);
+    d.push_back(data7);
+    d.push_back(data8);
+    d.push_back(data9);
+    d.push_back(data10);
+    d.push_back(data11);
+    d.push_back(data12);
+    d.push_back(data13);
+    d.push_back(data14);
+    d.push_back(data15);
+    d.push_back(data16);
+    d.push_back(data17);
+    d.push_back(data18);
+    d.push_back(data19);
+    d.push_back(data20);
+    print(d); cout << endl;
+    cout << featureMean(d, 1) << endl;
+    cout << stdDev(d, 1) << endl;
+    zNormalize(d);
+    print(d);
+    cout << endl;
+    
+    
 }
