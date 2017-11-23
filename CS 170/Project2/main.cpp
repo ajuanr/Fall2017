@@ -60,36 +60,16 @@ bstFeats* backwardElim(const vfVec&);
 iVec allFeatures(const vfVec&);
 vfVec randomData(const vfVec&);
 void repeatedtrialResults(const vector<bstFeats>&);
+// output stuff
+void introduction(vfVec&);
+void resultsInfo(const vfVec&);
 
 /*****************************************************************************/
 int main(int argc, const char * argv[]) {
     vfVec data = readData();
     if (!data.empty()) {
-        cout << "Please wait while I normalize the data...   ";
-        zNormalize(data);
-
-        cout << "Done\n\n";
-
-        cout << "This dataset has " << data.at(0).size()-1 <<
-        " features (not including the class attribute) with " <<
-        data.size() << " instances.\n\n";
-
-        cout << "Beginning Search\n\n";
-        
-        vector<bstFeats> results;
-        int numTrials = 10;
-        for (int i =0; i != numTrials; ++i) {
-            vfVec newData = randomData(data);
-            bstFeats *best = forwardSelection(newData);
-            cout << best->accuracy * 100 << "% ";
-            print(best->features);
-            cout << endl;
-            results.push_back(*best);
-        }
-        cout << endl << endl;
-        cout << "Number of trials: " << numTrials << endl;
-        repeatedtrialResults(results);
-        
+        introduction(data);
+        resultsInfo(data);
     }
     else
         cout << "There's no data\n";
@@ -450,4 +430,33 @@ void repeatedtrialResults(const bVec& trials) {
         cout << endl;
     }
     
+}
+
+void introduction(vfVec &data) {
+    cout << "Please wait while I normalize the data...   ";
+    zNormalize(data);
+    
+    cout << "Done\n\n";
+    
+    cout << "This dataset has " << data.at(0).size()-1 <<
+    " features (not including the class attribute) with " <<
+    data.size() << " instances.\n\n";
+    
+    cout << "Beginning Search\n\n";
+}
+
+void resultsInfo(const vfVec &data) {
+    vector<bstFeats> results;
+    int numTrials = 10;
+    for (int i =0; i != numTrials; ++i) {
+        vfVec newData = randomData(data);
+        bstFeats *best = forwardSelection(newData);
+        cout << best->accuracy * 100 << "% ";
+        print(best->features);
+        cout << endl;
+        results.push_back(*best);
+    }
+    cout << endl << endl;
+    cout << "Number of trials: " << numTrials << endl;
+    repeatedtrialResults(results);
 }
