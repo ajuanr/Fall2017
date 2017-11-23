@@ -216,7 +216,7 @@ void forwardSelectionDemo(const vfVec& data) {
                 print(tempFeatures);
                 float accuracy = leaveOneOutCrossValidation(data, tempFeatures);
                 cout << setprecision(4)
-                    << ", accuracy is: " << accuracy*100 << "%\n";
+                    << ", accuracy is: " << accuracy << "\n";
                 if ( accuracy > bestAccuracy) {
                     bestAccuracy = accuracy;
                     bestAtThisLevel = j;
@@ -438,7 +438,7 @@ vfVec randomData(const vfVec &data) {
     float percentToSkip = .05;
     int numToSkip = data.size() * percentToSkip;
     for (int i = 0; i != data.size() - numToSkip; ++i) {
-        int temp = rand()%100;
+        int temp = rand()%data.size();
         if (find(randomiseData.begin(), randomiseData.end(), temp)
             == randomiseData.end()) {
             randomiseData.push_back(temp);
