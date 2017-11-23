@@ -74,7 +74,7 @@ int main(int argc, const char * argv[]) {
     vfVec data = readData();
     if (!data.empty()) {
         introduction(data);
-//        forwardSelectionDemo(data);
+        forwardSelectionDemo(data);
         resultsInfo(data);
 
     }
@@ -184,17 +184,17 @@ void zNormalize(vfVec &data) {
 }
 
 // hide this data.
-fVec validationData(const vfVec& data, int index) {
-    fVec validation(data.at(index));
+fVec validationData(const vfVec& data, int instance) {
+    fVec validation(data.at(instance));
     validation.at(0) = -1; // hide the class
     return validation;
 }
 
 // copy the data, minus the validation data
-vfVec trainingData(const vfVec& data, int index) {
+vfVec trainingData(const vfVec& data, int instance) {
     vfVec training;
     for (int i = 0; i != data.size(); ++i) {
-        if (i == index) continue;
+        if (i == instance) continue;    // leave out the instance
         training.push_back(data.at(i));
     }
     return training;
@@ -238,6 +238,7 @@ void forwardSelectionDemo(const vfVec& data) {
             cout << " was best, accuracy is " << bestAccuracy << "\n\n";
         }
     }
+    cout << "Best is: ";
     sort(best.begin(),best.end(), cmpFeatures); // move best accuracy to front
     cout << best.at(0).accuracy << " ";
     print(best.at(0).features);
@@ -275,24 +276,24 @@ bstFeats* forwardSelection(const vfVec& data) {
 
 float leaveOneOutCrossValidation(const vfVec& data, const iVec& features) {
     float numCorrect=0;
-    for (int index = 0; index != data.size(); ++index) {
-        fVec validation = validationData(data,index);
-        vfVec training = trainingData(data,index);
-        int k = chooseBestK(data, training, validation, features, index);
+    for (int instance = 0; instance != data.size(); ++instance) {
+        fVec validation = validationData(data,instance);
+        vfVec training = trainingData(data,instance);
+        int k = chooseBestK(data, training, validation, features, instance);
         classify(training, validation, features, k);
-        if (accurate(data, validation, index)) ++numCorrect;
+        if (accurate(data, validation, instance)) ++numCorrect;
     }
     return numCorrect/data.size();
 }
 
 int chooseBestK(const vfVec &originalData, const vfVec &training,
-                const fVec &validation, const iVec &features, int index) {
+                const fVec &validation, const iVec &features, int instance) {
     int numberPointstoCheck = static_cast<int>(originalData.size())/3;
     // k can't exceed number of data points
     for (int k = 1; k < numberPointstoCheck; k = k+2) {
         fVec tempValidation = validation;
         classify(training, tempValidation, features, k);
-        if (accurate(originalData, tempValidation, index)){
+        if (accurate(originalData, tempValidation, instance)){
             return k;
         }
     }
@@ -301,8 +302,8 @@ int chooseBestK(const vfVec &originalData, const vfVec &training,
 
 // returns the accurary of the tested data.
 // using leave one out so it's either correct or incorrect
-bool accurate(const vfVec& originalData, const fVec& validation, int index){
-    return (originalData.at(index).at(0) == validation.at(0));
+bool accurate(const vfVec& originalData, const fVec& validation, int instance){
+    return (originalData.at(instance).at(0) == validation.at(0));
 }
 
 void classify(const vfVec &training, fVec &validation,
@@ -323,14 +324,13 @@ int knn(const vfVec& training, const fVec& validation,
 }
 
 int vote(const fiMap& distances, int k) {
-    int index = 0;
+    int count = 1;
     // count the votes for each class
     map<int, int> classesSeen; // hold the # of times a class is seen
     for (fiMap::const_iterator i=distances.begin(); i != distances.end(); ++i) {
-        if (index++ == k) break;
         ++classesSeen[i->second];
+        if (count++ == k) break;
     }
-    
     // find out which class had the most votes
     int max = -1;
     int classificationIs = -1;
