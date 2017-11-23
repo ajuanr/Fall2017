@@ -74,7 +74,7 @@ int main(int argc, const char * argv[]) {
     vfVec data = readData();
     if (!data.empty()) {
         introduction(data);
-        forwardSelectionDemo(data);
+//        forwardSelectionDemo(data);
         resultsInfo(data);
 
     }
@@ -434,21 +434,19 @@ iVec allFeatures(const vfVec& data) {
 vfVec randomData(const vfVec &data) {
     srand(static_cast<unsigned int>(time(0)));
     vfVec newData;
-    iVec skipThese;
+    iVec randomiseData;
     float percentToSkip = .05;
     int numToSkip = data.size() * percentToSkip;
-    for (int i = 0; i != numToSkip; ++i) {
+    for (int i = 0; i != data.size() - numToSkip; ++i) {
         int temp = rand()%100;
-        if (find(skipThese.begin(), skipThese.end(),temp) == skipThese.end()) {
-            skipThese.push_back(temp);
+        if (find(randomiseData.begin(), randomiseData.end(), temp)
+            == randomiseData.end()) {
+            randomiseData.push_back(temp);
         }
-        else --i; // redo this iteration since we already saw this temp value
+        else --i;   // repeat this trial
     }
-    for (int i = 0; i != data.size(); ++i) {
-        if(find(skipThese.begin(), skipThese.end(),i) == skipThese.end()) {
-            // not skipping this i
-            newData.push_back(data.at(i));
-        }
+    for (int i = 0; i != randomiseData.size(); ++i) {
+            newData.push_back(data.at(randomiseData.at(i)));
     }
     return newData;
 }
@@ -483,13 +481,13 @@ void introduction(vfVec &data) {
 
 void resultsInfo(const vfVec &data) {
     vector<bstFeats> results;
-    int numTrials = 50;
-    for (int i =0; i != numTrials; ++i) {
+    int numTrials = 20;
+    for (int i = 0; i != numTrials; ++i) {
         vfVec newData = randomData(data);
-        bstFeats *best = forwardSelection(newData);
-//        bstFeats *best = backwardElim(newData);
-        cout << setw(5) << setprecision(5) << best->accuracy  << " ";
-        print(best->features);
+//        bstFeats *best = forwardSelection(newData);
+        bstFeats *best = backwardElim(newData);
+        cout << setw(8) << setprecision(5) << right <<
+        best->accuracy  << " "; print(best->features);
         cout << endl;
         results.push_back(*best);
     }
