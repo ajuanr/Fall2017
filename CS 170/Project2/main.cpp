@@ -56,9 +56,9 @@ bool cmpFeatures(const bstFeats &a,const bstFeats &b)
 //search stuff
 float leaveOneOutCrossValidation(const vfVec&, const iVec&);
 void forwardSelectionDemo(const vfVec&);
-bstFeats* forwardSelection(const vfVec&);
+bstFeats forwardSelection(const vfVec&);
 void backwardElimDemo(const vfVec&);
-bstFeats* backwardElim(const vfVec&);
+bstFeats backwardElim(const vfVec&);
 iVec allFeatures(const vfVec&);
 vfVec randomData(const vfVec&);
 void repeatedtrialResults(const vector<bstFeats>&);
@@ -245,7 +245,7 @@ void forwardSelectionDemo(const vfVec& data) {
     cout << endl;
 }
 
-bstFeats* forwardSelection(const vfVec& data) {
+bstFeats forwardSelection(const vfVec& data) {
     iVec features;
     iVec tempFeatures;
     vector<bstFeats> best;
@@ -270,7 +270,7 @@ bstFeats* forwardSelection(const vfVec& data) {
         sort(best.begin(),best.end(), cmpFeatures);
     }
     sort(best.begin(),best.end(), cmpFeatures); // move best accuracy to front
-    bstFeats *bestFeature = new bstFeats(best.at(0).accuracy, best.at(0).features);
+    bstFeats bestFeature(best.at(0).accuracy, best.at(0).features);
     return bestFeature;
 }
 
@@ -391,7 +391,7 @@ void backwardElimDemo(const vfVec& data) {
     cout << endl;
 }
 
-bstFeats* backwardElim(const vfVec& data) {
+bstFeats backwardElim(const vfVec& data) {
     iVec features = allFeatures(data);
     iVec tempFeatures = features;
     vector<bstFeats> best;
@@ -417,7 +417,7 @@ bstFeats* backwardElim(const vfVec& data) {
         sort(best.begin(),best.end(), cmpFeatures);
     }
     sort(best.begin(),best.end(), cmpFeatures); // move best accuracy to front
-    bstFeats *bestFeature = new bstFeats(best.at(0).accuracy, best.at(0).features);
+    bstFeats bestFeature(best.at(0).accuracy, best.at(0).features);
     return bestFeature;
 }
 
@@ -484,12 +484,12 @@ void resultsInfo(const vfVec &data) {
     int numTrials = 20;
     for (int i = 0; i != numTrials; ++i) {
         vfVec newData = randomData(data);
-//        bstFeats *best = forwardSelection(newData);
-        bstFeats *best = backwardElim(newData);
+        bstFeats best = forwardSelection(newData);
+//        bstFeats *best = backwardElim(newData);
         cout << setw(8) << setprecision(5) << right <<
-        best->accuracy  << " "; print(best->features);
+        best.accuracy  << " "; print(best.features);
         cout << endl;
-        results.push_back(*best);
+        results.push_back(best);
     }
     cout << endl << endl;
     cout << "Number of trials: " << numTrials << endl;
