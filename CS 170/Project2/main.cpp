@@ -55,9 +55,9 @@ bool cmpFeatures(const bstFeats &a,const bstFeats &b)
 
 //search stuff
 float leaveOneOutCrossValidation(const vfVec&, const iVec&);
-bstFeats* forwardSelectionDemo(const vfVec&);
+void forwardSelectionDemo(const vfVec&);
 bstFeats* forwardSelection(const vfVec&);
-bstFeats* backwardElimDemo(const vfVec&);
+void backwardElimDemo(const vfVec&);
 bstFeats* backwardElim(const vfVec&);
 iVec allFeatures(const vfVec&);
 vfVec randomData(const vfVec&);
@@ -73,16 +73,10 @@ void testNormalize(vfVec&);
 int main(int argc, const char * argv[]) {
     vfVec data = readData();
     if (!data.empty()) {
-        testNormalize(data);
-//        vfVec dataCopy = data;
-//        normalize(data);
-//        print(data);
-//        cout << "\n\n\n";
-//        zNormalize(dataCopy);
-//        print(dataCopy);
-//        introduction(data);
+        introduction(data);
+        forwardSelectionDemo(data);
 //        resultsInfo(data);
-//        resultsInfo(data);
+
     }
     else
         cout << "There's no data\n";
@@ -92,10 +86,10 @@ int main(int argc, const char * argv[]) {
 
 // Read the data and return a vector containing the data
 vfVec readData(){
-//    const string fileName = "CS170Smalltestdata__44.txt";
+    const string fileName = "CS170Smalltestdata__44.txt";
 //    const string fileName = "CS170BIGtestdata__4.txt";
 //    const string fileName = "leaf.txt";
-    const string fileName = "wine.txt";
+//    const string fileName = "wine.txt";
 //    const string fileName = "DataUserModeling.txt";
     ifstream input;
     input.open(fileName, ifstream::in);
@@ -206,7 +200,7 @@ vfVec trainingData(const vfVec& data, int index) {
     return training;
 }
 
-bstFeats* forwardSelectionDemo(const vfVec& data) {
+void forwardSelectionDemo(const vfVec& data) {
     iVec features;
     iVec tempFeatures;
     vector<bstFeats> best;
@@ -245,8 +239,9 @@ bstFeats* forwardSelectionDemo(const vfVec& data) {
         }
     }
     sort(best.begin(),best.end(), cmpFeatures); // move best accuracy to front
-    bstFeats *bestFeature = new bstFeats(best.at(0).accuracy, best.at(0).features);
-    return bestFeature;
+    cout << best.at(0).accuracy * 100 << "% ";
+    print(best.at(0).features);
+    cout << endl;
 }
 
 bstFeats* forwardSelection(const vfVec& data) {
@@ -349,7 +344,7 @@ int vote(const fiMap& distances, int k) {
     return classificationIs;
 }
 
-bstFeats* backwardElimDemo(const vfVec& data) {
+void backwardElimDemo(const vfVec& data) {
     iVec features = allFeatures(data);
     iVec tempFeatures = features;
     vector<bstFeats> best;
@@ -391,8 +386,9 @@ bstFeats* backwardElimDemo(const vfVec& data) {
     }
     cout << "\nbest\n";
     sort(best.begin(),best.end(), cmpFeatures); // move best accuracy to front
-    bstFeats *bestFeature = new bstFeats(best.at(0).accuracy, best.at(0).features);
-    return bestFeature;
+    cout << best.at(0).accuracy * 100 << "% ";
+    print(best.at(0).features);
+    cout << endl;
 }
 
 bstFeats* backwardElim(const vfVec& data) {
@@ -503,26 +499,26 @@ void resultsInfo(const vfVec &data) {
 
 void testNormalize(vfVec &data) {
     //7, 4, 12, 5, 4, 10, 9, 6, 9, 4
-    fVec data1 = {0,9};
-    fVec data2 = {0,2};
-    fVec data3 = {0,5};
-    fVec data4 = {0,4};
-    fVec data5 = {0,12};
-    fVec data6 = {0,7};
-    fVec data7 = {0,8};
-    fVec data8 = {0,11};
-    fVec data9 = {0,9};
-    fVec data10 = {0,3};
-    fVec data11 = {0,7};
-    fVec data12 = {0,4};
-    fVec data13 = {0,12};
-    fVec data14 = {0,5};
-    fVec data15 = {0,4};
-    fVec data16 = {0,10};
-    fVec data17 = {0,9};
-    fVec data18 = {0,6};
-    fVec data19 = {0,9};
-    fVec data20 = {0,4};
+    fVec data1 = {0,9,9};
+    fVec data2 = {0,2,2};
+    fVec data3 = {0,5,5};
+    fVec data4 = {0,4,4};
+    fVec data5 = {0,12,12};
+    fVec data6 = {0,7,7};
+    fVec data7 = {0,8,8};
+    fVec data8 = {0,11,11};
+    fVec data9 = {0,9,9};
+    fVec data10 = {0,3,3};
+    fVec data11 = {0,7,7};
+    fVec data12 = {0,4,4};
+    fVec data13 = {0,12,12};
+    fVec data14 = {0,5,5};
+    fVec data15 = {0,4,4};
+    fVec data16 = {0,10,10};
+    fVec data17 = {0,9,9};
+    fVec data18 = {0,6,6};
+    fVec data19 = {0,9,9};
+    fVec data20 = {0,4,4};
     vfVec d;
     d.push_back(data1);
     d.push_back(data2);
