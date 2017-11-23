@@ -74,8 +74,8 @@ int main(int argc, const char * argv[]) {
     vfVec data = readData();
     if (!data.empty()) {
         introduction(data);
-        forwardSelectionDemo(data);
-//        resultsInfo(data);
+//        forwardSelectionDemo(data);
+        resultsInfo(data);
 
     }
     else
@@ -239,7 +239,7 @@ void forwardSelectionDemo(const vfVec& data) {
         }
     }
     sort(best.begin(),best.end(), cmpFeatures); // move best accuracy to front
-    cout << best.at(0).accuracy * 100 << "% ";
+    cout << best.at(0).accuracy << " ";
     print(best.at(0).features);
     cout << endl;
 }
@@ -386,7 +386,7 @@ void backwardElimDemo(const vfVec& data) {
     }
     cout << "\nbest\n";
     sort(best.begin(),best.end(), cmpFeatures); // move best accuracy to front
-    cout << best.at(0).accuracy * 100 << "% ";
+    cout << best.at(0).accuracy << " ";
     print(best.at(0).features);
     cout << endl;
 }
@@ -483,10 +483,11 @@ void introduction(vfVec &data) {
 
 void resultsInfo(const vfVec &data) {
     vector<bstFeats> results;
-    int numTrials = 10;
+    int numTrials = 50;
     for (int i =0; i != numTrials; ++i) {
         vfVec newData = randomData(data);
         bstFeats *best = forwardSelection(newData);
+//        bstFeats *best = backwardElim(newData);
         cout << setw(5) << setprecision(5) << best->accuracy  << " ";
         print(best->features);
         cout << endl;
@@ -495,57 +496,4 @@ void resultsInfo(const vfVec &data) {
     cout << endl << endl;
     cout << "Number of trials: " << numTrials << endl;
     repeatedtrialResults(results);
-}
-
-void testNormalize(vfVec &data) {
-    //7, 4, 12, 5, 4, 10, 9, 6, 9, 4
-    fVec data1 = {0,9,9};
-    fVec data2 = {0,2,2};
-    fVec data3 = {0,5,5};
-    fVec data4 = {0,4,4};
-    fVec data5 = {0,12,12};
-    fVec data6 = {0,7,7};
-    fVec data7 = {0,8,8};
-    fVec data8 = {0,11,11};
-    fVec data9 = {0,9,9};
-    fVec data10 = {0,3,3};
-    fVec data11 = {0,7,7};
-    fVec data12 = {0,4,4};
-    fVec data13 = {0,12,12};
-    fVec data14 = {0,5,5};
-    fVec data15 = {0,4,4};
-    fVec data16 = {0,10,10};
-    fVec data17 = {0,9,9};
-    fVec data18 = {0,6,6};
-    fVec data19 = {0,9,9};
-    fVec data20 = {0,4,4};
-    vfVec d;
-    d.push_back(data1);
-    d.push_back(data2);
-    d.push_back(data3);
-    d.push_back(data4);
-    d.push_back(data5);
-    d.push_back(data6);
-    d.push_back(data7);
-    d.push_back(data8);
-    d.push_back(data9);
-    d.push_back(data10);
-    d.push_back(data11);
-    d.push_back(data12);
-    d.push_back(data13);
-    d.push_back(data14);
-    d.push_back(data15);
-    d.push_back(data16);
-    d.push_back(data17);
-    d.push_back(data18);
-    d.push_back(data19);
-    d.push_back(data20);
-    print(d); cout << endl;
-    cout << featureMean(d, 1) << endl;
-    cout << stdDev(d, 1) << endl;
-    zNormalize(d);
-    print(d);
-    cout << endl;
-    
-    
 }
