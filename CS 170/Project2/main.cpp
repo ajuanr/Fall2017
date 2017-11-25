@@ -38,7 +38,7 @@ vfVec readData();
 fVec parseLine(const string);
 void print(const vfVec&);
 void print(const iVec&);
-int chooseBestK(const vfVec&, const vfVec&, const fVec&, const iVec&, int);
+
 int knn(const vfVec&, const fVec&,const iVec&, int);
 float distance(const fVec&, const fVec&, const iVec&);
 fVec validationData(const vfVec&, int);
@@ -48,12 +48,9 @@ void classify(const vfVec&, fVec&, const iVec&, int);
 float featureMean(const vfVec&, int);
 float stdDev(const vfVec&, int);
 void zNormalize(vfVec&);
-
 bool accurate(const vfVec&, const fVec&, int);
-int vote(const fiMap&, int);
 bool cmpFeatures(const bstFeats &a,const bstFeats &b)
-    {return a.accuracy>b.accuracy;}
-
+        {return a.accuracy>b.accuracy;}
 //search stuff
 float leaveOneOutCrossValidation(const vfVec&, const iVec&);
 void forwardSelectionDemo(const vfVec&);
@@ -86,7 +83,7 @@ int main(int argc, const char * argv[]) {
 // Read the data and return a vector containing the data
 vfVec readData(){
     const string fileName = "testData170/CS170Smalltestdata__44.txt";
-//    const string fileName = "CS170BIGtestdata__4.txt";
+//    const string fileName = "testData170/CS170BIGtestdata__4.txt";
 //    const string fileName = "leaf.txt";
 //    const string fileName = "wine.txt";
 //    const string fileName = "DataUserModeling.txt";
@@ -214,7 +211,7 @@ void forwardSelectionDemo(const vfVec& data) {
                 print(tempFeatures);
                 float accuracy = leaveOneOutCrossValidation(data, tempFeatures);
                 cout << ", accuracy is: " << accuracy << "\n";
-                if ( accuracy >= bestAccuracy) {
+                if ( accuracy > bestAccuracy) {
                     bestAccuracy = accuracy;
                     bestAtThisLevel = j;
                 }
@@ -277,27 +274,12 @@ float leaveOneOutCrossValidation(const vfVec& data, const iVec& features) {
     for (int instance = 0; instance != data.size(); ++instance) {
         fVec validation = validationData(data,instance);
         vfVec training = trainingData(data,instance);
-        int k = chooseBestK(data, training, validation, features, instance);
-        classify(training, validation, features, k);
+        classify(training, validation, features, 1);
         if (accurate(data, validation, instance)) ++numCorrect;
     }
     return static_cast<float>(numCorrect)/data.size();
 }
 
-int chooseBestK(const vfVec &originalData, const vfVec &training,
-                const fVec &validation, const iVec &features, int instance) {
-    return 1;
-    int numberPointstoCheck = static_cast<int>(originalData.size())/3;
-    // k can't exceed number of data points
-    for (int k = 1; k < numberPointstoCheck; k = k+2) {
-        fVec tempValidation = validation;
-        classify(training, tempValidation, features, k);
-        if (accurate(originalData, tempValidation, instance)){
-            return k;
-        }
-    }
-    return 1;      // ran out of neighbors. Use 1 nearest neighbor
-}
 
 // returns the accurary of the tested data.
 // using leave one out so it's either correct or incorrect
@@ -319,28 +301,7 @@ int knn(const vfVec& training, const fVec& validation,
         float tempDistance = distance(training.at(i), validation, features);
         distances[tempDistance] = training.at(i).at(0);
     }
-    return vote(distances,k); // pick the k-val that was seen the most out of k
-}
-
-int vote(const fiMap& distances, int k) {
-    int count = 1;
-    // count the votes for each class
-    map<int, int> classesSeen; // hold the # of times a class is seen
-    for (fiMap::const_iterator i=distances.begin(); i != distances.end(); ++i) {
-        ++classesSeen[i->second];
-        if (count++ == k) break;
-    }
-    // find out which class had the most votes
-    int max = -1;
-    int classificationIs = -1;
-    for (map<int,int>::iterator i = classesSeen.begin(); i != classesSeen.end();
-         ++i) {
-        if (i->second > max ) {
-            max = i->second;
-            classificationIs = i->first;
-        }
-    }
-    return classificationIs;
+    return distances.begin()->second;
 }
 
 void backwardElimDemo(const vfVec& data) {
@@ -480,7 +441,7 @@ void introduction(vfVec &data) {
 
 void resultsInfo(const vfVec &data) {
     vector<bstFeats> results;
-    int numTrials = 20;
+    int numTrials = 10;
     for (int i = 0; i != numTrials; ++i) {
         vfVec newData = randomData(data);
         bstFeats best = forwardSelection(newData);
