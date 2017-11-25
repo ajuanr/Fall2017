@@ -48,6 +48,7 @@ void classify(const vfVec&, fVec&, const iVec&, int);
 float featureMean(const vfVec&, int);
 float stdDev(const vfVec&, int);
 void zNormalize(vfVec&);
+
 bool accurate(const vfVec&, const fVec&, int);
 int vote(const fiMap&, int);
 bool cmpFeatures(const bstFeats &a,const bstFeats &b)
@@ -66,7 +67,6 @@ void repeatedtrialResults(const vector<bstFeats>&);
 // output stuff
 void introduction(vfVec&);
 void resultsInfo(const vfVec&);
-
 void testNormalize(vfVec&);
 
 /*****************************************************************************/
@@ -74,9 +74,8 @@ int main(int argc, const char * argv[]) {
     vfVec data = readData();
     if (!data.empty()) {
         introduction(data);
-//        forwardSelectionDemo(data);
+        forwardSelectionDemo(data);
         resultsInfo(data);
-
     }
     else
         cout << "There's no data\n";
@@ -172,13 +171,12 @@ float stdDev(const vfVec& data, int feature) {
 // input: the dataset
 // alters the datset, with the normalized values, except for the class column
 void zNormalize(vfVec &data) {
-    vfVec dataCopy = data;
     for (int feature = 1; feature != data.at(0).size(); ++feature) {
-        float mean = featureMean(dataCopy, feature);
-        float stdDeviation = stdDev(dataCopy, feature);
+        float mean = featureMean(data, feature);
+        float stdDeviation = stdDev(data, feature);
         for (int instance = 0; instance != data.size(); ++instance) {
-            data.at(instance).at(feature) -= mean;
-            data.at(instance).at(feature) /= stdDeviation;
+            float x = data.at(instance).at(feature);
+            data.at(instance).at(feature) = (x - mean)/stdDeviation;
         }
     }
 }
@@ -205,9 +203,8 @@ void forwardSelectionDemo(const vfVec& data) {
     iVec tempFeatures;
     vector<bstFeats> best;
     int bestAtThisLevel=-1;
-    float defaultAcc = 0.5;          // 50% default accuracy
+    float bestAccuracy =  0.5;
     for (int i = 1; i != data.at(0).size(); ++i) {
-        float bestAccuracy =  defaultAcc;
         for (int j = 1; j != data.at(0).size(); ++j) {
             if (find(features.begin(), features.end(), j) == features.end()) {
                 tempFeatures = features;
@@ -215,18 +212,21 @@ void forwardSelectionDemo(const vfVec& data) {
                 cout << "Using features: ";
                 print(tempFeatures);
                 float accuracy = leaveOneOutCrossValidation(data, tempFeatures);
-                cout << setprecision(4)
-                    << ", accuracy is: " << accuracy << "\n";
+                cout << ", accuracy is: " << accuracy << "\n";
                 if ( accuracy > bestAccuracy) {
                     bestAccuracy = accuracy;
                     bestAtThisLevel = j;
                 }
             }
         }
-        features.push_back(bestAtThisLevel);
-        bstFeats temp(bestAccuracy, features);
-        best.push_back(temp);
-        sort(best.begin(),best.end(), cmpFeatures);
+        // don't add same 'bestAtThisLevel' more than once
+        if (find(features.begin(), features.end(), bestAtThisLevel)
+            == features.end()) {
+            features.push_back(bestAtThisLevel);
+            bstFeats temp(bestAccuracy, features);
+            best.push_back(temp);
+            sort(best.begin(),best.end(), cmpFeatures);
+        }
         // print out information on accuracy for the current level
         if (best.at(0).accuracy > bestAccuracy) {
             cout << "\n(WARNING: Accuracy has decreased. "
@@ -250,9 +250,8 @@ bstFeats forwardSelection(const vfVec& data) {
     iVec tempFeatures;
     vector<bstFeats> best;
     int bestAtThisLevel=-1;
-    float defaultAcc = 0.5;          // 50% default accuracy
+    float bestAccuracy =  0.5;
     for (int i = 1; i != data.at(0).size(); ++i) {
-        float bestAccuracy =  defaultAcc;
         for (int j = 1; j != data.at(0).size(); ++j) {
             if (find(features.begin(), features.end(), j) == features.end()) {
                 tempFeatures = features;
@@ -264,10 +263,14 @@ bstFeats forwardSelection(const vfVec& data) {
                 }
             }
         }
-        features.push_back(bestAtThisLevel);
-        bstFeats temp(bestAccuracy, features);
-        best.push_back(temp);
-        sort(best.begin(),best.end(), cmpFeatures);
+        // don't add same 'bestAtThisLevel' more than once
+        if (find(features.begin(), features.end(), bestAtThisLevel)
+            == features.end()) {
+            features.push_back(bestAtThisLevel);
+            bstFeats temp(bestAccuracy, features);
+            best.push_back(temp);
+            sort(best.begin(),best.end(), cmpFeatures);
+        }
     }
     sort(best.begin(),best.end(), cmpFeatures); // move best accuracy to front
     bstFeats bestFeature(best.at(0).accuracy, best.at(0).features);
@@ -275,7 +278,7 @@ bstFeats forwardSelection(const vfVec& data) {
 }
 
 float leaveOneOutCrossValidation(const vfVec& data, const iVec& features) {
-    float numCorrect=0;
+    int numCorrect=0;
     for (int instance = 0; instance != data.size(); ++instance) {
         fVec validation = validationData(data,instance);
         vfVec training = trainingData(data,instance);
@@ -283,7 +286,7 @@ float leaveOneOutCrossValidation(const vfVec& data, const iVec& features) {
         classify(training, validation, features, k);
         if (accurate(data, validation, instance)) ++numCorrect;
     }
-    return numCorrect/data.size();
+    return static_cast<float>(numCorrect)/data.size();
 }
 
 int chooseBestK(const vfVec &originalData, const vfVec &training,
@@ -361,7 +364,7 @@ void backwardElimDemo(const vfVec& data) {
                 float accuracy = leaveOneOutCrossValidation(data, tempFeatures);
                 cout << setprecision(4)
                 << ", accuracy is: " << accuracy << "\n";
-                cout << "best accuracy is; " << bestAccuracy << endl;
+                cout << "best accuracy is: " << bestAccuracy << endl;
                 if ( accuracy > bestAccuracy) {
                     bestAccuracy = accuracy;
                     bestAtThisLevel = j;
