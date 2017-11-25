@@ -85,7 +85,7 @@ int main(int argc, const char * argv[]) {
 
 // Read the data and return a vector containing the data
 vfVec readData(){
-    const string fileName = "CS170Smalltestdata__44.txt";
+    const string fileName = "testData170/CS170Smalltestdata__44.txt";
 //    const string fileName = "CS170BIGtestdata__4.txt";
 //    const string fileName = "leaf.txt";
 //    const string fileName = "wine.txt";
@@ -201,10 +201,11 @@ vfVec trainingData(const vfVec& data, int instance) {
 void forwardSelectionDemo(const vfVec& data) {
     iVec features;
     iVec tempFeatures;
-    vector<bstFeats> best;
+    bstFeats best;
     int bestAtThisLevel=-1;
-    float bestAccuracy =  0.5;
+    float defaultAccuracy = 0.5;
     for (int i = 1; i != data.at(0).size(); ++i) {
+        float bestAccuracy =  defaultAccuracy;
         for (int j = 1; j != data.at(0).size(); ++j) {
             if (find(features.begin(), features.end(), j) == features.end()) {
                 tempFeatures = features;
@@ -213,68 +214,62 @@ void forwardSelectionDemo(const vfVec& data) {
                 print(tempFeatures);
                 float accuracy = leaveOneOutCrossValidation(data, tempFeatures);
                 cout << ", accuracy is: " << accuracy << "\n";
-                if ( accuracy > bestAccuracy) {
+                if ( accuracy >= bestAccuracy) {
                     bestAccuracy = accuracy;
                     bestAtThisLevel = j;
                 }
             }
         }
         // don't add same 'bestAtThisLevel' more than once
-        if (find(features.begin(), features.end(), bestAtThisLevel)
-            == features.end()) {
-            features.push_back(bestAtThisLevel);
-            bstFeats temp(bestAccuracy, features);
-            best.push_back(temp);
-            sort(best.begin(),best.end(), cmpFeatures);
+        features.push_back(bestAtThisLevel);
+        bstFeats temp(bestAccuracy, features);
+        if (temp.accuracy >= best.accuracy) {
+            best.accuracy = temp.accuracy;
+            best.features = temp.features;
+            cout << "\nFeature set ";
+            print(best.features);
+            cout << " was best, accuracy is " << bestAccuracy << "\n\n";
         }
         // print out information on accuracy for the current level
-        if (best.at(0).accuracy > bestAccuracy) {
+        else {
             cout << "\n(WARNING: Accuracy has decreased. "
             "Continuing search in case of local maxima.)\n";
         }
-        else {
-            cout << "\nFeature set ";
-            print(best.at(0).features);
-            cout << " was best, accuracy is " << bestAccuracy << "\n\n";
-        }
     }
-    cout << "Best is: ";
-    sort(best.begin(),best.end(), cmpFeatures); // move best accuracy to front
-    cout << best.at(0).accuracy << " ";
-    print(best.at(0).features);
+    cout << "\nBest is: ";
+    cout << best.accuracy << " ";
+    print(best.features);
     cout << endl;
 }
 
 bstFeats forwardSelection(const vfVec& data) {
     iVec features;
     iVec tempFeatures;
-    vector<bstFeats> best;
+    bstFeats best;
     int bestAtThisLevel=-1;
-    float bestAccuracy =  0.5;
+    float defaultAccuracy = 0.5;
     for (int i = 1; i != data.at(0).size(); ++i) {
+        float bestAccuracy =  defaultAccuracy;
         for (int j = 1; j != data.at(0).size(); ++j) {
             if (find(features.begin(), features.end(), j) == features.end()) {
                 tempFeatures = features;
                 tempFeatures.push_back(j);
                 float accuracy = leaveOneOutCrossValidation(data, tempFeatures);
-                if ( accuracy > bestAccuracy) {
+                if ( accuracy >= bestAccuracy) {
                     bestAccuracy = accuracy;
                     bestAtThisLevel = j;
                 }
             }
         }
         // don't add same 'bestAtThisLevel' more than once
-        if (find(features.begin(), features.end(), bestAtThisLevel)
-            == features.end()) {
-            features.push_back(bestAtThisLevel);
-            bstFeats temp(bestAccuracy, features);
-            best.push_back(temp);
-            sort(best.begin(),best.end(), cmpFeatures);
+        features.push_back(bestAtThisLevel);
+        bstFeats temp(bestAccuracy, features);
+        if (temp.accuracy >= best.accuracy) {
+            best.accuracy = temp.accuracy;
+            best.features = temp.features;
         }
     }
-    sort(best.begin(),best.end(), cmpFeatures); // move best accuracy to front
-    bstFeats bestFeature(best.at(0).accuracy, best.at(0).features);
-    return bestFeature;
+    return best;
 }
 
 float leaveOneOutCrossValidation(const vfVec& data, const iVec& features) {
@@ -291,6 +286,7 @@ float leaveOneOutCrossValidation(const vfVec& data, const iVec& features) {
 
 int chooseBestK(const vfVec &originalData, const vfVec &training,
                 const fVec &validation, const iVec &features, int instance) {
+    return 1;
     int numberPointstoCheck = static_cast<int>(originalData.size())/3;
     // k can't exceed number of data points
     for (int k = 1; k < numberPointstoCheck; k = k+2) {
