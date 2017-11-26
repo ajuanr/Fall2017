@@ -71,8 +71,9 @@ int main(int argc, const char * argv[]) {
     vfVec data = readData();
     if (!data.empty()) {
         introduction(data);
-        forwardSelectionDemo(data);
-        resultsInfo(data);
+//        forwardSelectionDemo(data);
+        backwardElimDemo(data);
+//        resultsInfo(data);
     }
     else
         cout << "There's no data\n";
@@ -233,8 +234,7 @@ void forwardSelectionDemo(const vfVec& data) {
             "Continuing search in case of local maxima.)\n";
         }
     }
-    cout << "\nBest is: ";
-    cout << best.accuracy << " ";
+    cout << "\nBest is: " << best.accuracy << " ";
     print(best.features);
     cout << endl;
 }
@@ -306,61 +306,60 @@ int knn(const vfVec& training, const fVec& validation,
 
 void backwardElimDemo(const vfVec& data) {
     iVec features = allFeatures(data);
-    iVec tempFeatures = features;
-    vector<bstFeats> best;
+    iVec tempFeatures;
+    bstFeats best;
     int bestAtThisLevel=-1;
-    float defaultAcc = 0.0;
-    for (int i = 1; i != data.at(0).size(); ++i) {
-        float bestAccuracy =  defaultAcc;
-        for (int j = 0; j != features.size(); ++j) {
-            if (find(features.begin(), features.end(), j) != features.end()) {
+    float defaultAccuracy = 0.5;
+    for (int i = 1; i != data.at(0).size()-1; ++i) {
+        float bestAccuracy =  defaultAccuracy;
+        for (int j = 0; j != features.size()-1; ++j) {
+            if (find(features.begin(), features.end(), features.at(j))
+                    != features.end()) {
                 tempFeatures = features;
                 tempFeatures.erase(tempFeatures.begin()+j);
                 cout << "Using features: ";
                 print(tempFeatures);
                 float accuracy = leaveOneOutCrossValidation(data, tempFeatures);
-                cout << setprecision(4)
-                << ", accuracy is: " << accuracy << "\n";
-                cout << "best accuracy is: " << bestAccuracy << endl;
+                cout << ", accuracy is: " << accuracy << "\n";
                 if ( accuracy > bestAccuracy) {
                     bestAccuracy = accuracy;
                     bestAtThisLevel = j;
                 }
             }
         }
-        if (features.size() == 1) --bestAtThisLevel;
-        features.erase(features.begin() + (bestAtThisLevel));
+        // don't add same 'bestAtThisLevel' more than once
+        features.erase(features.begin()+bestAtThisLevel);
         bstFeats temp(bestAccuracy, features);
-        best.push_back(temp);
-        sort(best.begin(),best.end(), cmpFeatures);
+        if (temp.accuracy >= best.accuracy) {
+            best.accuracy = temp.accuracy;
+            best.features = temp.features;
+            cout << "\nFeature set ";
+            print(best.features);
+            cout << " was best, accuracy is " << bestAccuracy << "\n\n";
+        }
         // print out information on accuracy for the current level
-        if (best.at(0).accuracy > bestAccuracy) {
+        else {
             cout << "\n(WARNING: Accuracy has decreased. "
             "Continuing search in case of local maxima.)\n";
         }
-        else {
-            cout << "\nFeature set ";
-            print(best.at(0).features);
-            cout << " was best, accuracy is " << bestAccuracy << "\n\n";
-        }
     }
-    cout << "\nbest\n";
-    sort(best.begin(),best.end(), cmpFeatures); // move best accuracy to front
-    cout << best.at(0).accuracy << " ";
-    print(best.at(0).features);
+    cout << "\nBest is: " << best.accuracy << " ";
+    print(best.features);
     cout << endl;
 }
 
 bstFeats backwardElim(const vfVec& data) {
     iVec features = allFeatures(data);
-    iVec tempFeatures = features;
-    vector<bstFeats> best;
+    iVec tempFeatures;
+    bstFeats best;
     int bestAtThisLevel=-1;
-    float defaultAcc = 0.0;
-    for (int i = 1; i != data.at(0).size(); ++i) {
-        float bestAccuracy =  defaultAcc;
-        for (int j = 0; j != features.size(); ++j) {
-            if (find(features.begin(), features.end(), j) != features.end()) {
+    float defaultAccuracy = 0.5;
+    for (int i = 1; i != data.at(0).size()-1; ++i) {
+        float bestAccuracy =  defaultAccuracy;
+        for (int j = 0; j != features.size()-1; ++j) {
+            cout << features.at(j) << endl;
+            if (find(features.begin(), features.end(), features.at(j))
+                != features.end()) {
                 tempFeatures = features;
                 tempFeatures.erase(tempFeatures.begin()+j);
                 float accuracy = leaveOneOutCrossValidation(data, tempFeatures);
@@ -370,15 +369,15 @@ bstFeats backwardElim(const vfVec& data) {
                 }
             }
         }
-        if (features.size() == 1) --bestAtThisLevel; // for the last feature
-        features.erase(features.begin() + (bestAtThisLevel));
+        // don't add same 'bestAtThisLevel' more than once
+        features.erase(features.begin()+bestAtThisLevel);
         bstFeats temp(bestAccuracy, features);
-        best.push_back(temp);
-        sort(best.begin(),best.end(), cmpFeatures);
+        if (temp.accuracy >= best.accuracy) {
+            best.accuracy = temp.accuracy;
+            best.features = temp.features;
+        }
     }
-    sort(best.begin(),best.end(), cmpFeatures); // move best accuracy to front
-    bstFeats bestFeature(best.at(0).accuracy, best.at(0).features);
-    return bestFeature;
+    return best;
 }
 
 // returns a vector a value for every feature in the data
