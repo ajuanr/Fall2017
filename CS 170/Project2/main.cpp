@@ -50,7 +50,7 @@ float stdDev(const vfVec&, int);
 void zNormalize(vfVec&);
 bool accurate(const vfVec&, const fVec&, int);
 bool cmpFeatures(const bstFeats &a,const bstFeats &b)
-        {return a.accuracy>b.accuracy;}
+{return a.accuracy>b.accuracy;}
 //search stuff
 float leaveOneOutCrossValidation(const vfVec&, const iVec&);
 void forwardSelectionDemo(const vfVec&);
@@ -71,9 +71,11 @@ int main(int argc, const char * argv[]) {
     vfVec data = readData();
     if (!data.empty()) {
         introduction(data);
-//        forwardSelectionDemo(data);
+        forwardSelectionDemo(data);
+        cout << endl;
         backwardElimDemo(data);
-//        resultsInfo(data);
+        cout << endl;
+        resultsInfo(data);
     }
     else
         cout << "There's no data\n";
@@ -83,11 +85,11 @@ int main(int argc, const char * argv[]) {
 
 // Read the data and return a vector containing the data
 vfVec readData(){
-    const string fileName = "testData170/CS170Smalltestdata__44.txt";
-//    const string fileName = "testData170/CS170BIGtestdata__4.txt";
-//    const string fileName = "leaf.txt";
-//    const string fileName = "wine.txt";
-//    const string fileName = "DataUserModeling.txt";
+//    const string fileName = "testData170/CS170Smalltestdata__44.txt";
+        const string fileName = "testData170/CS170BIGtestdata__4.txt";
+    //    const string fileName = "leaf.txt";
+    //    const string fileName = "wine.txt";
+//        const string fileName = "DataUserModeling.txt";
     ifstream input;
     input.open(fileName, ifstream::in);
     vfVec output;
@@ -161,7 +163,7 @@ float stdDev(const vfVec& data, int feature) {
     float sum = 0.0;
     for (int i = 0; i != data.size(); ++i) {
         sum +=
-         ((data.at(i).at(feature)-mu)*(data.at(i).at(feature)-mu) / data.size());
+        ((data.at(i).at(feature)-mu)*(data.at(i).at(feature)-mu) / data.size());
     }
     return sqrt(sum);
 }
@@ -234,7 +236,8 @@ void forwardSelectionDemo(const vfVec& data) {
             "Continuing search in case of local maxima.)\n";
         }
     }
-    cout << "\nBest is: " << best.accuracy << " ";
+    cout << "\n\nBest is: ";
+    cout << best.accuracy << " ";
     print(best.features);
     cout << endl;
 }
@@ -306,29 +309,29 @@ int knn(const vfVec& training, const fVec& validation,
 
 void backwardElimDemo(const vfVec& data) {
     iVec features = allFeatures(data);
-    iVec tempFeatures;
+    iVec tempFeatures = features;
     bstFeats best;
     int bestAtThisLevel=-1;
-    float defaultAccuracy = 0.5;
-    for (int i = 1; i != data.at(0).size()-1; ++i) {
-        float bestAccuracy =  defaultAccuracy;
+    float defaultAcc = 0.0;
+    for (int i = 1; i != data.at(0).size(); ++i) {
+        float bestAccuracy =  defaultAcc;
         for (int j = 0; j != features.size()-1; ++j) {
-            if (find(features.begin(), features.end(), features.at(j))
-                    != features.end()) {
+            if (find(features.begin(), features.end(), features.at(j)) != features.end()) {
                 tempFeatures = features;
                 tempFeatures.erase(tempFeatures.begin()+j);
                 cout << "Using features: ";
                 print(tempFeatures);
                 float accuracy = leaveOneOutCrossValidation(data, tempFeatures);
-                cout << ", accuracy is: " << accuracy << "\n";
+                cout << setprecision(4)
+                << ", accuracy is: " << accuracy << "\n";
+                cout << "best accuracy is: " << bestAccuracy << endl;
                 if ( accuracy > bestAccuracy) {
                     bestAccuracy = accuracy;
                     bestAtThisLevel = j;
                 }
             }
         }
-        // don't add same 'bestAtThisLevel' more than once
-        features.erase(features.begin()+bestAtThisLevel);
+        features.erase(features.begin() + (bestAtThisLevel));
         bstFeats temp(bestAccuracy, features);
         if (temp.accuracy >= best.accuracy) {
             best.accuracy = temp.accuracy;
@@ -343,23 +346,22 @@ void backwardElimDemo(const vfVec& data) {
             "Continuing search in case of local maxima.)\n";
         }
     }
-    cout << "\nBest is: " << best.accuracy << " ";
+    cout << "\n\nbest\n";
+    cout << best.accuracy << " ";
     print(best.features);
     cout << endl;
 }
 
 bstFeats backwardElim(const vfVec& data) {
     iVec features = allFeatures(data);
-    iVec tempFeatures;
+    iVec tempFeatures = features;
     bstFeats best;
     int bestAtThisLevel=-1;
-    float defaultAccuracy = 0.5;
-    for (int i = 1; i != data.at(0).size()-1; ++i) {
-        float bestAccuracy =  defaultAccuracy;
+    float defaultAcc = 0.0;
+    for (int i = 1; i != data.at(0).size(); ++i) {
+        float bestAccuracy =  defaultAcc;
         for (int j = 0; j != features.size()-1; ++j) {
-            cout << features.at(j) << endl;
-            if (find(features.begin(), features.end(), features.at(j))
-                != features.end()) {
+            if (find(features.begin(), features.end(), features.at(j)) != features.end()) {
                 tempFeatures = features;
                 tempFeatures.erase(tempFeatures.begin()+j);
                 float accuracy = leaveOneOutCrossValidation(data, tempFeatures);
@@ -369,8 +371,7 @@ bstFeats backwardElim(const vfVec& data) {
                 }
             }
         }
-        // don't add same 'bestAtThisLevel' more than once
-        features.erase(features.begin()+bestAtThisLevel);
+        features.erase(features.begin() + (bestAtThisLevel));
         bstFeats temp(bestAccuracy, features);
         if (temp.accuracy >= best.accuracy) {
             best.accuracy = temp.accuracy;
@@ -405,7 +406,7 @@ vfVec randomData(const vfVec &data) {
         else --i;   // repeat this trial
     }
     for (int i = 0; i != randomiseData.size(); ++i) {
-            newData.push_back(data.at(randomiseData.at(i)));
+        newData.push_back(data.at(randomiseData.at(i)));
     }
     return newData;
 }
@@ -419,7 +420,7 @@ void repeatedtrialResults(const bVec& trials) {
     }
     for (iMap::iterator i = results.begin(); i != results.end(); ++i) {
         cout << setw(3) << i->first << " was seen: "
-             << setw(2) << i->second << " times ";
+        << setw(2) << i->second << " times ";
         for (int k = 0; k != i->second; ++k) {
             cout << "#";
         }
@@ -429,7 +430,7 @@ void repeatedtrialResults(const bVec& trials) {
 
 void introduction(vfVec &data) {
     cout << "Please wait while I normalize the data...   ";
-//    zNormalize(data);
+    //    zNormalize(data);
     zNormalize(data);
     cout << "Done\n\n";
     cout << "This dataset has " << data.at(0).size()-1 <<
@@ -443,8 +444,8 @@ void resultsInfo(const vfVec &data) {
     int numTrials = 10;
     for (int i = 0; i != numTrials; ++i) {
         vfVec newData = randomData(data);
-        bstFeats best = forwardSelection(newData);
-//        bstFeats *best = backwardElim(newData);
+//        bstFeats best = forwardSelection(newData);
+                bstFeats best = backwardElim(newData);
         cout << setw(8) << setprecision(5) << right <<
         best.accuracy  << " "; print(best.features);
         cout << endl;
