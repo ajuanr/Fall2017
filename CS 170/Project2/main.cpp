@@ -58,7 +58,7 @@ bstFeats forwardSelection(const vfVec&);
 void backwardElimDemo(const vfVec&);
 bstFeats backwardElim(const vfVec&);
 iVec allFeatures(const vfVec&);
-vfVec randomData(const vfVec&);
+vfVec randomData(const vfVec&, float);
 void repeatedtrialResults(const vector<bstFeats>&);
 
 // output stuff
@@ -85,8 +85,8 @@ int main(int argc, const char * argv[]) {
 
 // Read the data and return a vector containing the data
 vfVec readData(){
-//    const string fileName = "testData170/CS170Smalltestdata__44.txt";
-        const string fileName = "testData170/CS170BIGtestdata__4.txt";
+    const string fileName = "testData170/CS170Smalltestdata__44.txt";
+//        const string fileName = "testData170/CS170BIGtestdata__4.txt";
     //    const string fileName = "leaf.txt";
     //    const string fileName = "wine.txt";
 //        const string fileName = "DataUserModeling.txt";
@@ -325,7 +325,7 @@ void backwardElimDemo(const vfVec& data) {
                 cout << setprecision(4)
                 << ", accuracy is: " << accuracy << "\n";
                 cout << "best accuracy is: " << bestAccuracy << endl;
-                if ( accuracy > bestAccuracy) {
+                if ( accuracy >= bestAccuracy) {
                     bestAccuracy = accuracy;
                     bestAtThisLevel = j;
                 }
@@ -365,7 +365,7 @@ bstFeats backwardElim(const vfVec& data) {
                 tempFeatures = features;
                 tempFeatures.erase(tempFeatures.begin()+j);
                 float accuracy = leaveOneOutCrossValidation(data, tempFeatures);
-                if ( accuracy > bestAccuracy) {
+                if ( accuracy >= bestAccuracy) {
                     bestAccuracy = accuracy;
                     bestAtThisLevel = j;
                 }
@@ -391,11 +391,10 @@ iVec allFeatures(const vfVec& data) {
     return features;
 }
 
-vfVec randomData(const vfVec &data) {
+vfVec randomData(const vfVec &data, float percentToSkip) {
     srand(static_cast<unsigned int>(time(0)));
     vfVec newData;
     iVec randomiseData;
-    float percentToSkip = .05;
     int numToSkip = data.size() * percentToSkip;
     for (int i = 0; i != data.size() - numToSkip; ++i) {
         int temp = rand()%data.size();
@@ -443,7 +442,7 @@ void resultsInfo(const vfVec &data) {
     vector<bstFeats> results;
     int numTrials = 10;
     for (int i = 0; i != numTrials; ++i) {
-        vfVec newData = randomData(data);
+        vfVec newData = randomData(data,0.15);
 //        bstFeats best = forwardSelection(newData);
                 bstFeats best = backwardElim(newData);
         cout << setw(8) << setprecision(5) << right <<
