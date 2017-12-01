@@ -99,11 +99,11 @@ int main(int argc, const char * argv[]) {
 //        cout << endl;
         
         introduction(data);
-        forwardSelectionDemo(data);
-        cout << endl;
+//        forwardSelectionDemo(data);
+//        cout << endl;
 //        backwardElimDemo(data);
 //        cout << endl;
-//        resultsInfo(data);
+        resultsInfo(data);
     }
     else
         cout << "There's no data\n";
@@ -116,9 +116,9 @@ vfVec readData(){
 //    const string fileName = "testData170/CS170Smalltestdata__44.txt";
 //        const string fileName = "testData170/CS170BIGtestdata__4.txt";
 //        const string fileName = "leaf.txt";
-//        const string fileName = "wine.txt";
+        const string fileName = "wine.txt";
 //        const string fileName = "DataUserModeling.txt";
-    const string fileName = "sonar.txt";
+//    const string fileName = "sonar.txt";
     ifstream input;
     input.open(fileName, ifstream::in);
     vfVec output;
@@ -156,7 +156,10 @@ void print(const vfVec &data) {
 
 // used to print out the features that were checked/used
 void print(const iVec &features) {
-    if (features.empty()) cout << "{ }";
+    if (features.empty()) {
+        cout << "{ }";
+        return;
+    }
     cout << "{" << features.at(0);
     for (int i = 1; i != features.size(); ++i) {
         cout << " " << features.at(i);
@@ -255,7 +258,7 @@ void forwardSelectionDemo(const vfVec& data) {
         if (temp.accuracy >= best.accuracy) {
             best.accuracy = temp.accuracy;
             best.features = temp.features;
-            cout << "\nFeature set ";
+            cout << "\n\nFeature set ";
             print(best.features);
             cout << " was best, accuracy is " << bestAccuracy << "\n\n";
         }
@@ -344,7 +347,7 @@ void backwardElimDemo(const vfVec& data) {
     float defaultAcc = 0.0;
     for (int i = 1; i != data.at(0).size(); ++i) {
         float bestAccuracy =  defaultAcc;
-        for (int j = 0; j != features.size()-1; ++j) {
+        for (int j = 0; j != features.size(); ++j) {
             if (find(features.begin(), features.end(), features.at(j)) != features.end()) {
                 tempFeatures = features;
                 tempFeatures.erase(tempFeatures.begin()+j);
@@ -353,7 +356,6 @@ void backwardElimDemo(const vfVec& data) {
                 float accuracy = leaveOneOutCrossValidation(data, tempFeatures);
                 cout << setprecision(4)
                 << ", accuracy is: " << accuracy << "\n";
-                cout << "best accuracy is: " << bestAccuracy << endl;
                 if ( accuracy >= bestAccuracy) {
                     bestAccuracy = accuracy;
                     bestAtThisLevel = j;
@@ -389,7 +391,7 @@ bstFeats backwardElim(const vfVec& data) {
     float defaultAcc = 0.0;
     for (int i = 1; i != data.at(0).size(); ++i) {
         float bestAccuracy =  defaultAcc;
-        for (int j = 0; j != features.size()-1; ++j) {
+        for (int j = 0; j != features.size(); ++j) {
             if (find(features.begin(), features.end(), features.at(j)) != features.end()) {
                 tempFeatures = features;
                 tempFeatures.erase(tempFeatures.begin()+j);
@@ -470,7 +472,7 @@ void resultsInfo(const vfVec &data) {
     vector<bstFeats> results;
     int numTrials = 10;
     for (int i = 0; i != numTrials; ++i) {
-        vfVec newData = randomData(data,0.15);
+        vfVec newData = randomData(data,0.05);
 //        bstFeats best = forwardSelection(newData);
                 bstFeats best = backwardElim(newData);
         cout << setw(8) << setprecision(5) << right <<
@@ -518,7 +520,6 @@ iVec crossOver(const iVec& a, const iVec& b) {
 
 void crossoverParents(viVec& parents) {
     iVec pairOder;
-    cout << "parents: " << parents.size() << endl;
     for (int i = 0; i != parents.size(); ++i) {
         int temp = rand() % parents.size();
         if (find(pairOder.begin(), pairOder.end(), temp) != pairOder.end()) {
@@ -526,7 +527,6 @@ void crossoverParents(viVec& parents) {
         }
         else { pairOder.push_back(temp); }
     }
-    print(pairOder); cout << endl;
 }
 
 void mutate(iVec& individual) {
