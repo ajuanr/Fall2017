@@ -544,7 +544,6 @@ void mutate(iVec& individual) {
 }
 
 bstFeats evaluate(const vfVec& data, iVec& individual) {
-    bstFeats newFeatures;
     // convert features used to a format useable by leaveOneOutCrossValidation
     iVec featuresVector;
     for (int i = 0; i != individual.size(); ++i) {
@@ -552,8 +551,7 @@ bstFeats evaluate(const vfVec& data, iVec& individual) {
             featuresVector.push_back(i+1);
         }
     }
-    print(featuresVector); cout << endl;
-    cout << leaveOneOutCrossValidation(data, featuresVector) << endl;
-    
-    return newFeatures;
+    float acc = leaveOneOutCrossValidation(data, featuresVector);
+    cout << acc << endl;
+    return bstFeats(acc, individual);
 }
