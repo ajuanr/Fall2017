@@ -23,6 +23,7 @@ struct bstFeats;                    // forwward declaration
 typedef vector<float> fVec;         // holds the features
 typedef vector<fVec> vfVec;         // holds all the rows
 typedef vector<int> iVec;           // holds which features to look at
+typedef vector<iVec> viVec;
 typedef vector<bstFeats> bVec;      // for storing the trials
 typedef map<float, int> fiMap;
 typedef map<int,int> iMap;
@@ -60,6 +61,10 @@ bstFeats backwardElim(const vfVec&);
 iVec allFeatures(const vfVec&);
 vfVec randomData(const vfVec&, float);
 void repeatedtrialResults(const vector<bstFeats>&);
+// my search algorithm
+iVec featureBitVector(int);
+viVec initParents(int size);
+void crossOver(iVec&, iVec&);
 
 // output stuff
 void introduction(vfVec&);
@@ -70,12 +75,26 @@ void testNormalize(vfVec&);
 int main(int argc, const char * argv[]) {
     vfVec data = readData();
     if (!data.empty()) {
-        introduction(data);
-        forwardSelectionDemo(data);
-        cout << endl;
-        backwardElimDemo(data);
-        cout << endl;
-        resultsInfo(data);
+        srand(static_cast<unsigned int>(time(0)));
+  
+        iVec a = featureBitVector(10);
+        print(a); cout << endl;
+        iVec b = featureBitVector(10);
+        print(b); cout << endl;
+        
+//        viVec parents = initParents(10);
+//        for (int i = 0; i != parents.size(); ++i) {
+//            print(parents.at(i));
+//            cout << endl;
+//        }
+//        cout << endl;
+        
+//        introduction(data);
+//        forwardSelectionDemo(data);
+//        cout << endl;
+//        backwardElimDemo(data);
+//        cout << endl;
+//        resultsInfo(data);
     }
     else
         cout << "There's no data\n";
@@ -392,7 +411,6 @@ iVec allFeatures(const vfVec& data) {
 }
 
 vfVec randomData(const vfVec &data, float percentToSkip) {
-    srand(static_cast<unsigned int>(time(0)));
     vfVec newData;
     iVec randomiseData;
     int numToSkip = data.size() * percentToSkip;
@@ -453,4 +471,35 @@ void resultsInfo(const vfVec &data) {
     cout << endl << endl;
     cout << "Number of trials: " << numTrials << endl;
     repeatedtrialResults(results);
+}
+
+iVec featureBitVector(int numFeatures) {
+    iVec output;
+    for (int i = 0; i != numFeatures; ++i) {
+        output.push_back(rand()%2);
+    }
+    
+    return output;
+}
+
+viVec initParents(int numFeatures) {
+    viVec parents;
+    float percentToUse = 0.3;
+    int numParents = numFeatures * percentToUse;
+    for (int i = 0; i != numParents; ++i) {
+        iVec parent = featureBitVector(numFeatures);
+        parents.push_back(parent);
+    }
+    
+    return parents;
+}
+
+void crossOver(iVec& a, iVec& b) {
+    int crossOverPoint = a.size() / (rand() % 5 + 3);
+    cout << "\ncrossOverPoint is " << crossOverPoint << endl;
+    
+    for (int i = crossOverPoint; i != a.size(); ++i) {
+        swap(a.at(i), b.at(i));
+    }
+    
 }
