@@ -64,9 +64,10 @@ void repeatedtrialResults(const vector<bstFeats>&);
 // my search algorithm
 iVec featureBitVector(int);
 viVec initParents(int size);
-void crossOver(iVec&, iVec&);
+iVec crossOver(const iVec&, const iVec&);
 void crossoverParents(viVec&);
-
+void mutate(iVec&);
+bstFeats evaluate(const vfVec&, iVec&);
 // output stuff
 void introduction(vfVec&);
 void resultsInfo(const vfVec&);
@@ -78,20 +79,24 @@ int main(int argc, const char * argv[]) {
     if (!data.empty()) {
         srand(static_cast<unsigned int>(time(0)));
   
-//        iVec a = featureBitVector(10);
-//        print(a); cout << endl;
+        iVec a = featureBitVector(10);
+        print(a); cout << endl;
 //        iVec b = featureBitVector(10);
 //        print(b); cout << endl;
-//        crossOver(a, b);
-//        print(a); cout << endl;
-//        print(b); cout << endl;
+//        print(crossOver(a, b)); cout << endl;
+        mutate(a);
+        print(a); cout << endl;
+        evaluate(data, a);
+
         
-        viVec parents = initParents(10);
-        for (int i = 0; i != parents.size(); ++i) {
-            print(parents.at(i));
-            cout << endl;
-        }
-        cout << endl;
+//        viVec parents = initParents(10);
+//        for (int i = 0; i != parents.size(); ++i) {
+//            print(parents.at(i));
+//            cout << endl;
+//        }
+//        cout << endl;
+//        crossoverParents(parents);
+//        cout << endl;
         
 //        introduction(data);
 //        forwardSelectionDemo(data);
@@ -108,10 +113,10 @@ int main(int argc, const char * argv[]) {
 
 // Read the data and return a vector containing the data
 vfVec readData(){
-    const string fileName = "testData170/CS170Smalltestdata__44.txt";
+//    const string fileName = "testData170/CS170Smalltestdata__44.txt";
 //        const string fileName = "testData170/CS170BIGtestdata__4.txt";
     //    const string fileName = "leaf.txt";
-    //    const string fileName = "wine.txt";
+        const string fileName = "wine.txt";
 //        const string fileName = "DataUserModeling.txt";
     ifstream input;
     input.open(fileName, ifstream::in);
@@ -500,14 +505,55 @@ viVec initParents(int numFeatures) {
     return parents;
 }
 
-void crossOver(iVec& a, iVec& b) {
+iVec crossOver(const iVec& a, const iVec& b) {
+    iVec child;
     int maxCrossOverPoint = a.size() * .7;
     int minCrossOverPoint = a.size() * .3;
     int crossOverPoint = (rand() % maxCrossOverPoint)+minCrossOverPoint;
     cout << maxCrossOverPoint << " " << minCrossOverPoint << endl;
-    cout << "\ncrossOverPoint is " << crossOverPoint << endl;
-    
-    for (int i = crossOverPoint; i != a.size(); ++i) {
-        swap(a.at(i), b.at(i));
+    for (int i = 0; i != a.size(); ++i) {
+        (i<crossOverPoint) ? child.push_back(a.at(i)) : child.push_back(b.at(i));
     }
+    
+    return child;
+}
+
+void crossoverParents(viVec& parents) {
+    iVec pairOder;
+    cout << "parents: " << parents.size() << endl;
+    for (int i = 0; i != parents.size(); ++i) {
+        int temp = rand() % parents.size();
+        if (find(pairOder.begin(), pairOder.end(), temp) != pairOder.end()) {
+            --i; // redo this iteration
+        }
+        else { pairOder.push_back(temp); }
+    }
+    print(pairOder); cout << endl;
+}
+
+void mutate(iVec& individual) {
+    float chanceOfMutation = 1.0/individual.size();
+    float chanceOfNoMutation = static_cast<float>(rand() % individual.size());
+    chanceOfNoMutation/= individual.size();
+    if (chanceOfNoMutation <= chanceOfMutation) {
+        int mutationPoint = rand() % individual.size();
+        if (individual.at(mutationPoint) == 0)
+            individual.at(mutationPoint) = 1;
+        else individual.at(mutationPoint) = 0;
+    }
+}
+
+bstFeats evaluate(const vfVec& data, iVec& individual) {
+    bstFeats newFeatures;
+    // convert features used to a format useable by leaveOneOutCrossValidation
+    iVec featuresVector;
+    for (int i = 0; i != individual.size(); ++i) {
+        if (individual.at(i) == 1) {
+            featuresVector.push_back(i+1);
+        }
+    }
+    print(featuresVector); cout << endl;
+    cout << leaveOneOutCrossValidation(data, featuresVector) << endl;
+    
+    return newFeatures;
 }
