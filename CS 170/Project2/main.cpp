@@ -63,7 +63,7 @@ vfVec randomData(const vfVec&, float);
 void repeatedtrialResults(const vector<bstFeats>&);
 // my search algorithm
 iVec featureBitVector(int);
-viVec initParents(int size);
+viVec initPopulation(int size);
 iVec crossOver(const iVec&, const iVec&);
 void crossoverParents(viVec&);
 void mutate(iVec&);
@@ -79,17 +79,17 @@ int main(int argc, const char * argv[]) {
     if (!data.empty()) {
         srand(static_cast<unsigned int>(time(0)));
   
-        iVec a = featureBitVector(10);
-        print(a); cout << endl;
+//        iVec a = featureBitVector(data.at(0).size()-1);
+//        print(a); cout << endl;
 //        iVec b = featureBitVector(10);
 //        print(b); cout << endl;
 //        print(crossOver(a, b)); cout << endl;
-        mutate(a);
-        print(a); cout << endl;
-        evaluate(data, a);
+//        mutate(a);
+//        print(a); cout << endl;
+//        evaluate(data, a);
 
         
-//        viVec parents = initParents(10);
+//        viVec parents = initPopulation(10);
 //        for (int i = 0; i != parents.size(); ++i) {
 //            print(parents.at(i));
 //            cout << endl;
@@ -98,9 +98,9 @@ int main(int argc, const char * argv[]) {
 //        crossoverParents(parents);
 //        cout << endl;
         
-//        introduction(data);
-//        forwardSelectionDemo(data);
-//        cout << endl;
+        introduction(data);
+        forwardSelectionDemo(data);
+        cout << endl;
 //        backwardElimDemo(data);
 //        cout << endl;
 //        resultsInfo(data);
@@ -115,9 +115,10 @@ int main(int argc, const char * argv[]) {
 vfVec readData(){
 //    const string fileName = "testData170/CS170Smalltestdata__44.txt";
 //        const string fileName = "testData170/CS170BIGtestdata__4.txt";
-    //    const string fileName = "leaf.txt";
-        const string fileName = "wine.txt";
+//        const string fileName = "leaf.txt";
+//        const string fileName = "wine.txt";
 //        const string fileName = "DataUserModeling.txt";
+    const string fileName = "sonar.txt";
     ifstream input;
     input.open(fileName, ifstream::in);
     vfVec output;
@@ -491,18 +492,16 @@ iVec featureBitVector(int numFeatures) {
     return output;
 }
 
-viVec initParents(int numFeatures) {
-    viVec parents;
+viVec initPopulation(int numFeatures) {
+    viVec startingPopulation;
     float percentToUse = 0.3;
-    int numParents = numFeatures * percentToUse;
-    if ((numParents % 2) == 1) ++numParents; // don't have odd num parents
-    cout << numParents << endl;
-    for (int i = 0; i != numParents; ++i) {
+    int populationSize = numFeatures * percentToUse;
+    if ((populationSize % 2) == 1) ++populationSize; //don't have odd population
+    for (int i = 0; i != populationSize; ++i) {
         iVec parent = featureBitVector(numFeatures);
-        parents.push_back(parent);
+        startingPopulation.push_back(parent);
     }
-    
-    return parents;
+    return startingPopulation;
 }
 
 iVec crossOver(const iVec& a, const iVec& b) {
@@ -514,7 +513,6 @@ iVec crossOver(const iVec& a, const iVec& b) {
     for (int i = 0; i != a.size(); ++i) {
         (i<crossOverPoint) ? child.push_back(a.at(i)) : child.push_back(b.at(i));
     }
-    
     return child;
 }
 
@@ -551,6 +549,7 @@ bstFeats evaluate(const vfVec& data, iVec& individual) {
             featuresVector.push_back(i+1);
         }
     }
+    print(featuresVector); cout << endl;
     float acc = leaveOneOutCrossValidation(data, featuresVector);
     cout << acc << endl;
     return bstFeats(acc, individual);
