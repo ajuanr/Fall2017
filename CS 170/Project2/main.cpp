@@ -67,7 +67,9 @@ viVec initPopulation(int size);
 iVec crossOver(const iVec&, const iVec&);
 void crossoverParents(viVec&);
 void mutate(iVec&);
-bstFeats evaluate(const vfVec&, iVec&);
+bstFeats evaluate(const vfVec&, const iVec&);
+bstFeats compete(const vfVec&, const iVec&, const iVec&);
+void evolve(const vfVec&);
 // output stuff
 void introduction(vfVec&);
 void resultsInfo(const vfVec&);
@@ -99,11 +101,19 @@ int main(int argc, const char * argv[]) {
 //        cout << endl;
         
         introduction(data);
-//        forwardSelectionDemo(data);
+        int t1 = time(0);
+        evolve(data);
+        int t2 = time(0);
+        cout << "took: " << t2 - t1 << endl;
+        
+        t1 = time(0);
+        forwardSelectionDemo(data);
+        t2 = time(0);
+        cout << "took: " << t2 - t1 << endl;
 //        cout << endl;
 //        backwardElimDemo(data);
 //        cout << endl;
-        resultsInfo(data);
+//        resultsInfo(data);
     }
     else
         cout << "There's no data\n";
@@ -116,9 +126,9 @@ vfVec readData(){
 //    const string fileName = "testData170/CS170Smalltestdata__44.txt";
 //        const string fileName = "testData170/CS170BIGtestdata__4.txt";
 //        const string fileName = "leaf.txt";
-        const string fileName = "wine.txt";
+//        const string fileName = "wine.txt";
 //        const string fileName = "DataUserModeling.txt";
-//    const string fileName = "sonar.txt";
+    const string fileName = "sonar.txt";
     ifstream input;
     input.open(fileName, ifstream::in);
     vfVec output;
@@ -490,7 +500,6 @@ iVec featureBitVector(int numFeatures) {
     for (int i = 0; i != numFeatures; ++i) {
         output.push_back(rand()%2);
     }
-    
     return output;
 }
 
@@ -511,7 +520,6 @@ iVec crossOver(const iVec& a, const iVec& b) {
     int maxCrossOverPoint = a.size() * .7;
     int minCrossOverPoint = a.size() * .3;
     int crossOverPoint = (rand() % maxCrossOverPoint)+minCrossOverPoint;
-    cout << maxCrossOverPoint << " " << minCrossOverPoint << endl;
     for (int i = 0; i != a.size(); ++i) {
         (i<crossOverPoint) ? child.push_back(a.at(i)) : child.push_back(b.at(i));
     }
@@ -519,6 +527,7 @@ iVec crossOver(const iVec& a, const iVec& b) {
 }
 
 void crossoverParents(viVec& parents) {
+    // pair parents randomly
     iVec pairOder;
     for (int i = 0; i != parents.size(); ++i) {
         int temp = rand() % parents.size();
@@ -527,13 +536,19 @@ void crossoverParents(viVec& parents) {
         }
         else { pairOder.push_back(temp); }
     }
+    
+    // perform the crossover on the pairs
+    int numParents = static_cast<int>(parents.size());
+    int i = 0;
+    while (i < numParents) {
+        // add the child of the crossover to parents vector
+        parents.push_back(crossOver(parents.at(i), parents.at(i+1)));
+        i += 2; // move on to next pair
+    }
 }
 
 void mutate(iVec& individual) {
-    float chanceOfMutation = 1.0/individual.size();
-    float chanceOfNoMutation = static_cast<float>(rand() % individual.size());
-    chanceOfNoMutation/= individual.size();
-    if (chanceOfNoMutation <= chanceOfMutation) {
+    if (rand()%individual.size() == 0) {
         int mutationPoint = rand() % individual.size();
         if (individual.at(mutationPoint) == 0)
             individual.at(mutationPoint) = 1;
@@ -541,7 +556,7 @@ void mutate(iVec& individual) {
     }
 }
 
-bstFeats evaluate(const vfVec& data, iVec& individual) {
+bstFeats evaluate(const vfVec& data, const iVec& individual) {
     // convert features used to a format useable by leaveOneOutCrossValidation
     iVec featuresVector;
     for (int i = 0; i != individual.size(); ++i) {
@@ -549,8 +564,43 @@ bstFeats evaluate(const vfVec& data, iVec& individual) {
             featuresVector.push_back(i+1);
         }
     }
-    print(featuresVector); cout << endl;
     float acc = leaveOneOutCrossValidation(data, featuresVector);
-    cout << acc << endl;
     return bstFeats(acc, individual);
+}
+
+bstFeats compete(const vfVec &data, const iVec &a, const iVec &b) {
+    bstFeats newA = evaluate(data, a);
+    bstFeats newB = evaluate(data, b);
+    return (newA.accuracy > newB.accuracy)? newA : newB;
+}
+
+void evolve(const vfVec &data) {
+    // initialize population
+    viVec parents = initPopulation(static_cast<int>(data.at(0).size())-1);
+    bVec population;
+    for (int round = 0; round != 100; ++round) {
+        // clear the old population, if any
+        population.clear();
+        // perform crossover
+        crossoverParents(parents);
+        // possibly mutate some individuals
+        for (int i = 0; i != parents.size(); ++i) {
+            mutate(parents.at(i));
+        }
+        // evalute the population
+        for ( int i = 0; i != parents.size(); ++i) {
+            population.push_back(evaluate(data, parents.at(i)));
+        }
+        sort(population.begin(), population.end(), cmpFeatures);
+        // create the new parents for next round
+        int numCopy = population.size() - 2; // leave out the worst two
+        parents.clear();
+        for (int i = 0; i != numCopy; ++i) {
+            parents.push_back(population.at(i).features);
+        }
+        cout << "best for round: " << round << " was: " << population.at(0).accuracy << "  ";
+        print(population.at(0).features); cout << endl;
+    }
+    cout << "\n\nbest was: " << population.at(0).accuracy << "  ";
+    print(population.at(0).features); cout << endl;
 }
