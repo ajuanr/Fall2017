@@ -65,6 +65,7 @@ void repeatedtrialResults(const vector<bstFeats>&);
 iVec featureBitVector(int);
 viVec initParents(int size);
 void crossOver(iVec&, iVec&);
+void crossoverParents(viVec&);
 
 // output stuff
 void introduction(vfVec&);
@@ -77,17 +78,20 @@ int main(int argc, const char * argv[]) {
     if (!data.empty()) {
         srand(static_cast<unsigned int>(time(0)));
   
-        iVec a = featureBitVector(10);
-        print(a); cout << endl;
-        iVec b = featureBitVector(10);
-        print(b); cout << endl;
+//        iVec a = featureBitVector(10);
+//        print(a); cout << endl;
+//        iVec b = featureBitVector(10);
+//        print(b); cout << endl;
+//        crossOver(a, b);
+//        print(a); cout << endl;
+//        print(b); cout << endl;
         
-//        viVec parents = initParents(10);
-//        for (int i = 0; i != parents.size(); ++i) {
-//            print(parents.at(i));
-//            cout << endl;
-//        }
-//        cout << endl;
+        viVec parents = initParents(10);
+        for (int i = 0; i != parents.size(); ++i) {
+            print(parents.at(i));
+            cout << endl;
+        }
+        cout << endl;
         
 //        introduction(data);
 //        forwardSelectionDemo(data);
@@ -486,6 +490,8 @@ viVec initParents(int numFeatures) {
     viVec parents;
     float percentToUse = 0.3;
     int numParents = numFeatures * percentToUse;
+    if ((numParents % 2) == 1) ++numParents; // don't have odd num parents
+    cout << numParents << endl;
     for (int i = 0; i != numParents; ++i) {
         iVec parent = featureBitVector(numFeatures);
         parents.push_back(parent);
@@ -495,11 +501,13 @@ viVec initParents(int numFeatures) {
 }
 
 void crossOver(iVec& a, iVec& b) {
-    int crossOverPoint = a.size() / (rand() % 5 + 3);
+    int maxCrossOverPoint = a.size() * .7;
+    int minCrossOverPoint = a.size() * .3;
+    int crossOverPoint = (rand() % maxCrossOverPoint)+minCrossOverPoint;
+    cout << maxCrossOverPoint << " " << minCrossOverPoint << endl;
     cout << "\ncrossOverPoint is " << crossOverPoint << endl;
     
     for (int i = crossOverPoint; i != a.size(); ++i) {
         swap(a.at(i), b.at(i));
     }
-    
 }
