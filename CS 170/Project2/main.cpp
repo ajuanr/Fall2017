@@ -68,7 +68,6 @@ iVec crossOver(const iVec&, const iVec&);
 void crossoverParents(viVec&);
 void mutate(iVec&);
 bstFeats evaluate(const vfVec&, const iVec&);
-bstFeats compete(const vfVec&, const iVec&, const iVec&);
 void evolve(const vfVec&);
 // output stuff
 void introduction(vfVec&);
@@ -101,15 +100,10 @@ int main(int argc, const char * argv[]) {
 //        cout << endl;
         
         introduction(data);
-        int t1 = time(0);
         evolve(data);
-        int t2 = time(0);
-        cout << "took: " << t2 - t1 << endl;
-        
-        t1 = time(0);
+
         forwardSelectionDemo(data);
-        t2 = time(0);
-        cout << "took: " << t2 - t1 << endl;
+
 //        cout << endl;
 //        backwardElimDemo(data);
 //        cout << endl;
@@ -124,11 +118,11 @@ int main(int argc, const char * argv[]) {
 // Read the data and return a vector containing the data
 vfVec readData(){
 //    const string fileName = "testData170/CS170Smalltestdata__44.txt";
-//        const string fileName = "testData170/CS170BIGtestdata__4.txt";
+        const string fileName = "testData170/CS170BIGtestdata__4.txt";
 //        const string fileName = "leaf.txt";
 //        const string fileName = "wine.txt";
 //        const string fileName = "DataUserModeling.txt";
-    const string fileName = "sonar.txt";
+//    const string fileName = "sonar.txt";
     ifstream input;
     input.open(fileName, ifstream::in);
     vfVec output;
@@ -568,17 +562,12 @@ bstFeats evaluate(const vfVec& data, const iVec& individual) {
     return bstFeats(acc, individual);
 }
 
-bstFeats compete(const vfVec &data, const iVec &a, const iVec &b) {
-    bstFeats newA = evaluate(data, a);
-    bstFeats newB = evaluate(data, b);
-    return (newA.accuracy > newB.accuracy)? newA : newB;
-}
-
 void evolve(const vfVec &data) {
-    // initialize population
+    // initialize parents
     viVec parents = initPopulation(static_cast<int>(data.at(0).size())-1);
     bVec population;
-    for (int round = 0; round != 100; ++round) {
+    int maxGenerations = 100;
+    for (int generation = 0; generation != maxGenerations; ++generation) {
         // clear the old population, if any
         population.clear();
         // perform crossover
@@ -592,13 +581,14 @@ void evolve(const vfVec &data) {
             population.push_back(evaluate(data, parents.at(i)));
         }
         sort(population.begin(), population.end(), cmpFeatures);
-        // create the new parents for next round
-        int numCopy = population.size() - 2; // leave out the worst two
+        // select parents for next round
+        int numCopy = static_cast<int>(population.size()) - 2; // leave out the worst two
         parents.clear();
         for (int i = 0; i != numCopy; ++i) {
             parents.push_back(population.at(i).features);
         }
-        cout << "best for round: " << round << " was: " << population.at(0).accuracy << "  ";
+        cout << "best for generation: " << generation << " was: "
+             << population.at(0).accuracy << "  ";
         print(population.at(0).features); cout << endl;
     }
     cout << "\n\nbest was: " << population.at(0).accuracy << "  ";
