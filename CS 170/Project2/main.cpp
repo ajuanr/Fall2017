@@ -48,14 +48,13 @@ float distance(const fVec&, const fVec&, const iVec&);
 fVec validationData(const vfVec&, int);
 vfVec trainingData(const vfVec&, int);
 void classify(const vfVec&, fVec&, const iVec&, int);
-float defaultAverage(const vfVec&);
 // normalizing stuff
 float featureMean(const vfVec&, int);
 float stdDev(const vfVec&, int);
 void zNormalize(vfVec&);
 bool accurate(const vfVec&, const fVec&, int);
 bool compare(const bestFeatures &a,const bestFeatures &b)
-    {return a.accuracy>b.accuracy;}
+{return a.accuracy>b.accuracy;}
 float leaveOneOutCrossValidation(const vfVec&, const iVec&);
 void forwardSelectionDemo(const vfVec&);
 bestFeatures forwardSelection(const vfVec&);
@@ -85,7 +84,7 @@ int main(int argc, const char * argv[]) {
     vfVec data = readData(promptFileName());
     if (!data.empty()) {
         srand(static_cast<unsigned int>(time(0)));
-        startSearch(data);
+                startSearch(data);
 //        resultsInfo(data, forwardSelection);
     }
     else
@@ -96,25 +95,24 @@ int main(int argc, const char * argv[]) {
 
 string promptFileName() {
     cout << "Welcome to Juan Ruiz's feature selection algorithm\n"
-            "Type in the name of the file to test: ";
+    "Type in the name of the file to test: ";
     string fileName;
     cin >> fileName;
     fileName = "CS170Smalltestdata__44.txt";
-//    fileName = "CS170BIGtestdata__4.txt";
-//    fileName = "leaf.txt";
-//      fileName = "wine.txt";
-//    fileName = "DataUserModeling.txt";
-//fileName = "sonar.txt";
-    fileName = "glassIdentification.txt";
+        fileName = "CS170BIGtestdata__4.txt";
+    //    fileName = "leaf.txt";
+    //      fileName = "wine.txt";
+    //    fileName = "DataUserModeling.txt";
+    //fileName = "sonar.txt";
     return fileName;
 }
 
 searchFunc promptSearchFunction() {
     cout << "Type the number of the algorithm you want to run\n"
-            "1. Forward Selection\n"
-            "2. Backward Elimination\n"
-            "3. Juan's Special Algorithm\n"
-            "        ";
+    "1. Forward Selection\n"
+    "2. Backward Elimination\n"
+    "3. Juan's Special Algorithm\n"
+    "        ";
     int choice;
     cin >> choice;
     switch (choice) {
@@ -136,7 +134,7 @@ void startSearch(vfVec &data) {
     zNormalize(data);
     
     cout << "Done\n\n"
-         << "Beginning Search\n\n";
+    << "Beginning Search\n\n";
     searchFunction(data);
 }
 
@@ -278,10 +276,11 @@ void forwardSelectionDemo(const vfVec& data) {
     iVec tempFeatures;
     bestFeatures best;
     int bestAtThisLevel=-1;
-    float bestAccuracy = defaultAverage(data);
-    cout << "default accuracy with no features: " << bestAccuracy << endl;
+    cout << "accuracy with no features: "
+        << leaveOneOutCrossValidation(data, features) << endl;
+    float defaultAccuracy = 0.5;
     for (int i = 1; i != data.at(0).size(); ++i) {
-//        float bestAccuracy =  defaultAccuracy;
+        float bestAccuracy =  defaultAccuracy;
         for (int j = 1; j != data.at(0).size(); ++j) {
             if (find(features.begin(), features.end(), j) == features.end()) {
                 tempFeatures = features;
@@ -297,22 +296,19 @@ void forwardSelectionDemo(const vfVec& data) {
             }
         }
         // don't add same 'bestAtThisLevel' more than once
-        if (find(features.begin(), features.end(), bestAtThisLevel)
-            == features.end()){
-            features.push_back(bestAtThisLevel);
-            bestFeatures temp(bestAccuracy, features);
-            if (temp.accuracy > best.accuracy) {
-                best.accuracy = temp.accuracy;
-                best.features = temp.features;
-                cout << "\n\nFeature set ";
-                print(best.features);
-                cout << " was best, accuracy is " << bestAccuracy << "\n\n";
-            }
-            // print out information on accuracy for the current level
-            else {
-                cout << "\n(WARNING: Accuracy has decreased. "
-                "Continuing search in case of local maxima.)\n";
-            }
+        features.push_back(bestAtThisLevel);
+        bestFeatures temp(bestAccuracy, features);
+        if (temp.accuracy > best.accuracy) {
+            best.accuracy = temp.accuracy;
+            best.features = temp.features;
+            cout << "\n\nFeature set ";
+            print(best.features);
+            cout << " was best, accuracy is " << bestAccuracy << "\n\n";
+        }
+        // print out information on accuracy for the current level
+        else {
+            cout << "\n(WARNING: Accuracy has decreased. "
+            "Continuing search in case of local maxima.)\n";
         }
     }
     cout << "\n\nBest is: ";
@@ -326,7 +322,7 @@ bestFeatures forwardSelection(const vfVec& data) {
     iVec tempFeatures;
     bestFeatures best;
     int bestAtThisLevel=-1;
-    float defaultAccuracy = defaultAverage(data);
+    float defaultAccuracy = 0.5;
     for (int i = 1; i != data.at(0).size(); ++i) {
         float bestAccuracy =  defaultAccuracy;
         for (int j = 1; j != data.at(0).size(); ++j) {
@@ -340,15 +336,12 @@ bestFeatures forwardSelection(const vfVec& data) {
                 }
             }
         }
-        if (find(features.begin(), features.end(), bestAtThisLevel)
-            == features.end()){
-            // don't add same 'bestAtThisLevel' more than once
-            features.push_back(bestAtThisLevel);
-            bestFeatures temp(bestAccuracy, features);
-            if (temp.accuracy > best.accuracy) {
-                best.accuracy = temp.accuracy;
-                best.features = temp.features;
-            }
+        // don't add same 'bestAtThisLevel' more than once
+        features.push_back(bestAtThisLevel);
+        bestFeatures temp(bestAccuracy, features);
+        if (temp.accuracy > best.accuracy) {
+            best.accuracy = temp.accuracy;
+            best.features = temp.features;
         }
     }
     return best;
@@ -394,7 +387,9 @@ void backwardElimDemo(const vfVec& data) {
     iVec tempFeatures = features;
     bestFeatures best;
     int bestAtThisLevel=-1;
-    float defaultAcc = defaultAverage(data);
+    float defaultAcc = 0.5;
+    cout << "accuracy with all features: "
+    << leaveOneOutCrossValidation(data, features) << endl;
     for (int i = 1; i != data.at(0).size(); ++i) {
         float bestAccuracy =  defaultAcc;
         for (int j = 0; j != features.size(); ++j) {
@@ -413,7 +408,6 @@ void backwardElimDemo(const vfVec& data) {
                 }
             }
         }
-        
         features.erase(features.begin() + (bestAtThisLevel));
         bestFeatures temp(bestAccuracy, features);
         if (temp.accuracy > best.accuracy) {
@@ -440,7 +434,7 @@ bestFeatures backwardElim(const vfVec& data) {
     iVec tempFeatures = features;
     bestFeatures best;
     int bestAtThisLevel=-1;
-    float defaultAcc = defaultAverage(data);
+    float defaultAcc = 0.0;
     for (int i = 1; i != data.at(0).size(); ++i) {
         float bestAccuracy =  defaultAcc;
         for (int j = 0; j != features.size(); ++j) {
@@ -622,13 +616,13 @@ void evolve(const vfVec &data) {
         sort(population.begin(), population.end(), compare);
         // select parents for next round
         int numCopy = static_cast<int>(population.size()) -
-                        (originalNumParents/2); // leave out the worst two
+        (originalNumParents/2); // leave out the worst two
         parents.clear();
         for (int i = 0; i != numCopy; ++i) {
             parents.push_back(population.at(i).features);
         }
         cout << "best for generation: " << generation << " was: "
-             << population.at(0).accuracy << "  ";
+        << population.at(0).accuracy << "  ";
         print(population.at(0).features); cout << endl;
     }
     cout << "\n\nbest was: " << population.at(0).accuracy << "  ";
