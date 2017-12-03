@@ -18,22 +18,22 @@
 
 using namespace std;
 
-struct bstFeats;                    // forwward declaration
+struct bestFeatures;                    // forwward declaration
 
 typedef vector<float> fVec;         // holds the features
 typedef vector<fVec> vfVec;         // holds all the rows
 typedef vector<int> iVec;           // holds which features to look at
 typedef vector<iVec> viVec;
-typedef vector<bstFeats> bVec;      // for storing the trials
+typedef vector<bestFeatures> bVec;      // for storing the trials
 typedef map<float, int> fiMap;
 typedef map<int,int> iMap;
 
 typedef void(*searchFunc)(const vfVec&);
-typedef bstFeats(*searchNoInfo)(const vfVec&);
+typedef bestFeatures(*searchNoInfo)(const vfVec&);
 
-struct bstFeats{
-    bstFeats():accuracy(0.5){ }
-    bstFeats(float a, iVec f):accuracy(a), features(f) { }
+struct bestFeatures{
+    bestFeatures():accuracy(0.5){ }
+    bestFeatures(float a, iVec f):accuracy(a), features(f) { }
     float accuracy;
     iVec features;
 };
@@ -53,24 +53,23 @@ float featureMean(const vfVec&, int);
 float stdDev(const vfVec&, int);
 void zNormalize(vfVec&);
 bool accurate(const vfVec&, const fVec&, int);
-bool cmpFeatures(const bstFeats &a,const bstFeats &b)
-{return a.accuracy>b.accuracy;}
-//search stuff
+bool compare(const bestFeatures &a,const bestFeatures &b)
+    {return a.accuracy>b.accuracy;}
 float leaveOneOutCrossValidation(const vfVec&, const iVec&);
 void forwardSelectionDemo(const vfVec&);
-bstFeats forwardSelection(const vfVec&);
+bestFeatures forwardSelection(const vfVec&);
 void backwardElimDemo(const vfVec&);
-bstFeats backwardElim(const vfVec&);
+bestFeatures backwardElim(const vfVec&);
 iVec allFeatures(const vfVec&);
 vfVec randomData(const vfVec&, float);
-void repeatedtrialResults(const vector<bstFeats>&);
+void repeatedtrialResults(const vector<bestFeatures>&);
 // my search algorithm
 iVec featureBitVector(int);
 viVec initPopulation(int size);
 iVec crossOver(const iVec&, const iVec&);
 void crossoverParents(viVec&);
 void mutate(iVec&);
-bstFeats evaluate(const vfVec&, const iVec&);
+bestFeatures evaluate(const vfVec&, const iVec&);
 void evolve(const vfVec&);
 // output stuff
 string promptFileName();
@@ -101,13 +100,11 @@ string promptFileName() {
     cin >> fileName;
     fileName = "CS170Smalltestdata__44.txt";
 //    fileName = "CS170BIGtestdata__4.txt";
-    string folderName = "testData170/";
 //    fileName = "leaf.txt";
 //      fileName = "wine.txt";
 //    fileName = "DataUserModeling.txt";
 //fileName = "sonar.txt";
-    string completeFileName = folderName + fileName;
-    return completeFileName;
+    return fileName;
 }
 
 searchFunc promptSearchFunction() {
@@ -138,7 +135,6 @@ void startSearch(vfVec &data) {
     
     cout << "Done\n\n"
          << "Beginning Search\n\n";
-    
     searchFunction(data);
 }
 
@@ -259,7 +255,7 @@ vfVec trainingData(const vfVec& data, int instance) {
 void forwardSelectionDemo(const vfVec& data) {
     iVec features;
     iVec tempFeatures;
-    bstFeats best;
+    bestFeatures best;
     int bestAtThisLevel=-1;
     float defaultAccuracy = 0.5;
     for (int i = 1; i != data.at(0).size(); ++i) {
@@ -280,7 +276,7 @@ void forwardSelectionDemo(const vfVec& data) {
         }
         // don't add same 'bestAtThisLevel' more than once
         features.push_back(bestAtThisLevel);
-        bstFeats temp(bestAccuracy, features);
+        bestFeatures temp(bestAccuracy, features);
         if (temp.accuracy > best.accuracy) {
             best.accuracy = temp.accuracy;
             best.features = temp.features;
@@ -300,10 +296,10 @@ void forwardSelectionDemo(const vfVec& data) {
     cout << endl;
 }
 
-bstFeats forwardSelection(const vfVec& data) {
+bestFeatures forwardSelection(const vfVec& data) {
     iVec features;
     iVec tempFeatures;
-    bstFeats best;
+    bestFeatures best;
     int bestAtThisLevel=-1;
     float defaultAccuracy = 0.5;
     for (int i = 1; i != data.at(0).size(); ++i) {
@@ -321,7 +317,7 @@ bstFeats forwardSelection(const vfVec& data) {
         }
         // don't add same 'bestAtThisLevel' more than once
         features.push_back(bestAtThisLevel);
-        bstFeats temp(bestAccuracy, features);
+        bestFeatures temp(bestAccuracy, features);
         if (temp.accuracy > best.accuracy) {
             best.accuracy = temp.accuracy;
             best.features = temp.features;
@@ -368,13 +364,14 @@ int knn(const vfVec& training, const fVec& validation,
 void backwardElimDemo(const vfVec& data) {
     iVec features = allFeatures(data);
     iVec tempFeatures = features;
-    bstFeats best;
+    bestFeatures best;
     int bestAtThisLevel=-1;
     float defaultAcc = 0.0;
     for (int i = 1; i != data.at(0).size(); ++i) {
         float bestAccuracy =  defaultAcc;
         for (int j = 0; j != features.size(); ++j) {
-            if (find(features.begin(), features.end(), features.at(j)) != features.end()) {
+            if (find(features.begin(), features.end(), features.at(j))
+                != features.end()) {
                 tempFeatures = features;
                 tempFeatures.erase(tempFeatures.begin()+j);
                 cout << "Using features: ";
@@ -389,7 +386,7 @@ void backwardElimDemo(const vfVec& data) {
             }
         }
         features.erase(features.begin() + (bestAtThisLevel));
-        bstFeats temp(bestAccuracy, features);
+        bestFeatures temp(bestAccuracy, features);
         if (temp.accuracy > best.accuracy) {
             best.accuracy = temp.accuracy;
             best.features = temp.features;
@@ -409,16 +406,17 @@ void backwardElimDemo(const vfVec& data) {
     cout << endl;
 }
 
-bstFeats backwardElim(const vfVec& data) {
+bestFeatures backwardElim(const vfVec& data) {
     iVec features = allFeatures(data);
     iVec tempFeatures = features;
-    bstFeats best;
+    bestFeatures best;
     int bestAtThisLevel=-1;
     float defaultAcc = 0.0;
     for (int i = 1; i != data.at(0).size(); ++i) {
         float bestAccuracy =  defaultAcc;
         for (int j = 0; j != features.size(); ++j) {
-            if (find(features.begin(), features.end(), features.at(j)) != features.end()) {
+            if (find(features.begin(), features.end(), features.at(j))
+                != features.end()) {
                 tempFeatures = features;
                 tempFeatures.erase(tempFeatures.begin()+j);
                 float accuracy = leaveOneOutCrossValidation(data, tempFeatures);
@@ -429,7 +427,7 @@ bstFeats backwardElim(const vfVec& data) {
             }
         }
         features.erase(features.begin() + (bestAtThisLevel));
-        bstFeats temp(bestAccuracy, features);
+        bestFeatures temp(bestAccuracy, features);
         if (temp.accuracy > best.accuracy) {
             best.accuracy = temp.accuracy;
             best.features = temp.features;
@@ -484,11 +482,11 @@ void repeatedtrialResults(const bVec& trials) {
 }
 
 void resultsInfo(const vfVec &data, searchNoInfo sf) {
-    vector<bstFeats> results;
+    vector<bestFeatures> results;
     int numTrials = 10;
     for (int i = 0; i != numTrials; ++i) {
         vfVec newData = randomData(data,0.05);
-        bstFeats best = sf(newData);
+        bestFeatures best = sf(newData);
         cout << setw(8) << setprecision(5) << right <<
         best.accuracy  << " "; print(best.features);
         cout << endl;
@@ -511,7 +509,7 @@ viVec initPopulation(int numFeatures) {
     viVec startingPopulation;
     float percentToUse = 0.3;
     int populationSize = numFeatures * percentToUse;
-    if ((populationSize % 2) == 1) ++populationSize; //don't have odd population
+    if ((populationSize % 2) == 1) ++populationSize; // no odd populations
     for (int i = 0; i != populationSize; ++i) {
         iVec parent = featureBitVector(numFeatures);
         startingPopulation.push_back(parent);
@@ -525,7 +523,7 @@ iVec crossOver(const iVec& a, const iVec& b) {
     int minCrossOverPoint = a.size() * .3;
     int crossOverPoint = (rand() % maxCrossOverPoint)+minCrossOverPoint;
     for (int i = 0; i != a.size(); ++i) {
-        (i<crossOverPoint) ? child.push_back(a.at(i)) : child.push_back(b.at(i));
+        (i<crossOverPoint)?child.push_back(a.at(i)) : child.push_back(b.at(i));
     }
     return child;
 }
@@ -560,7 +558,7 @@ void mutate(iVec& individual) {
     }
 }
 
-bstFeats evaluate(const vfVec& data, const iVec& individual) {
+bestFeatures evaluate(const vfVec& data, const iVec& individual) {
     // convert features used to a format useable by leaveOneOutCrossValidation
     iVec featuresVector;
     for (int i = 0; i != individual.size(); ++i) {
@@ -569,7 +567,7 @@ bstFeats evaluate(const vfVec& data, const iVec& individual) {
         }
     }
     float acc = leaveOneOutCrossValidation(data, featuresVector);
-    return bstFeats(acc, individual);
+    return bestFeatures(acc, individual);
 }
 
 void evolve(const vfVec &data) {
@@ -592,7 +590,7 @@ void evolve(const vfVec &data) {
         for ( int i = 0; i != parents.size(); ++i) {
             population.push_back(evaluate(data, parents.at(i)));
         }
-        sort(population.begin(), population.end(), cmpFeatures);
+        sort(population.begin(), population.end(), compare);
         // select parents for next round
         int numCopy = static_cast<int>(population.size()) -
                         (originalNumParents/2); // leave out the worst two
