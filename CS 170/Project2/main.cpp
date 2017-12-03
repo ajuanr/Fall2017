@@ -105,6 +105,7 @@ string promptFileName() {
 //      fileName = "wine.txt";
 //    fileName = "DataUserModeling.txt";
 //fileName = "sonar.txt";
+    fileName = "glassIdentification.txt";
     return fileName;
 }
 
@@ -277,9 +278,8 @@ void forwardSelectionDemo(const vfVec& data) {
     iVec tempFeatures;
     bestFeatures best;
     int bestAtThisLevel=-1;
-    float defaultAccuracy = defaultAverage(data);
-    cout << "default accuracy with no features: " << defaultAccuracy << endl;
-    float bestAccuracy = defaultAccuracy;
+    float bestAccuracy = defaultAverage(data);
+    cout << "default accuracy with no features: " << bestAccuracy << endl;
     for (int i = 1; i != data.at(0).size(); ++i) {
 //        float bestAccuracy =  defaultAccuracy;
         for (int j = 1; j != data.at(0).size(); ++j) {
@@ -297,19 +297,22 @@ void forwardSelectionDemo(const vfVec& data) {
             }
         }
         // don't add same 'bestAtThisLevel' more than once
-        features.push_back(bestAtThisLevel);
-        bestFeatures temp(bestAccuracy, features);
-        if (temp.accuracy > best.accuracy) {
-            best.accuracy = temp.accuracy;
-            best.features = temp.features;
-            cout << "\n\nFeature set ";
-            print(best.features);
-            cout << " was best, accuracy is " << bestAccuracy << "\n\n";
-        }
-        // print out information on accuracy for the current level
-        else {
-            cout << "\n(WARNING: Accuracy has decreased. "
-            "Continuing search in case of local maxima.)\n";
+        if (find(features.begin(), features.end(), bestAtThisLevel)
+            == features.end()){
+            features.push_back(bestAtThisLevel);
+            bestFeatures temp(bestAccuracy, features);
+            if (temp.accuracy > best.accuracy) {
+                best.accuracy = temp.accuracy;
+                best.features = temp.features;
+                cout << "\n\nFeature set ";
+                print(best.features);
+                cout << " was best, accuracy is " << bestAccuracy << "\n\n";
+            }
+            // print out information on accuracy for the current level
+            else {
+                cout << "\n(WARNING: Accuracy has decreased. "
+                "Continuing search in case of local maxima.)\n";
+            }
         }
     }
     cout << "\n\nBest is: ";
@@ -337,12 +340,15 @@ bestFeatures forwardSelection(const vfVec& data) {
                 }
             }
         }
-        // don't add same 'bestAtThisLevel' more than once
-        features.push_back(bestAtThisLevel);
-        bestFeatures temp(bestAccuracy, features);
-        if (temp.accuracy > best.accuracy) {
-            best.accuracy = temp.accuracy;
-            best.features = temp.features;
+        if (find(features.begin(), features.end(), bestAtThisLevel)
+            == features.end()){
+            // don't add same 'bestAtThisLevel' more than once
+            features.push_back(bestAtThisLevel);
+            bestFeatures temp(bestAccuracy, features);
+            if (temp.accuracy > best.accuracy) {
+                best.accuracy = temp.accuracy;
+                best.features = temp.features;
+            }
         }
     }
     return best;
@@ -407,6 +413,7 @@ void backwardElimDemo(const vfVec& data) {
                 }
             }
         }
+        
         features.erase(features.begin() + (bestAtThisLevel));
         bestFeatures temp(bestAccuracy, features);
         if (temp.accuracy > best.accuracy) {
