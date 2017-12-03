@@ -99,12 +99,11 @@ string promptFileName() {
     "Type in the name of the file to test: ";
     string fileName;
     cin >> fileName;
-    fileName = "CS170Smalltestdata__44.txt";
-//        fileName = "CS170BIGtestdata__4.txt";
+//    fileName = "CS170Smalltestdata__44.txt";
+        fileName = "CS170BIGtestdata__4.txt";
     //    fileName = "leaf.txt";
-          fileName = "wine.txt";
-    //    fileName = "DataUserModeling.txt";
-    //fileName = "sonar.txt";
+//          fileName = "wine.txt";
+//        fileName = "DataUserModeling.txt";
     return fileName;
 }
 
@@ -198,8 +197,9 @@ void printBitVector(const iVec &bits) {
     cout << "{";
     if (bits.at(0) == 1) cout << 1;
     for (int i = 1; i != bits.size(); ++i) {
-        if (bits.at(i) == 1)
-        cout << " " << i+1;
+        if (bits.at(i) == 1) {
+            cout << " " << i+1;
+        }
     }
     cout << "}";
 }
@@ -267,24 +267,6 @@ vfVec trainingData(const vfVec& data, int instance) {
     return training;
 }
 
-//input: dataset
-// returns the % chance to be right when guessing the class
-float defaultAverage(const vfVec& data) {
-    // count the votes for each class
-    map<int, int> classesSeen; // hold the # of times a class is seen
-    for (int i = 0; i != data.size(); ++i) {
-        ++classesSeen[data.at(i).at(0)];
-    }
-    // find out which class had the most votes
-    int max = -1;
-    for (map<int,int>::iterator i = classesSeen.begin(); i != classesSeen.end();
-         ++i) {
-        if (i->second > max ) {
-            max = i->second;
-        }
-    }
-    return static_cast<float>(max)/data.size();
-}
 
 void forwardSelectionDemo(const vfVec& data) {
     iVec features;
@@ -473,8 +455,6 @@ int knn(const vfVec& training, const fVec& validation,
     return distances.begin()->second;
 }
 
-
-
 // returns a vector a value for every feature in the data
 // used for backward elimination;
 iVec allFeatures(const vfVec& data) {
@@ -617,7 +597,6 @@ void evolve(const vfVec &data) {
     // want to keep pop. through each generation at this size
     int originalNumParents = static_cast<int>(parents.size());
     for (int generation = 0; generation != maxGenerations; ++generation) {
-        cout << "number of parents: " << parents.size();
         // clear the old population, if any
         population.clear();
         // perform crossover
@@ -632,14 +611,14 @@ void evolve(const vfVec &data) {
         }
         sort(population.begin(), population.end(), compare);
         // select parents for next round
-        int numCopy = static_cast<int>(population.size())-(originalNumParents/2); // leave out the worst two
+        int numCopy=static_cast<int>(population.size())-(originalNumParents/2);
         parents.clear();
         for (int i = 0; i != numCopy; ++i) {
             parents.push_back(population.at(i).features);
         }
         cout << " best for generation: " << generation << " was: "
         << population.at(0).accuracy << "  ";
-        print(population.at(0).features); cout << endl;
+        printBitVector(population.at(0).features); cout << endl;
     }
     cout << "\n\nbest was: " << population.at(0).accuracy << "  ";
     print(population.at(0).features); cout << endl;
