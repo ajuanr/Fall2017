@@ -71,6 +71,7 @@ void crossoverParents(viVec&);
 void mutate(iVec&);
 bestFeatures evaluate(const vfVec&, const iVec&);
 void evolve(const vfVec&);
+void printBitVector(const iVec&);
 // output stuff
 string promptFileName();
 searchFunc promptSearchFunction();
@@ -99,9 +100,9 @@ string promptFileName() {
     string fileName;
     cin >> fileName;
     fileName = "CS170Smalltestdata__44.txt";
-        fileName = "CS170BIGtestdata__4.txt";
+//        fileName = "CS170BIGtestdata__4.txt";
     //    fileName = "leaf.txt";
-    //      fileName = "wine.txt";
+          fileName = "wine.txt";
     //    fileName = "DataUserModeling.txt";
     //fileName = "sonar.txt";
     return fileName;
@@ -185,6 +186,20 @@ void print(const iVec &features) {
     cout << "{" << features.at(0);
     for (int i = 1; i != features.size(); ++i) {
         cout << " " << features.at(i);
+    }
+    cout << "}";
+}
+
+void printBitVector(const iVec &bits) {
+    if (bits.empty()) {
+        cout << "{ }";
+        return;
+    }
+    cout << "{";
+    if (bits.at(0) == 1) cout << 1;
+    for (int i = 1; i != bits.size(); ++i) {
+        if (bits.at(i) == 1)
+        cout << " " << i+1;
     }
     cout << "}";
 }
@@ -276,7 +291,7 @@ void forwardSelectionDemo(const vfVec& data) {
     iVec tempFeatures;
     bestFeatures best;
     int bestAtThisLevel=-1;
-    cout << "accuracy with no features: "
+    cout << "Accuracy with no features: "
         << leaveOneOutCrossValidation(data, features) << endl;
     float defaultAccuracy = 0.5;
     for (int i = 1; i != data.at(0).size(); ++i) {
@@ -345,41 +360,6 @@ bestFeatures forwardSelection(const vfVec& data) {
         }
     }
     return best;
-}
-
-float leaveOneOutCrossValidation(const vfVec& data, const iVec& features) {
-    int numCorrect=0;
-    for (int instance = 0; instance != data.size(); ++instance) {
-        fVec validation = validationData(data,instance);
-        vfVec training = trainingData(data,instance);
-        classify(training, validation, features, 1);
-        if (accurate(data, validation, instance)) ++numCorrect;
-    }
-    return static_cast<float>(numCorrect)/data.size();
-}
-
-
-// returns the accurary of the tested data.
-// using leave one out so it's either correct or incorrect
-bool accurate(const vfVec& originalData, const fVec& validation, int instance){
-    return (originalData.at(instance).at(0) == validation.at(0));
-}
-
-void classify(const vfVec &training, fVec &validation,
-              const iVec &features, int k) {
-    validation.at(0) = knn(training, validation, features, k);
-}
-
-// returns class of k-nearest neighbors
-int knn(const vfVec& training, const fVec& validation,
-        const iVec& features, int k) {
-    fiMap distances; // holds classes in order of increasing distance
-    // find the nearest points in the training data
-    for (int i = 0; i != training.size(); ++i) {
-        float tempDistance = distance(training.at(i), validation, features);
-        distances[tempDistance] = training.at(i).at(0);
-    }
-    return distances.begin()->second;
 }
 
 void backwardElimDemo(const vfVec& data) {
@@ -458,6 +438,42 @@ bestFeatures backwardElim(const vfVec& data) {
     }
     return best;
 }
+
+float leaveOneOutCrossValidation(const vfVec& data, const iVec& features) {
+    int numCorrect=0;
+    for (int instance = 0; instance != data.size(); ++instance) {
+        fVec validation = validationData(data,instance);
+        vfVec training = trainingData(data,instance);
+        classify(training, validation, features, 1);
+        if (accurate(data, validation, instance)) ++numCorrect;
+    }
+    return static_cast<float>(numCorrect)/data.size();
+}
+
+// returns the accurary of the tested data.
+// using leave one out so it's either correct or incorrect
+bool accurate(const vfVec& originalData, const fVec& validation, int instance){
+    return (originalData.at(instance).at(0) == validation.at(0));
+}
+
+void classify(const vfVec &training, fVec &validation,
+              const iVec &features, int k) {
+    validation.at(0) = knn(training, validation, features, k);
+}
+
+// returns class of k-nearest neighbors
+int knn(const vfVec& training, const fVec& validation,
+        const iVec& features, int k) {
+    fiMap distances; // holds classes in order of increasing distance
+    // find the nearest points in the training data
+    for (int i = 0; i != training.size(); ++i) {
+        float tempDistance = distance(training.at(i), validation, features);
+        distances[tempDistance] = training.at(i).at(0);
+    }
+    return distances.begin()->second;
+}
+
+
 
 // returns a vector a value for every feature in the data
 // used for backward elimination;
@@ -601,6 +617,7 @@ void evolve(const vfVec &data) {
     // want to keep pop. through each generation at this size
     int originalNumParents = static_cast<int>(parents.size());
     for (int generation = 0; generation != maxGenerations; ++generation) {
+        cout << "number of parents: " << parents.size();
         // clear the old population, if any
         population.clear();
         // perform crossover
@@ -615,16 +632,16 @@ void evolve(const vfVec &data) {
         }
         sort(population.begin(), population.end(), compare);
         // select parents for next round
-        int numCopy = static_cast<int>(population.size()) -
-        (originalNumParents/2); // leave out the worst two
+        int numCopy = static_cast<int>(population.size())-(originalNumParents/2); // leave out the worst two
         parents.clear();
         for (int i = 0; i != numCopy; ++i) {
             parents.push_back(population.at(i).features);
         }
-        cout << "best for generation: " << generation << " was: "
+        cout << " best for generation: " << generation << " was: "
         << population.at(0).accuracy << "  ";
         print(population.at(0).features); cout << endl;
     }
     cout << "\n\nbest was: " << population.at(0).accuracy << "  ";
     print(population.at(0).features); cout << endl;
+    printBitVector(population.at(0).features); cout << endl;
 }
