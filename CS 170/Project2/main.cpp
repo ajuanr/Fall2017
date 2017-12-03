@@ -48,6 +48,7 @@ float distance(const fVec&, const fVec&, const iVec&);
 fVec validationData(const vfVec&, int);
 vfVec trainingData(const vfVec&, int);
 void classify(const vfVec&, fVec&, const iVec&, int);
+float defaultAverage(const vfVec&);
 // normalizing stuff
 float featureMean(const vfVec&, int);
 float stdDev(const vfVec&, int);
@@ -84,8 +85,8 @@ int main(int argc, const char * argv[]) {
     vfVec data = readData(promptFileName());
     if (!data.empty()) {
         srand(static_cast<unsigned int>(time(0)));
-//        startSearch(data);
-        resultsInfo(data, forwardSelection);
+        startSearch(data);
+//        resultsInfo(data, forwardSelection);
     }
     else
         cout << "There's no data\n";
@@ -252,14 +253,35 @@ vfVec trainingData(const vfVec& data, int instance) {
     return training;
 }
 
+//input: dataset
+// returns the % chance to be right when guessing the class
+float defaultAverage(const vfVec& data) {
+    // count the votes for each class
+    map<int, int> classesSeen; // hold the # of times a class is seen
+    for (int i = 0; i != data.size(); ++i) {
+        ++classesSeen[data.at(i).at(0)];
+    }
+    // find out which class had the most votes
+    int max = -1;
+    for (map<int,int>::iterator i = classesSeen.begin(); i != classesSeen.end();
+         ++i) {
+        if (i->second > max ) {
+            max = i->second;
+        }
+    }
+    return static_cast<float>(max)/data.size();
+}
+
 void forwardSelectionDemo(const vfVec& data) {
     iVec features;
     iVec tempFeatures;
     bestFeatures best;
     int bestAtThisLevel=-1;
-    float defaultAccuracy = 0.5;
+    float defaultAccuracy = defaultAverage(data);
+    cout << "default accuracy with no features: " << defaultAccuracy << endl;
+    float bestAccuracy = defaultAccuracy;
     for (int i = 1; i != data.at(0).size(); ++i) {
-        float bestAccuracy =  defaultAccuracy;
+//        float bestAccuracy =  defaultAccuracy;
         for (int j = 1; j != data.at(0).size(); ++j) {
             if (find(features.begin(), features.end(), j) == features.end()) {
                 tempFeatures = features;
@@ -301,7 +323,7 @@ bestFeatures forwardSelection(const vfVec& data) {
     iVec tempFeatures;
     bestFeatures best;
     int bestAtThisLevel=-1;
-    float defaultAccuracy = 0.5;
+    float defaultAccuracy = defaultAverage(data);
     for (int i = 1; i != data.at(0).size(); ++i) {
         float bestAccuracy =  defaultAccuracy;
         for (int j = 1; j != data.at(0).size(); ++j) {
@@ -366,7 +388,7 @@ void backwardElimDemo(const vfVec& data) {
     iVec tempFeatures = features;
     bestFeatures best;
     int bestAtThisLevel=-1;
-    float defaultAcc = 0.0;
+    float defaultAcc = defaultAverage(data);
     for (int i = 1; i != data.at(0).size(); ++i) {
         float bestAccuracy =  defaultAcc;
         for (int j = 0; j != features.size(); ++j) {
@@ -411,7 +433,7 @@ bestFeatures backwardElim(const vfVec& data) {
     iVec tempFeatures = features;
     bestFeatures best;
     int bestAtThisLevel=-1;
-    float defaultAcc = 0.0;
+    float defaultAcc = defaultAverage(data);
     for (int i = 1; i != data.at(0).size(); ++i) {
         float bestAccuracy =  defaultAcc;
         for (int j = 0; j != features.size(); ++j) {
