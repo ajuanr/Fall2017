@@ -18,7 +18,7 @@
 
 using namespace std;
 
-struct bestFeatures;                    // forwward declaration
+struct bestFeatures;                    // forward declaration
 
 typedef vector<float> fVec;         // holds the features
 typedef vector<fVec> vfVec;         // holds all the rows
@@ -26,7 +26,6 @@ typedef vector<int> iVec;           // holds which features to look at
 typedef vector<iVec> viVec;
 typedef vector<bestFeatures> bVec;      // for storing the trials
 typedef map<float, int> fiMap;
-typedef map<int,int> iMap;
 
 typedef void(*searchFunc)(const vfVec&);
 typedef bestFeatures(*searchNoInfo)(const vfVec&);
@@ -79,8 +78,9 @@ int main(int argc, const char * argv[]) {
     vfVec data = readData(promptFileName());
     if (!data.empty()) {
         srand(static_cast<unsigned int>(time(0)));
-                startSearch(data);
-//        resultsInfo(data, forwardSelection);
+//        startSearch(data);
+        iVec f = {7,37,9};
+        cout << leaveOneOutCrossValidation(data, f) << endl;
     }
     else
         cout << "There's no data\n";
@@ -290,8 +290,7 @@ void forwardSelectionDemo(const vfVec& data) {
         }
     }
     cout << "\n\nBest is: " << best.accuracy << " ";
-    print(best.features);
-    cout << endl;
+    print(best.features); cout << endl;
 }
 
 void backwardElimDemo(const vfVec& data) {
@@ -336,8 +335,7 @@ void backwardElimDemo(const vfVec& data) {
         }
     }
     cout << "\n\nBest is: " << best.accuracy << " ";
-    print(best.features);
-    cout << endl;
+    print(best.features); cout << endl;
 }
 
 float leaveOneOutCrossValidation(const vfVec& data, const iVec& features) {
