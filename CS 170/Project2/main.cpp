@@ -260,8 +260,8 @@ void forwardSelectionDemo(const vfVec& data) {
                 == currentSet.end()) {
                 tempFeatures.push_back(j);
                 float accuracy = leaveOneOutCrossValidation(data, tempFeatures);
-                cout << "Using features: " << setw(4) << accuracy << " ";
-                print(tempFeatures); cout << endl;
+                cout << "Using features: " << setw(5) << setprecision(3)
+                << accuracy << " "; print(tempFeatures); cout << endl;
                 if (accuracy > bestAccuracySoFar) {
                     bestAccuracySoFar = accuracy;
                     featureToAddAtThisLevel = j;
@@ -296,7 +296,8 @@ void backwardElimDemo(const vfVec& data) {
                 tempFeatures = currentSet;
                 tempFeatures.erase(tempFeatures.begin() + j);
                 float accuracy = leaveOneOutCrossValidation(data, tempFeatures);
-                cout << "Using features: " << setw(4) << accuracy << " ";
+                cout << "Using features: " << setw(5) << setprecision(3)
+                << accuracy << " ";
                 print(tempFeatures); cout << endl;
                 if (accuracy > bestAccuracySoFar) {
                     bestAccuracySoFar = accuracy;
@@ -308,8 +309,6 @@ void backwardElimDemo(const vfVec& data) {
         if (bestAccuracySoFar > best.accuracy) {
             best = Feature(bestAccuracySoFar, currentSet);
         }
-        cout << "on level " << i << " i added " << featureToRmAtThisLevel
-        << " to current set\n";
     }
     cout << best.accuracy<< " "; print(best.features); cout << endl;
 }
@@ -457,8 +456,8 @@ void evolve(const vfVec &data) {
         for (int i = 0; i != numCopy; ++i) {
             parents.push_back(population.at(i).features);
         }
-        cout << " best for generation: " << generation << " was: "
-        << population.at(0).accuracy << "  ";
+        cout << " best for generation: " << setw(2) << generation << " was: "
+        << setw(5) << setprecision(3) << population.at(0).accuracy << "  ";
         printBitVector(population.at(0).features); cout << endl;
     }
     cout << "\n\nbest was: " << population.at(0).accuracy << "  ";
