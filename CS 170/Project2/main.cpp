@@ -13,26 +13,26 @@
 #include <iostream>                 // for I/O
 #include <map>                      // to hold the distances
 #include <string>                   // to get a line of text
-#include <sstream>                  // to parse a line of text
+#include <sstream>          // to parse a line of text
 #include <vector>                   // to hold the data.
 
 using namespace std;
 
-struct bestFeatures;                    // forward declaration
+struct Feature;                    // forward declaration
 
 typedef vector<float> fVec;         // holds the features
 typedef vector<fVec> vfVec;         // holds all the rows
 typedef vector<int> iVec;           // holds which features to look at
 typedef vector<iVec> viVec;
-typedef vector<bestFeatures> bVec;      // for storing the trials
+typedef vector<Feature> bVec;      // for storing the trials
 typedef map<float, int> fiMap;
 
 typedef void(*searchFunc)(const vfVec&);
-typedef bestFeatures(*searchNoInfo)(const vfVec&);
+typedef Feature(*searchNoInfo)(const vfVec&);
 
-struct bestFeatures{
-    bestFeatures():accuracy(0.5){ }
-    bestFeatures(float a, iVec f):accuracy(a), features(f) { }
+struct Feature{
+    Feature():accuracy(0.5){ }
+    Feature(float a, iVec f):accuracy(a), features(f) { }
     float accuracy;
     iVec features;
 };
@@ -53,7 +53,7 @@ float stdDev(const vfVec&, int);
 void zNormalize(vfVec&);
 // search stuff
 bool accurate(const vfVec&, const fVec&, int);
-bool compare(const bestFeatures &a,const bestFeatures &b)
+bool compare(const Feature &a,const Feature &b)
     {return a.accuracy>b.accuracy;}
 float leaveOneOutCrossValidation(const vfVec&, const iVec&);
 void forwardSelectionDemo(const vfVec&);
@@ -65,7 +65,7 @@ viVec initPopulation(int size);
 iVec crossOver(const iVec&, const iVec&);
 void crossoverParents(viVec&);
 void mutate(iVec&);
-bestFeatures evaluate(const vfVec&, const iVec&);
+Feature evaluate(const vfVec&, const iVec&);
 void evolve(const vfVec&);
 void printBitVector(const iVec&);
 // output stuff
@@ -78,9 +78,8 @@ int main(int argc, const char * argv[]) {
     vfVec data = readData(promptFileName());
     if (!data.empty()) {
         srand(static_cast<unsigned int>(time(0)));
-//        startSearch(data);
-        iVec f = {7,37,9};
-        cout << leaveOneOutCrossValidation(data, f) << endl;
+        startSearch(data);
+
     }
     else
         cout << "There's no data\n";
@@ -250,53 +249,44 @@ vfVec trainingData(const vfVec& data, int instance) {
 }
 
 void forwardSelectionDemo(const vfVec& data) {
-    iVec features;
-    iVec tempFeatures;
-    bestFeatures best;
-    int bestAtThisLevel=-1;
-    cout << "Accuracy with no features: "
-        << leaveOneOutCrossValidation(data, features) << endl;
-    float defaultAccuracy = 0.5;
+    iVec currentSet;
+    Feature best(0, currentSet);
     for (int i = 1; i != data.at(0).size(); ++i) {
-        float bestAccuracy =  defaultAccuracy;
+        int featureToAddAtThisLevel = i;
+        float bestAccuracySoFar = 0.0;
         for (int j = 1; j != data.at(0).size(); ++j) {
-            if (find(features.begin(), features.end(), j) == features.end()) {
-                tempFeatures = features;
+            iVec tempFeatures = currentSet;
+            if (find(currentSet.begin(), currentSet.end(), j)
+                == currentSet.end()) {
                 tempFeatures.push_back(j);
-                cout << "Using features: ";
-                print(tempFeatures);
                 float accuracy = leaveOneOutCrossValidation(data, tempFeatures);
-                cout << ", accuracy is: " << accuracy << "\n";
-                if ( accuracy > bestAccuracy) {
-                    bestAccuracy = accuracy;
-                    bestAtThisLevel = j;
+                cout << "Using features: " << setw(5) << accuracy << " ";
+                print(tempFeatures); cout << endl;
+                if (accuracy > bestAccuracySoFar) {
+                    bestAccuracySoFar = accuracy;
+                    featureToAddAtThisLevel = j;
                 }
             }
         }
-        // don't add same 'bestAtThisLevel' more than once
-        features.push_back(bestAtThisLevel);
-        bestFeatures temp(bestAccuracy, features);
-        if (temp.accuracy > best.accuracy) {
-            best.accuracy = temp.accuracy;
-            best.features = temp.features;
-            cout << "\n\nFeature set ";
+        currentSet.push_back(featureToAddAtThisLevel);
+        if (bestAccuracySoFar > best.accuracy) {
+            best = Feature(bestAccuracySoFar, currentSet);
+            cout << "\nFeature set ";
             print(best.features);
-            cout << " was best, accuracy is " << bestAccuracy << "\n\n";
+            cout << " was best, accuracy is " << bestAccuracySoFar << "\n\n";
         }
-        // print out information on accuracy for the current level
         else {
             cout << "\n(WARNING: Accuracy has decreased. "
-            "Continuing search in case of local maxima.)\n";
+            "Continuing search in case of local maxima.)\n\n";
         }
     }
-    cout << "\n\nBest is: " << best.accuracy << " ";
-    print(best.features); cout << endl;
+    cout << best.accuracy<< " "; print(best.features); cout << endl;
 }
 
 void backwardElimDemo(const vfVec& data) {
     iVec features = allFeatures(data);
     iVec tempFeatures = features;
-    bestFeatures best;
+    Feature best;
     int bestAtThisLevel=-1;
     float defaultAcc = 0.5;
     cout << "accuracy with all features: "
@@ -320,7 +310,7 @@ void backwardElimDemo(const vfVec& data) {
             }
         }
         features.erase(features.begin() + (bestAtThisLevel));
-        bestFeatures temp(bestAccuracy, features);
+        Feature temp(bestAccuracy, features);
         if (temp.accuracy > best.accuracy) {
             best.accuracy = temp.accuracy;
             best.features = temp.features;
@@ -442,7 +432,7 @@ void mutate(iVec& individual) {
     }
 }
 
-bestFeatures evaluate(const vfVec& data, const iVec& individual) {
+Feature evaluate(const vfVec& data, const iVec& individual) {
     // convert features used to a format useable by leaveOneOutCrossValidation
     iVec featuresVector;
     for (int i = 0; i != individual.size(); ++i) {
@@ -451,7 +441,7 @@ bestFeatures evaluate(const vfVec& data, const iVec& individual) {
         }
     }
     float acc = leaveOneOutCrossValidation(data, featuresVector);
-    return bestFeatures(acc, individual);
+    return Feature(acc, individual);
 }
 
 void evolve(const vfVec &data) {
