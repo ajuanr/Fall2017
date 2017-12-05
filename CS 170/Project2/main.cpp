@@ -54,7 +54,7 @@ void zNormalize(vfVec&);
 // search stuff
 bool accurate(const vfVec&, const fVec&, int);
 bool compare(const Feature &a,const Feature &b)
-    {return a.accuracy>b.accuracy;}
+{return a.accuracy>b.accuracy;}
 float leaveOneOutCrossValidation(const vfVec&, const iVec&);
 void forwardSelectionDemo(const vfVec&);
 void backwardElimDemo(const vfVec&);
@@ -64,7 +64,7 @@ iVec featureBitVector(int);
 viVec initPopulation(int size);
 iVec crossOver(const iVec&, const iVec&);
 void crossoverParents(viVec&);
-void mutate(iVec&);
+iVec mutate(iVec&);
 Feature evaluate(const vfVec&, const iVec&);
 void evolve(const vfVec&);
 void printBitVector(const iVec&);
@@ -73,13 +73,14 @@ string promptFileName();
 searchFunc promptSearchFunction();
 void startSearch(vfVec&);
 
+float worstAccuracySeen = 1.0; // keep track of worst accuracy seen
+
 /*****************************************************************************/
 int main(int argc, const char * argv[]) {
     vfVec data = readData(promptFileName());
     if (!data.empty()) {
         srand(static_cast<unsigned int>(time(0)));
         startSearch(data);
-
     }
     else
         cout << "There's no data\n";
@@ -254,6 +255,7 @@ void forwardSelectionDemo(const vfVec& data) {
     for (int i = 1; i != data.at(0).size(); ++i) {
         int featureToAddAtThisLevel = i;
         float bestAccuracySoFar = 0.0;
+        worstAccuracySeen = 1.0;
         for (int j = 1; j != data.at(0).size(); ++j) {
             iVec tempFeatures = currentSet;
             if (find(currentSet.begin(), currentSet.end(), j)
@@ -265,6 +267,7 @@ void forwardSelectionDemo(const vfVec& data) {
                 if (accuracy > bestAccuracySoFar) {
                     bestAccuracySoFar = accuracy;
                     featureToAddAtThisLevel = j;
+                    worstAccuracySeen = 1.0 - bestAccuracySoFar;
                 }
             }
         }
@@ -289,6 +292,7 @@ void backwardElimDemo(const vfVec& data) {
     for (int i = 1; i != data.at(0).size(); ++i) {
         int featureToRmAtThisLevel = i;
         float bestAccuracySoFar = 0;
+        worstAccuracySeen = 1.0;
         for (int j = 0; j != currentSet.size(); ++j) {
             iVec tempFeatures = currentSet;
             if (find(currentSet.begin(), currentSet.end(), currentSet.at(j))
@@ -302,6 +306,7 @@ void backwardElimDemo(const vfVec& data) {
                 if (accuracy > bestAccuracySoFar) {
                     bestAccuracySoFar = accuracy;
                     featureToRmAtThisLevel = j;
+                    worstAccuracySeen = 1.0 - bestAccuracySoFar;
                 }
             }
         }
@@ -314,12 +319,20 @@ void backwardElimDemo(const vfVec& data) {
 }
 
 float leaveOneOutCrossValidation(const vfVec& data, const iVec& features) {
-    int numCorrect=0;
+    int numCorrect = 0;
+    int numWrong = 0;
     for (int instance = 0; instance != data.size(); ++instance) {
         fVec validation = validationData(data,instance);
         vfVec training = trainingData(data,instance);
         classify(training, validation, features, 1);
         if (accurate(data, validation, instance)) ++numCorrect;
+        else {
+            ++numWrong;
+            
+        }
+        // don't find out how bad a solution really is
+        if ((static_cast<float>(numWrong)/data.size()) > worstAccuracySeen)
+            return 0;
     }
     return static_cast<float>(numCorrect)/data.size();
 }
@@ -408,13 +421,15 @@ void crossoverParents(viVec& parents) {
     }
 }
 
-void mutate(iVec& individual) {
+iVec mutate(iVec& individual) {
+    iVec cpy = individual;
     if (rand()%individual.size() == 0) {
         int mutationPoint = rand() % individual.size();
-        if (individual.at(mutationPoint) == 0)
-            individual.at(mutationPoint) = 1;
-        else individual.at(mutationPoint) = 0;
+        if (cpy.at(mutationPoint) == 0)
+            cpy.at(mutationPoint) = 1;
+        else cpy.at(mutationPoint) = 0;
     }
+    return cpy;
 }
 
 Feature evaluate(const vfVec& data, const iVec& individual) {
@@ -435,15 +450,15 @@ void evolve(const vfVec &data) {
     bVec population;
     int maxGenerations = 100;
     // want to keep pop. through each generation at this size
-    int originalNumParents = static_cast<int>(parents.size());
     for (int generation = 0; generation != maxGenerations; ++generation) {
         // clear the old population, if any
         population.clear();
         // perform crossover
         crossoverParents(parents);
         // possibly mutate some individuals
-        for (int i = 0; i != parents.size(); ++i) {
-            mutate(parents.at(i));
+        int newParentsSize = static_cast<int>(parents.size());
+        for (int i = 0; i != newParentsSize; ++i) {
+            parents.push_back(mutate(parents.at(i)));
         }
         // evalute the population
         for ( int i = 0; i != parents.size(); ++i) {
@@ -451,7 +466,8 @@ void evolve(const vfVec &data) {
         }
         sort(population.begin(), population.end(), compare);
         // select parents for next round
-        int numCopy=static_cast<int>(population.size())-(originalNumParents/2);
+        cout << population.size() << endl;
+        int numCopy=static_cast<int>(population.size())/3;
         parents.clear();
         for (int i = 0; i != numCopy; ++i) {
             parents.push_back(population.at(i).features);
@@ -464,3 +480,4 @@ void evolve(const vfVec &data) {
     print(population.at(0).features); cout << endl;
     printBitVector(population.at(0).features); cout << endl;
 }
+
