@@ -89,11 +89,21 @@ int main(int argc, const char * argv[]) {
 /*****************************************************************************/
 
 string promptFileName() {
-    cout << "Welcome to Juan Ruiz's feature selection algorithm\n"
-    "Type in the name of the file to test: ";
-    string fileName;
-    cin >> fileName;
-    return fileName;
+    cout << "Welcome to Juan Ruiz's feature selection algorithm\n\n"
+    "Enter 1 to test CS170Smalltestdata__44.txt\n"
+    "Enter 2 to test CS170BIGtestdata__4.txt\n"
+    "Enter 3 to type in the name of the file to test\n"
+    "        ";
+    int choice;
+    cin >> choice;
+    switch(choice) {
+        case 1: return "CS170Smalltestdata__44.txt";
+        case 2: return "CS170BIGtestdata__4.txt";
+        case 3: {
+            cout << "\nEnter file name: ";
+            string filename; cin >> filename; return filename;}
+        default: return "CS170Smalltestdata__44.txt";
+    }
 }
 
 searchFunc promptSearchFunction() {
@@ -326,10 +336,7 @@ float leaveOneOutCrossValidation(const vfVec& data, const iVec& features) {
         vfVec training = trainingData(data,instance);
         classify(training, validation, features, 1);
         if (accurate(data, validation, instance)) ++numCorrect;
-        else {
-            ++numWrong;
-            
-        }
+        else ++numWrong;
         // don't find out how bad a solution really is
         if ((static_cast<float>(numWrong)/data.size()) > worstAccuracySeen)
             return 0;
@@ -480,4 +487,3 @@ void evolve(const vfVec &data) {
     print(population.at(0).features); cout << endl;
     printBitVector(population.at(0).features); cout << endl;
 }
-
