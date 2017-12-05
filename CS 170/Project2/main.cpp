@@ -260,7 +260,7 @@ void forwardSelectionDemo(const vfVec& data) {
                 == currentSet.end()) {
                 tempFeatures.push_back(j);
                 float accuracy = leaveOneOutCrossValidation(data, tempFeatures);
-                cout << "Using features: " << setw(5) << accuracy << " ";
+                cout << "Using features: " << setw(4) << accuracy << " ";
                 print(tempFeatures); cout << endl;
                 if (accuracy > bestAccuracySoFar) {
                     bestAccuracySoFar = accuracy;
@@ -284,48 +284,34 @@ void forwardSelectionDemo(const vfVec& data) {
 }
 
 void backwardElimDemo(const vfVec& data) {
-    iVec features = allFeatures(data);
-    iVec tempFeatures = features;
-    Feature best;
-    int bestAtThisLevel=-1;
-    float defaultAcc = 0.5;
-    cout << "accuracy with all features: "
-    << leaveOneOutCrossValidation(data, features) << endl;
+    iVec currentSet = allFeatures(data);
+    Feature best(0, currentSet);
     for (int i = 1; i != data.at(0).size(); ++i) {
-        float bestAccuracy =  defaultAcc;
-        for (int j = 0; j != features.size(); ++j) {
-            if (find(features.begin(), features.end(), features.at(j))
-                != features.end()) {
-                tempFeatures = features;
-                tempFeatures.erase(tempFeatures.begin()+j);
-                cout << "Using features: ";
-                print(tempFeatures);
+        int featureToRmAtThisLevel = i;
+        float bestAccuracySoFar = 0;
+        for (int j = 0; j != currentSet.size(); ++j) {
+            iVec tempFeatures = currentSet;
+            if (find(currentSet.begin(), currentSet.end(), currentSet.at(j))
+                != currentSet.end()) {
+                tempFeatures = currentSet;
+                tempFeatures.erase(tempFeatures.begin() + j);
                 float accuracy = leaveOneOutCrossValidation(data, tempFeatures);
-                cout << setprecision(4)
-                << ", accuracy is: " << accuracy << "\n";
-                if ( accuracy > bestAccuracy) {
-                    bestAccuracy = accuracy;
-                    bestAtThisLevel = j;
+                cout << "Using features: " << setw(4) << accuracy << " ";
+                print(tempFeatures); cout << endl;
+                if (accuracy > bestAccuracySoFar) {
+                    bestAccuracySoFar = accuracy;
+                    featureToRmAtThisLevel = j;
                 }
             }
         }
-        features.erase(features.begin() + (bestAtThisLevel));
-        Feature temp(bestAccuracy, features);
-        if (temp.accuracy > best.accuracy) {
-            best.accuracy = temp.accuracy;
-            best.features = temp.features;
-            cout << "\nFeature set ";
-            print(best.features);
-            cout << " was best, accuracy is " << bestAccuracy << "\n\n";
+        currentSet.erase(currentSet.begin() + featureToRmAtThisLevel);
+        if (bestAccuracySoFar > best.accuracy) {
+            best = Feature(bestAccuracySoFar, currentSet);
         }
-        // print out information on accuracy for the current level
-        else {
-            cout << "\n(WARNING: Accuracy has decreased. "
-            "Continuing search in case of local maxima.)\n";
-        }
+        cout << "on level " << i << " i added " << featureToRmAtThisLevel
+        << " to current set\n";
     }
-    cout << "\n\nBest is: " << best.accuracy << " ";
-    print(best.features); cout << endl;
+    cout << best.accuracy<< " "; print(best.features); cout << endl;
 }
 
 float leaveOneOutCrossValidation(const vfVec& data, const iVec& features) {
