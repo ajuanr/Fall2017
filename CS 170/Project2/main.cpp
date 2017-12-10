@@ -66,7 +66,7 @@ iVec crossOver(const iVec&, const iVec&);
 void crossoverParents(viVec&);
 iVec mutate(iVec&);
 Feature evaluate(const vfVec&, const iVec&);
-void evolve(const vfVec&);
+void geneticSearchDemo(const vfVec&);
 void printBitVector(const iVec&);
 // output stuff
 string promptFileName();
@@ -117,7 +117,7 @@ searchFunc promptSearchFunction() {
     switch (choice) {
         case(1): return forwardSelectionDemo;
         case(2): return backwardElimDemo;
-        case(3): return evolve;
+        case(3): return geneticSearchDemo;
         default:return forwardSelectionDemo;
     }
 }
@@ -451,7 +451,7 @@ Feature evaluate(const vfVec& data, const iVec& individual) {
     return Feature(acc, individual);
 }
 
-void evolve(const vfVec &data) {
+void geneticSearchDemo(const vfVec &data) {
     // initialize parents
     viVec parents = initPopulation(static_cast<int>(data.at(0).size())-1);
     bVec population;
@@ -473,7 +473,6 @@ void evolve(const vfVec &data) {
         }
         sort(population.begin(), population.end(), compare);
         // select parents for next round
-        cout << population.size() << endl;
         int numCopy=static_cast<int>(population.size())/3;
         parents.clear();
         for (int i = 0; i != numCopy; ++i) {
